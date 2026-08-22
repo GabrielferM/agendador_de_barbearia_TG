@@ -3,5 +3,5 @@ node_modules
 .claude
 .agents
 .env
-
+dist
 /generated/prisma
