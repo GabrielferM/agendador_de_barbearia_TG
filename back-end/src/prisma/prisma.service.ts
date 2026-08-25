@@ -1,52 +1,32 @@
-import {
-  Injectable,
-  OnModuleInit,
-  OnModuleDestroy,
-  INestApplication,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
+import { EnvironmentVariables } from '../config/environment';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor() {
-    const connectionString = process.env.DATABASE_URL;
+  private readonly pool: pg.Pool;
 
-    if (!connectionString) {
-      throw new Error(
-        'DATABASE_URL is not defined. Set it in the environment before starting the application.',
-      );
-    }
-
+  constructor(configService: ConfigService<EnvironmentVariables, true>) {
+    const connectionString = configService.getOrThrow<string>('DATABASE_URL');
     const pool = new pg.Pool({ connectionString });
     const adapter = new PrismaPg(pool);
 
-    // `adapter` é fornecido pelo pacote `@prisma/adapter-pg`, porém
-    // não consta no tipo gerado `PrismaClientOptions`.
-    // Fazemos um cast para `any` para preservar o comportamento em tempo de
-    // execução e satisfazer o TypeScript.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    super({ adapter } as any);
+    super({ adapter });
+    this.pool = pool;
   }
 
   async onModuleInit() {
-    try {
-      await this.$connect();
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      // eslint-disable-next-line no-console
-      console.warn('PrismaClient: failed to connect on init:', msg);
-    }
-  }
-
-  async enableShutdownHooks(app: INestApplication) {
-    process.on('beforeExit', async () => {
-      await app.close();
-    });
+    await this.$connect();
   }
 
   async onModuleDestroy() {
-    await this.$disconnect();
+    try {
+      await this.$disconnect();
+    } finally {
+      await this.pool.end();
+    }
   }
 }

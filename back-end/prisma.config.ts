@@ -6,11 +6,8 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
-  // O Prisma agora espera informações de conexão das datasources no mapa `datasources`.
-  // Mapear a datasource `db` declarada em schema.prisma para a URL do env.
-  datasources: {
-    db: {
-      url: env("DATABASE_URL"),
-    },
+  // A URL é usada pelos comandos Prisma Migrate, não pelo schema.
+  datasource: {
+    url: env("DATABASE_URL"),
   },
 });

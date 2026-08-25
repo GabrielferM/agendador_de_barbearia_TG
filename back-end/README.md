@@ -31,6 +31,22 @@
 $ npm install
 ```
 
+## Configuration
+
+Create a `.env` file with a PostgreSQL connection URL:
+
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/barbearia"
+PORT=3000
+NODE_ENV=development
+```
+
+In production, `CORS_ORIGINS` is required and must contain a comma-separated list of allowed origins:
+
+```env
+CORS_ORIGINS="https://app.example.com,https://admin.example.com"
+```
+
 ## Compile and run the project
 
 ```bash

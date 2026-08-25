@@ -4,4 +4,5 @@ node_modules
 .agents
 .env
 dist
-/generated/prisma
+/generated/prisma/
+/src/generated/prisma/

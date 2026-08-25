@@ -1,19 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { VerificarHealthService } from './service/verificar-health.service';
 
 @Injectable()
 export class HealthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly verificarHealth: VerificarHealthService) {}
 
-  async pingDatabase(): Promise<boolean> {
-    try {
-      // simple lightweight query to verify connection
-      // Prisma returns result for raw queries; `SELECT 1` is portable
-      // use a type assertion to avoid TypeScript issues with generated client
-      const result = await (this.prisma as any).$queryRaw`SELECT 1 as result`;
-      return !!result;
-    } catch (error) {
-      return false;
-    }
+  async pingDatabase() {
+    return this.verificarHealth.execute();
   }
 }
