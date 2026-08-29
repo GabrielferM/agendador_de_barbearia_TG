@@ -28,26 +28,36 @@ export class EditarAgendamentoService {
       where: { id },
       include: includeAgendamento,
     });
+
     if (!atual) throw new ConflictException('Agendamento não encontrado.');
+
     const estadosFinais: StatusAgendamento[] = [
       StatusAgendamento.CONCLUIDO,
       StatusAgendamento.CANCELADO,
       StatusAgendamento.NAO_COMPARECEU,
     ];
+
     if (estadosFinais.includes(atual.status))
       throw new ConflictException('Agendamento em estado final não pode ser alterado.');
+
     if (dto.status && !transicoesStatusAgendamento[atual.status].includes(dto.status))
       throw new ConflictException('Transição de status inválida.');
+
     let inicio = atual.inicio;
     let servicos = atual.servicos.map((item) => item.servico);
+
     if (dto.inicio) {
       inicio = this.validarDataHora.execute(dto.inicio);
       if (inicio <= new Date()) throw new BadRequestException('O início deve estar no futuro.');
     }
+
     if (dto.servicoIds) servicos = await this.buscarServicos.execute(dto.servicoIds);
+
     const fim = this.calcularFim.execute(inicio, servicos);
+
     if (dto.inicio || dto.servicoIds)
       await this.verificarConflito.execute(atual.idBarbeiro, inicio, fim, id);
+
     const data: Prisma.AgendamentoUpdateInput = {
       ...(dto.inicio || dto.servicoIds
         ? {
@@ -67,6 +77,7 @@ export class EditarAgendamentoService {
       ...(dto.observacao !== undefined ? { observacao: dto.observacao.trim() } : {}),
       ...(dto.status ? { status: dto.status } : {}),
     };
+
     return serializarResposta(
       await this.prisma.agendamento.update({
         where: { id },

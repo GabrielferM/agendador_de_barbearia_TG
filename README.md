@@ -1,121 +1,122 @@
-# Agendador de Barbearia (TG)
+# Agendador de Barbearia
 
-Este repositório contém uma aplicação full-stack para gerenciar agendamentos de barbearia.
+Aplicação full-stack para organizar a operação de uma barbearia: cadastro de usuários, clientes, barbeiros, filiais, endereços e serviços, além do gerenciamento de agendamentos.
 
-**Resumo rápido**: backend em NestJS + Prisma (Postgres) e frontend em React (Vite). O backend expõe APIs para gerenciar usuários, clientes, barbeiros, filiais, serviços e agendamentos; o frontend fornece a interface mínima para interação.
+O backend disponibiliza uma API REST documentada com Swagger. O frontend em React está em desenvolvimento e concentra a interface da aplicação.
 
-**Tecnologias principais**
-- **Backend**: `NestJS`, `TypeScript`, `Prisma`, `pg`, `@prisma/adapter-pg`
-- **Frontend**: `React`, `Vite`, `TypeScript`
-- **DB**: `PostgreSQL` (via `DATABASE_URL`)
+## Tecnologias
 
-**Estrutura do repositório**
-- **`back-end/`**: código do servidor (NestJS). Veja `back-end/package.json` para scripts e dependências.
-- **`back-end/prisma/`**: esquema Prisma e migrações (ex.: `back-end/prisma/schema.prisma` and `back-end/prisma/migrations`).
-- **`front-end/`**: app React com Vite; scripts em `front-end/package.json`.
-- **`pasta/`**: diagramas e BPMN do fluxo de agendamento.
+- **Backend:** NestJS, TypeScript, Prisma e PostgreSQL
+- **Frontend:** React, Vite, TypeScript, Tailwind CSS e HeroUI
+- **Documentação da API:** Swagger/OpenAPI
 
-**Requisitos**
-- Node.js >= 18
-- PostgreSQL (ou acesso a um servidor Postgres)
-- `npm` (ou `pnpm` / `yarn`) para instalar dependências
+## Estrutura
 
-**Variáveis de ambiente necessárias**
-- `DATABASE_URL` — string de conexão com o Postgres. Exemplo:
-
-```
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE?schema=public
+```text
+.
+├── back-end/          # API NestJS e Prisma
+├── front-end/         # Interface React/Vite
+└── pasta/             # Diagramas de domínio e BPMN
 ```
 
-Coloque essa variável em um arquivo `.env` dentro de `back-end/` para desenvolvimento.
+## Pré-requisitos
 
-**Configuração e execução (desenvolvimento)**
+- Node.js 20.19 ou superior
+- npm
+- PostgreSQL
 
-1. Backend
+## Configuração
+
+Instale as dependências de cada aplicação:
 
 ```bash
 cd back-end
 npm install
-# crie .env com DATABASE_URL
-npx prisma generate       # gera o client Prisma
-npx prisma migrate dev    # aplica migrações (interativo)
-npm run start:dev         # inicia NestJS em modo watch
+
+cd ../front-end
+npm install
 ```
 
-2. Frontend
+Crie o arquivo `back-end/.env` com as variáveis abaixo:
+
+```env
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/agendador_barbearia?schema=public"
+PORT=3000
+NODE_ENV=development
+CORS_ORIGINS=http://localhost:5173
+```
+
+`PORT` e `NODE_ENV` possuem, respectivamente, os valores padrão `3000` e `development`. Em produção, `CORS_ORIGINS` é obrigatório e pode conter várias origens separadas por vírgula.
+
+## Executar localmente
+
+Em um terminal, prepare o banco e inicie a API:
+
+```bash
+cd back-end
+npm run prisma:generate
+npm run prisma:migrate
+npm run start:dev
+```
+
+Em outro terminal, inicie o frontend:
 
 ```bash
 cd front-end
-npm install
 npm run dev
 ```
 
-O frontend por padrão roda em `http://localhost:5173` (Vite) e o backend em `http://localhost:3000` (NestJS), salvo alterações de porta no código.
+Endereços padrão:
 
-**Build & produção**
+| Serviço | Endereço |
+| --- | --- |
+| Frontend | `http://localhost:5173` |
+| API | `http://localhost:3000` |
+| Swagger (desenvolvimento) | `http://localhost:3000/api` |
+| Saúde da API | `http://localhost:3000/health` |
 
-Backend:
+## Recursos da API
+
+Os recursos abaixo possuem operações de criação, listagem, busca por ID, atualização e remoção:
+
+| Recurso | Rota base |
+| --- | --- |
+| Usuários | `/usuarios` |
+| Clientes | `/clientes` |
+| Barbeiros | `/barbeiros` |
+| Filiais | `/filiais` |
+| Endereços | `/enderecos` |
+| Serviços | `/servicos` |
+| Agendamentos | `/agendamentos` |
+
+Consulte contratos, exemplos de requisição e filtros disponíveis diretamente no Swagger. A rota `GET /health` confirma a disponibilidade do banco de dados.
+
+## Comandos úteis
+
+### Backend
 
 ```bash
 cd back-end
 npm run build
-npm run start:prod
+npm run lint
+npm run test
+npm run test:e2e
+npm run prisma:studio
 ```
 
-Frontend:
+### Frontend
 
 ```bash
 cd front-end
 npm run build
-# sirva os arquivos estáticos gerados pela pasta dist com um servidor web
-```
-
-**Prisma**
-- Arquivo de esquema: [`back-end/prisma/schema.prisma`](back-end/prisma/schema.prisma#L1-L120)
-- Migrações: [`back-end/prisma/migrations`](back-end/prisma/migrations)
-- Comandos úteis (executar em `back-end/`):
-
-```bash
-npx prisma validate
-npx prisma generate
-npx prisma migrate dev
-npx prisma studio
-```
-
-Observação: foi necessário ajustar o `PrismaService` para suportar o adaptador Postgres (`@prisma/adapter-pg`). O arquivo alterado é `back-end/src/prisma/prisma.service.ts`; o construtor injeta o `PrismaPg` e faz um cast para `any` ao chamar `super()` por conta de incompatibilidade de tipos gerados pelo client. Veja a implementação atual em [back-end/src/prisma/prisma.service.ts](back-end/src/prisma/prisma.service.ts#L1-L120).
-
-**Testes**
-- Backend: rode em `back-end/`
-
-```bash
-npm run test         # unit tests
-npm run test:e2e     # end-to-end tests
-```
-
-Frontend: não há suíte de testes configurada por padrão neste repositório.
-
-**Lint e formatação**
-
-```bash
-cd back-end
 npm run lint
-npm run format
-
-cd front-end
-npm run lint
+npm run preview
 ```
 
-**Observações e dicas**
-- Garanta que `DATABASE_URL` esteja disponível antes de iniciar o backend. Sem essa variável o serviço lança erro na inicialização.
-- Ao usar `prisma migrate dev`, certifique-se de que o banco de dados apontado por `DATABASE_URL` é um ambiente de desenvolvimento (não rode migrations de destruição em produção sem revisão).
-- Se preferir usar containers, crie um `docker-compose` com Postgres e ajuste `DATABASE_URL` para apontar para o serviço Postgres do compose.
+## Banco de dados
 
-**Contribuição**
-- Sinta-se livre para abrir issues e pull requests. Siga o padrão de código do projeto: TypeScript + ESLint + Prettier.
+O esquema e o histórico de migrações ficam em [`back-end/prisma`](back-end/prisma). Para alterar o modelo em desenvolvimento, atualize o esquema Prisma e execute `npm run prisma:migrate` dentro de `back-end/`.
 
---
-Se quiser, eu posso:
-- Executar `npx prisma validate` / `npx prisma generate` para verificar localmente.
-- Gerar um `docker-compose.yml` de exemplo com Postgres e instruções para rodar localmente.
+## Materiais do projeto
 
-Quer que eu gere o `docker-compose.yml` e um exemplo de `.env` agora?
+Os diagramas entidade-relacionamento e BPMN estão em [`pasta/`](pasta/), e a referência da arquitetura do backend está em [`back-end/doc/arquitetura.md`](back-end/doc/arquitetura.md).

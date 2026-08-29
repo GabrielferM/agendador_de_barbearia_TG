@@ -28,6 +28,7 @@ export class ListarAgendamentosService {
           }
         : {}),
     };
+
     const [dados, total] = await this.prisma.$transaction([
       this.prisma.agendamento.findMany({
         where,
@@ -38,6 +39,7 @@ export class ListarAgendamentosService {
       }),
       this.prisma.agendamento.count({ where }),
     ]);
+
     return respostaPaginada(serializarResposta(dados), total, query.pagina, query.limite);
   }
 }

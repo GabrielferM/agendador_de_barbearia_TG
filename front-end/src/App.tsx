@@ -1,12 +1,7 @@
-import './App.css'
+import { Inicio } from './pages/inicio'
 
 export function App() {
-  
-
-  return (
-    <>
-    </>
-  )
+  return <Inicio />
 }
 
 export default App

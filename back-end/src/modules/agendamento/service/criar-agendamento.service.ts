@@ -23,11 +23,17 @@ export class CriarAgendamentoService {
   ) {}
   async execute(dto: CriarAgendamentoDto) {
     const inicio = this.validarDataHora.execute(dto.inicio);
-    if (inicio <= new Date()) throw new BadRequestException('O início deve estar no futuro.');
+
+    if (inicio <= new Date()) {
+      throw new BadRequestException('O início deve estar no futuro.');
+    }
+
     const servicos = await this.buscarServicos.execute(dto.servicoIds);
     const fim = this.calcularFim.execute(inicio, servicos);
+
     await this.validarVinculos.execute(dto.idCliente, dto.idBarbeiro, dto.idFilial);
     await this.verificarConflito.execute(dto.idBarbeiro, inicio, fim);
+
     const agendamento = await this.prisma.$transaction((tx) =>
       tx.agendamento.create({
         data: {

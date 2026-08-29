@@ -11,7 +11,9 @@ export class BuscarAgendamentoService {
       where: { id },
       include: includeAgendamento,
     });
+
     if (!agendamento) throw new NotFoundException('Agendamento não encontrado.');
+
     return serializarResposta(agendamento);
   }
 }
