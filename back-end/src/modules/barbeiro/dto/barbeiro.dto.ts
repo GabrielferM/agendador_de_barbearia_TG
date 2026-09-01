@@ -15,17 +15,21 @@ export class CriarBarbeiroDto {
   @IsEmail() email!: string;
   @IsString() @MinLength(8) senha!: string;
   @Type(() => Number) @IsInt() idFilial!: number;
+  @IsOptional() @IsString() nomeProfissional?: string;
   @IsOptional() @IsString() descricao?: string;
+  @IsOptional() @IsString() fotoUrl?: string;
   @IsOptional() @IsDateString() dataAdmissao?: string;
-  @IsOptional() @IsEnum(StatusBarbeiro) status?: StatusBarbeiro;
+  @IsOptional() @IsEnum(StatusBarbeiro) statusProfissional?: StatusBarbeiro;
 }
 export class AtualizarBarbeiroDto {
   @IsOptional() @IsString() @MinLength(2) nome?: string;
   @IsOptional() @IsEmail() email?: string;
   @IsOptional() @IsString() @MinLength(8) senha?: string;
   @IsOptional() @Type(() => Number) @IsInt() idFilial?: number;
+  @IsOptional() @IsString() nomeProfissional?: string;
   @IsOptional() @IsString() descricao?: string;
+  @IsOptional() @IsString() fotoUrl?: string;
   @IsOptional() @IsDateString() dataAdmissao?: string;
-  @IsOptional() @IsEnum(StatusBarbeiro) status?: StatusBarbeiro;
+  @IsOptional() @IsEnum(StatusBarbeiro) statusProfissional?: StatusBarbeiro;
 }
 export class ListarBarbeirosDto extends PaginacaoDto {}

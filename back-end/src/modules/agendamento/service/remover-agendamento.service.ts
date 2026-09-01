@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { BuscarAgendamentoService } from './buscar-agendamento.service';
 
@@ -10,9 +10,10 @@ export class RemoverAgendamentoService {
   ) {}
   async execute(id: number) {
     await this.buscar.execute(id);
-    await this.prisma.$transaction(async (tx) => {
-      await tx.agendamentoServico.deleteMany({ where: { idAgendamento: id } });
-      await tx.agendamento.delete({ where: { id } });
+    const itensComComissao = await this.prisma.agendamentoServico.count({
+      where: { idAgendamento: id, comissao: { isNot: null } },
     });
+    if (itensComComissao) throw new ConflictException('Agendamento possui comissões vinculadas.');
+    await this.prisma.agendamento.delete({ where: { id } });
   }
 }

@@ -17,7 +17,7 @@ export class CriarServicoService {
           data: {
             nome,
             descricao: dto.descricao?.trim() || null,
-            preco: new Prisma.Decimal(dto.preco.toString()),
+            precoBase: new Prisma.Decimal(dto.precoBase.toString()),
             duracaoMinutos: dto.duracaoMinutos,
           },
         }),

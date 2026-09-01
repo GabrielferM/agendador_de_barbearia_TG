@@ -15,7 +15,7 @@ export function serializarResposta<T>(valor: T): T {
   return valor;
 }
 
-export function semSenha<T extends { senha?: unknown }>(usuario: T) {
-  const { senha: _, ...resultado } = usuario;
+export function semSenha<T extends { senhaHash?: unknown }>(usuario: T) {
+  const { senhaHash: _, ...resultado } = usuario;
   return serializarResposta(resultado);
 }

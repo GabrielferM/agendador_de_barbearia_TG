@@ -3,9 +3,9 @@ import { StatusAgendamento } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 
 const estadosQueOcupamHorario = [
-  StatusAgendamento.AGENDADO,
+  StatusAgendamento.PENDENTE,
   StatusAgendamento.CONFIRMADO,
-  StatusAgendamento.EM_ANDAMENTO,
+  StatusAgendamento.EM_ATENDIMENTO,
 ];
 
 @Injectable()
@@ -17,8 +17,8 @@ export class VerificarConflitoAgendamentoService {
       where: {
         idBarbeiro,
         status: { in: estadosQueOcupamHorario },
-        inicio: { lt: fim },
-        fim: { gt: inicio },
+        inicioPrevisto: { lt: fim },
+        fimPrevisto: { gt: inicio },
         ...(excluirId ? { NOT: { id: excluirId } } : {}),
       },
     });

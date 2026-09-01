@@ -6,45 +6,115 @@ datasource db {
   provider = "postgresql"
 }
 
-enum TipoPerfil {
-  CLIENTE
-  BARBEIRO
-  ADMIN
+enum StatusUsuario {
+  ATIVO
+  INATIVO
+  BLOQUEADO
 }
 
 enum StatusBarbeiro {
   ATIVO
   INATIVO
+  AFASTADO
+}
+
+enum StatusFilial {
+  ATIVA
+  INATIVA
+  EM_MANUTENCAO
 }
 
 enum StatusAgendamento {
-  AGENDADO
+  PENDENTE
   CONFIRMADO
-  EM_ANDAMENTO
+  EM_ATENDIMENTO
   CONCLUIDO
   CANCELADO
   NAO_COMPARECEU
 }
 
-model Usuario {
-  id           Int        @id @default(autoincrement())
-  nome         String
-  email        String     @unique
-  senha        String
-  dataCadastro DateTime   @default(now())
-  tipoPerfil   TipoPerfil
-  cliente      Cliente?   @relation("UsuarioCliente")
-  barbeiro     Barbeiro?  @relation("UsuarioBarbeiro")
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+enum OrigemAgendamento {
+  SITE
+  BARBEIRO
+  ADMINISTRADOR
+}
 
+enum StatusComissao {
+  PREVISTA
+  LIBERADA
+  PAGA
+  CANCELADA
+  ESTORNADA
+}
+
+model Usuario {
+  id                 Int                          @id @default(autoincrement())
+  idPapel            Int
+  nome               String
+  email              String                       @unique
+  senhaHash          String
+  telefone           String?
+  status             StatusUsuario                @default(ATIVO)
+  dataCadastro       DateTime                     @default(now())
+  dataAtualizacao    DateTime                     @updatedAt
+  ultimoAcesso       DateTime?
+  papel              Papel                        @relation("PapelUsuarios", fields: [idPapel], references: [id], onDelete: Restrict)
+  cliente            Cliente?                     @relation("UsuarioCliente")
+  barbeiro           Barbeiro?                    @relation("UsuarioBarbeiro")
+  administrador      Administrador?               @relation("UsuarioAdministrador")
+  alteracoesDeStatus HistoricoStatusAgendamento[] @relation("UsuarioHistoricoStatus")
+
+  @@index([idPapel])
+  @@index([status])
   @@map("usuario")
+}
+
+model Papel {
+  id           Int              @id @default(autoincrement())
+  codigo       String           @unique
+  nome         String
+  descricao    String?
+  ativo        Boolean          @default(true)
+  dataCadastro DateTime         @default(now())
+  usuarios     Usuario[]        @relation("PapelUsuarios")
+  permissoes   PapelPermissao[] @relation("PapelPermissoes")
+
+  @@index([ativo])
+  @@map("papel")
+}
+
+model Permissao {
+  id        Int              @id @default(autoincrement())
+  codigo    String           @unique
+  nome      String
+  descricao String?
+  ativo     Boolean          @default(true)
+  papeis    PapelPermissao[] @relation("PermissaoPapeis")
+
+  @@index([ativo])
+  @@map("permissao")
+}
+
+model PapelPermissao {
+  id             Int       @id @default(autoincrement())
+  idPapel        Int
+  idPermissao    Int
+  dataAtribuicao DateTime  @default(now())
+  ativo          Boolean   @default(true)
+  papel          Papel     @relation("PapelPermissoes", fields: [idPapel], references: [id], onDelete: Cascade)
+  permissao      Permissao @relation("PermissaoPapeis", fields: [idPermissao], references: [id], onDelete: Cascade)
+
+  @@unique([idPapel, idPermissao])
+  @@index([idPermissao])
+  @@index([ativo])
+  @@map("papel_permissao")
 }
 
 model Cliente {
   id             Int           @id
   cpf            String        @unique
-  dataNascimento DateTime?
+  dataNascimento DateTime?     @db.Date
+  observacao     String?
   usuario        Usuario       @relation("UsuarioCliente", fields: [id], references: [id], onDelete: Cascade)
   agendamentos   Agendamento[] @relation("ClienteAgendamentos")
 
@@ -52,94 +122,167 @@ model Cliente {
 }
 
 model Barbeiro {
-  id           Int            @id
-  descricao    String?
-  dataAdmissao DateTime?
-  status       StatusBarbeiro @default(ATIVO)
-  idFilial     Int
-  filial       Filial         @relation("FilialBarbeiros", fields: [idFilial], references: [id], onDelete: Restrict)
-  usuario      Usuario        @relation("UsuarioBarbeiro", fields: [id], references: [id], onDelete: Cascade)
-  agendamentos Agendamento[]  @relation("BarbeiroAgendamentos")
+  id                 Int            @id
+  idFilial           Int
+  nomeProfissional   String
+  descricao          String?
+  fotoUrl            String?
+  dataAdmissao       DateTime?      @db.Date
+  statusProfissional StatusBarbeiro @default(ATIVO)
+  usuario            Usuario        @relation("UsuarioBarbeiro", fields: [id], references: [id], onDelete: Cascade)
+  filial             Filial         @relation("FilialBarbeiros", fields: [idFilial], references: [id], onDelete: Restrict)
+  agendamentos       Agendamento[]  @relation("BarbeiroAgendamentos")
+  comissoes          Comissao[]     @relation("BarbeiroComissoes")
 
   @@index([idFilial])
+  @@index([statusProfissional])
   @@map("barbeiro")
 }
 
-model Filial {
-  id                Int           @id @default(autoincrement())
-  nome              String
-  cnpj              String        @unique
-  telefone          String?
-  email             String?
-  horarioAbertura   String?
-  horarioFechamento String?
-  idEndereco        Int           @unique
-  endereco          Endereco      @relation("FilialEndereco", fields: [idEndereco], references: [id], onDelete: Restrict)
-  barbeiros         Barbeiro[]    @relation("FilialBarbeiros")
-  agendamentos      Agendamento[] @relation("FilialAgendamentos")
+model Administrador {
+  id                      Int       @id
+  dataInicioAdministracao DateTime? @db.Date
+  observacao              String?
+  usuario                 Usuario   @relation("UsuarioAdministrador", fields: [id], references: [id], onDelete: Cascade)
 
+  @@map("administrador")
+}
+
+model Filial {
+  id              Int           @id @default(autoincrement())
+  idEndereco      Int           @unique
+  nome            String
+  cnpj            String        @unique
+  telefone        String?
+  email           String?
+  status          StatusFilial  @default(ATIVA)
+  dataCadastro    DateTime      @default(now())
+  dataAtualizacao DateTime      @updatedAt
+  endereco        Endereco      @relation("FilialEndereco", fields: [idEndereco], references: [id], onDelete: Restrict)
+  barbeiros       Barbeiro[]    @relation("FilialBarbeiros")
+  agendamentos    Agendamento[] @relation("FilialAgendamentos")
+
+  @@index([status])
   @@map("filial")
 }
 
 model Endereco {
-  id         Int     @id @default(autoincrement())
-  cep        String
-  logradouro String
-  numero     String
-  bairro     String
-  cidade     String
-  estado     String
-  filial     Filial? @relation("FilialEndereco")
+  id          Int     @id @default(autoincrement())
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+  filial      Filial? @relation("FilialEndereco")
 
   @@map("endereco")
 }
 
 model Servico {
-  id             Int                  @id @default(autoincrement())
-  nome           String               @unique
-  descricao      String?
-  preco          Decimal              @db.Decimal(10, 2)
-  duracaoMinutos Int
-  agendamentos   AgendamentoServico[] @relation("ServicoAgendamentos")
+  id                 Int                  @id @default(autoincrement())
+  nome               String               @unique
+  descricao          String?
+  precoBase          Decimal              @db.Decimal(10, 2)
+  duracaoMinutos     Int
+  ativo              Boolean              @default(true)
+  dataCadastro       DateTime             @default(now())
+  dataAtualizacao    DateTime             @updatedAt
+  itensDeAgendamento AgendamentoServico[] @relation("ServicoAgendamentos")
 
+  @@index([ativo])
   @@map("servico")
 }
 
 model Agendamento {
-  id          Int                  @id @default(autoincrement())
-  idCliente   Int
-  idBarbeiro  Int
-  idFilial    Int
-  inicio      DateTime
-  fim         DateTime
-  status      StatusAgendamento    @default(AGENDADO)
-  observacao  String?
-  valorTotal  Decimal              @db.Decimal(10, 2)
-  dataCriacao DateTime             @default(now())
-  cliente     Cliente              @relation("ClienteAgendamentos", fields: [idCliente], references: [id], onDelete: Restrict)
-  barbeiro    Barbeiro             @relation("BarbeiroAgendamentos", fields: [idBarbeiro], references: [id], onDelete: Restrict)
-  filial      Filial               @relation("FilialAgendamentos", fields: [idFilial], references: [id], onDelete: Restrict)
-  servicos    AgendamentoServico[] @relation("AgendamentoServicos")
+  id                 Int                          @id @default(autoincrement())
+  idCliente          Int
+  idBarbeiro         Int
+  idFilial           Int
+  inicioPrevisto     DateTime
+  fimPrevisto        DateTime
+  inicioReal         DateTime?
+  fimReal            DateTime?
+  status             StatusAgendamento            @default(PENDENTE)
+  origem             OrigemAgendamento            @default(SITE)
+  observacaoCliente  String?
+  observacaoInterna  String?
+  dataCriacao        DateTime                     @default(now())
+  dataAtualizacao    DateTime                     @updatedAt
+  dataCancelamento   DateTime?
+  motivoCancelamento String?
+  cliente            Cliente                      @relation("ClienteAgendamentos", fields: [idCliente], references: [id], onDelete: Restrict)
+  barbeiro           Barbeiro                     @relation("BarbeiroAgendamentos", fields: [idBarbeiro], references: [id], onDelete: Restrict)
+  filial             Filial                       @relation("FilialAgendamentos", fields: [idFilial], references: [id], onDelete: Restrict)
+  servicos           AgendamentoServico[]         @relation("AgendamentoServicos")
+  historicoDeStatus  HistoricoStatusAgendamento[] @relation("AgendamentoHistoricoStatus")
 
   @@index([idCliente])
   @@index([idBarbeiro])
   @@index([idFilial])
-  @@index([inicio])
-  @@index([idBarbeiro, inicio])
+  @@index([inicioPrevisto])
+  @@index([idBarbeiro, inicioPrevisto])
   @@index([status])
   @@map("agendamento")
 }
 
 model AgendamentoServico {
-  id             Int         @id @default(autoincrement())
-  idAgendamento  Int
-  idServico      Int
-  preco          Decimal     @db.Decimal(10, 2)
-  duracaoMinutos Int
-  agendamento    Agendamento @relation("AgendamentoServicos", fields: [idAgendamento], references: [id], onDelete: Cascade)
-  servico        Servico     @relation("ServicoAgendamentos", fields: [idServico], references: [id], onDelete: Restrict)
+  id                     Int         @id @default(autoincrement())
+  idAgendamento          Int
+  idServico              Int
+  precoAplicado          Decimal     @db.Decimal(10, 2)
+  duracaoAplicadaMinutos Int
+  quantidade             Int         @default(1)
+  desconto               Decimal     @default(0) @db.Decimal(10, 2)
+  subtotal               Decimal     @db.Decimal(10, 2)
+  ordemExecucao          Int
+  agendamento            Agendamento @relation("AgendamentoServicos", fields: [idAgendamento], references: [id], onDelete: Cascade)
+  servico                Servico     @relation("ServicoAgendamentos", fields: [idServico], references: [id], onDelete: Restrict)
+  comissao               Comissao?   @relation("AgendamentoServicoComissao")
 
   @@unique([idAgendamento, idServico])
+  @@unique([idAgendamento, ordemExecucao])
   @@index([idServico])
   @@map("agendamento_servico")
+}
+
+model Comissao {
+  id                   Int                @id @default(autoincrement())
+  idAgendamentoServico Int                @unique
+  idBarbeiro           Int
+  baseCalculo          Decimal            @db.Decimal(10, 2)
+  percentualAplicado   Decimal            @db.Decimal(5, 2)
+  valorComissao        Decimal            @db.Decimal(10, 2)
+  status               StatusComissao     @default(PREVISTA)
+  dataGeracao          DateTime           @default(now())
+  dataLiberacao        DateTime?
+  dataPagamento        DateTime?
+  dataEstorno          DateTime?
+  motivoEstorno        String?
+  observacao           String?
+  agendamentoServico   AgendamentoServico @relation("AgendamentoServicoComissao", fields: [idAgendamentoServico], references: [id], onDelete: Restrict)
+  barbeiro             Barbeiro           @relation("BarbeiroComissoes", fields: [idBarbeiro], references: [id], onDelete: Restrict)
+
+  @@index([idBarbeiro])
+  @@index([status])
+  @@map("comissao")
+}
+
+model HistoricoStatusAgendamento {
+  id                   Int                @id @default(autoincrement())
+  idAgendamento        Int
+  idUsuarioResponsavel Int
+  statusAnterior       StatusAgendamento?
+  statusNovo           StatusAgendamento
+  dataAlteracao        DateTime           @default(now())
+  motivo               String?
+  observacao           String?
+  agendamento          Agendamento        @relation("AgendamentoHistoricoStatus", fields: [idAgendamento], references: [id], onDelete: Cascade)
+  usuarioResponsavel   Usuario            @relation("UsuarioHistoricoStatus", fields: [idUsuarioResponsavel], references: [id], onDelete: Restrict)
+
+  @@index([idAgendamento])
+  @@index([idUsuarioResponsavel])
+  @@index([dataAlteracao])
+  @@map("historico_status_agendamento")
 }

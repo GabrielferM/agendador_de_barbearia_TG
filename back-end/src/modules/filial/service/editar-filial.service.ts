@@ -27,8 +27,7 @@ export class EditarFilialService {
     }
     if (input.telefone !== undefined) data.telefone = input.telefone.trim();
     if (input.email !== undefined) data.email = normalizarEmail(input.email);
-    if (input.horarioAbertura !== undefined) data.horarioAbertura = input.horarioAbertura;
-    if (input.horarioFechamento !== undefined) data.horarioFechamento = input.horarioFechamento;
+    if (input.status !== undefined) data.status = input.status;
     if (input.endereco) data.endereco = { update: this.normalizarEndereco.execute(input.endereco) };
     try {
       return await this.prisma.filial.update({ where: { id }, data, include: { endereco: true } });

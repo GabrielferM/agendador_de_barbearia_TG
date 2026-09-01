@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CalcularValorTotalAgendamentoService {
-  execute(servicos: { preco: Prisma.Decimal }[]) {
-    return servicos.reduce((total, item) => total.plus(item.preco), new Prisma.Decimal(0));
+  execute(servicos: { precoBase: Prisma.Decimal }[]) {
+    return servicos.reduce((total, item) => total.plus(item.precoBase), new Prisma.Decimal(0));
   }
 }

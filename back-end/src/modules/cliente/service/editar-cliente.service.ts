@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { BCRYPT_SALT_ROUNDS } from '../../../common/constants/seguranca';
 import { normalizarCpf, normalizarEmail } from '../../../common/utils/documentos';
 import { semSenha } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -25,10 +26,13 @@ export class EditarClienteService {
       }
     }
     if (input.dataNascimento !== undefined) data.dataNascimento = new Date(input.dataNascimento);
+    if (input.observacao !== undefined) data.observacao = input.observacao.trim();
     const usuario: Prisma.UsuarioUpdateWithoutClienteInput = {};
     if (input.nome !== undefined) usuario.nome = input.nome.trim();
     if (input.email !== undefined) usuario.email = normalizarEmail(input.email);
-    if (input.senha !== undefined) usuario.senha = await bcrypt.hash(input.senha, 12);
+    if (input.senha !== undefined)
+      usuario.senhaHash = await bcrypt.hash(input.senha, BCRYPT_SALT_ROUNDS);
+    if (input.telefone !== undefined) usuario.telefone = input.telefone.trim();
     if (Object.keys(usuario).length) data.usuario = { update: usuario };
     try {
       const cliente = await this.prisma.cliente.update({

@@ -1,13 +1,13 @@
 import { StatusAgendamento } from '@prisma/client';
 
 export const transicoesStatusAgendamento: Record<StatusAgendamento, StatusAgendamento[]> = {
-  AGENDADO: [StatusAgendamento.CONFIRMADO, StatusAgendamento.CANCELADO],
+  PENDENTE: [StatusAgendamento.CONFIRMADO, StatusAgendamento.CANCELADO],
   CONFIRMADO: [
-    StatusAgendamento.EM_ANDAMENTO,
+    StatusAgendamento.EM_ATENDIMENTO,
     StatusAgendamento.CANCELADO,
     StatusAgendamento.NAO_COMPARECEU,
   ],
-  EM_ANDAMENTO: [StatusAgendamento.CONCLUIDO],
+  EM_ATENDIMENTO: [StatusAgendamento.CONCLUIDO],
   CONCLUIDO: [],
   CANCELADO: [],
   NAO_COMPARECEU: [],

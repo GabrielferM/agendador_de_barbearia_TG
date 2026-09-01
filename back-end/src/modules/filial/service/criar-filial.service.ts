@@ -28,8 +28,6 @@ export class CriarFilialService {
           cnpj,
           telefone: input.telefone?.trim(),
           email: input.email ? normalizarEmail(input.email) : null,
-          horarioAbertura: input.horarioAbertura,
-          horarioFechamento: input.horarioFechamento,
           endereco: { create: this.normalizarEndereco.execute(input.endereco) },
         },
         include: { endereco: true },

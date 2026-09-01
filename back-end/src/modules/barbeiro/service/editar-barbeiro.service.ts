@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { BCRYPT_SALT_ROUNDS } from '../../../common/constants/seguranca';
 import { normalizarEmail } from '../../../common/utils/documentos';
 import { semSenha } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -23,11 +24,14 @@ export class EditarBarbeiroService {
     if (input.idFilial !== undefined) data.filial = { connect: { id: input.idFilial } };
     if (input.descricao !== undefined) data.descricao = input.descricao.trim();
     if (input.dataAdmissao !== undefined) data.dataAdmissao = new Date(input.dataAdmissao);
-    if (input.status !== undefined) data.status = input.status;
+    if (input.nomeProfissional !== undefined) data.nomeProfissional = input.nomeProfissional.trim();
+    if (input.fotoUrl !== undefined) data.fotoUrl = input.fotoUrl.trim();
+    if (input.statusProfissional !== undefined) data.statusProfissional = input.statusProfissional;
     const usuario: Prisma.UsuarioUpdateWithoutBarbeiroInput = {};
     if (input.nome !== undefined) usuario.nome = input.nome.trim();
     if (input.email !== undefined) usuario.email = normalizarEmail(input.email);
-    if (input.senha !== undefined) usuario.senha = await bcrypt.hash(input.senha, 12);
+    if (input.senha !== undefined)
+      usuario.senhaHash = await bcrypt.hash(input.senha, BCRYPT_SALT_ROUNDS);
     if (Object.keys(usuario).length) data.usuario = { update: usuario };
     try {
       const barbeiro = await this.prisma.barbeiro.update({

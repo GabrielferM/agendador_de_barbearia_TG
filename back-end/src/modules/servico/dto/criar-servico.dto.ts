@@ -11,7 +11,7 @@ export class CriarServicoDto {
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
-  preco!: number;
+  precoBase!: number;
 
   @IsInt()
   @IsPositive()

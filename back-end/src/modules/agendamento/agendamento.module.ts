@@ -13,6 +13,8 @@ import { ListarAgendamentosService } from './service/listar-agendamentos.service
 import { BuscarAgendamentoService } from './service/buscar-agendamento.service';
 import { EditarAgendamentoService } from './service/editar-agendamento.service';
 import { RemoverAgendamentoService } from './service/remover-agendamento.service';
+import { PrepararItensAgendamentoService } from './validations/preparar-itens-agendamento.service';
+import { HistoricoStatusAgendamentoService } from './service/historico-status-agendamento.service';
 @Module({
   imports: [PrismaModule],
   controllers: [AgendamentoController],
@@ -24,11 +26,13 @@ import { RemoverAgendamentoService } from './service/remover-agendamento.service
     ValidarDataHoraAgendamentoService,
     ValidarVinculosAgendamentoService,
     VerificarConflitoAgendamentoService,
+    PrepararItensAgendamentoService,
     CriarAgendamentoService,
     ListarAgendamentosService,
     BuscarAgendamentoService,
     EditarAgendamentoService,
     RemoverAgendamentoService,
+    HistoricoStatusAgendamentoService,
   ],
 })
 export class AgendamentoModule {}

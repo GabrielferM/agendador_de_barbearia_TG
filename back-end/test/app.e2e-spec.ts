@@ -87,7 +87,15 @@ describe('AppController (e2e)', () => {
     const response = await request(app.getHttpServer()).get('/api-json').expect(200);
     const document = response.body as OpenApiDocument;
     expect(Object.keys(document.paths)).toEqual(
-      expect.arrayContaining(['/servicos', '/agendamentos']),
+      expect.arrayContaining([
+        '/servicos',
+        '/agendamentos',
+        '/agendamentos/{id}/historico-status',
+        '/administradores',
+        '/papeis',
+        '/permissoes',
+        '/comissoes',
+      ]),
     );
     expect(document.tags.map((tag) => tag.name)).toEqual(expect.arrayContaining(['Serviços']));
   });

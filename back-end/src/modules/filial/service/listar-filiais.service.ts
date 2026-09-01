@@ -11,11 +11,12 @@ export class ListarFiliaisService {
     const [dados, total] = await this.prisma.$transaction([
       this.prisma.filial.findMany({
         include: { endereco: true },
+        where: input.status ? { status: input.status } : {},
         skip: (input.pagina - 1) * input.limite,
         take: input.limite,
         orderBy: { id: 'asc' },
       }),
-      this.prisma.filial.count(),
+      this.prisma.filial.count({ where: input.status ? { status: input.status } : {} }),
     ]);
     return respostaPaginada(dados, total, input.pagina, input.limite);
   }

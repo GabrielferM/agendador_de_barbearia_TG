@@ -3,10 +3,9 @@ import { Prisma } from '@prisma/client';
 import { respostaPaginada } from '../../../common/dto/paginacao.dto';
 import { serializarResposta } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { ListarAgendamentosDto } from '../dto/agendamento.dto';
 import { includeAgendamento } from '../constants/include-agendamento';
+import { ListarAgendamentosDto } from '../dto/agendamento.dto';
 import { ValidarDataHoraAgendamentoService } from '../validations/validar-data-hora-agendamento.service';
-
 @Injectable()
 export class ListarAgendamentosService {
   constructor(
@@ -21,25 +20,23 @@ export class ListarAgendamentosService {
       ...(query.status ? { status: query.status } : {}),
       ...(query.inicioDe || query.inicioAte
         ? {
-            inicio: {
+            inicioPrevisto: {
               ...(query.inicioDe ? { gte: this.validarDataHora.execute(query.inicioDe) } : {}),
               ...(query.inicioAte ? { lte: this.validarDataHora.execute(query.inicioAte) } : {}),
             },
           }
         : {}),
     };
-
     const [dados, total] = await this.prisma.$transaction([
       this.prisma.agendamento.findMany({
         where,
         include: includeAgendamento,
-        orderBy: { inicio: 'asc' },
+        orderBy: { inicioPrevisto: 'asc' },
         skip: (query.pagina - 1) * query.limite,
         take: query.limite,
       }),
       this.prisma.agendamento.count({ where }),
     ]);
-
     return respostaPaginada(serializarResposta(dados), total, query.pagina, query.limite);
   }
 }

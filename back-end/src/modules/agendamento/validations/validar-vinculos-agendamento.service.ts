@@ -16,7 +16,8 @@ export class ValidarVinculosAgendamentoService {
     if (!cliente) throw new NotFoundException('Cliente não encontrado.');
     if (!barbeiro) throw new NotFoundException('Barbeiro não encontrado.');
     if (!filial) throw new NotFoundException('Filial não encontrada.');
-    if (barbeiro.status !== StatusBarbeiro.ATIVO) throw new ConflictException('Barbeiro inativo.');
+    if (barbeiro.statusProfissional !== StatusBarbeiro.ATIVO)
+      throw new ConflictException('Barbeiro inativo.');
     if (barbeiro.idFilial !== idFilial)
       throw new ConflictException('Barbeiro não pertence à filial informada.');
   }
