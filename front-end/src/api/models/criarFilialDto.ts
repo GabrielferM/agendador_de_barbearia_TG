@@ -8,11 +8,9 @@
 import type { DadosEnderecoDto } from './dadosEnderecoDto';
 
 export interface CriarFilialDto {
-  endereco: DadosEnderecoDto;
   nome: string;
   cnpj: string;
   telefone?: string;
   email?: string;
-  horarioAbertura?: string;
-  horarioFechamento?: string;
+  endereco: DadosEnderecoDto;
 }

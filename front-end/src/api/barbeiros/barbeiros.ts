@@ -24,13 +24,23 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import {
+  apiBaseUrl
+} from '../client';
+
 import type {
   AtualizarBarbeiroDto,
   BarbeiroControllerListarParams,
-  CriarBarbeiroDto
+  BarbeiroRespostaDto,
+  CriarBarbeiroDto,
+  ErroRespostaDto,
+  ListaBarbeirosRespostaDto
 } from '../models';
 
+import { httpClient } from '.././http-client';
 
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
@@ -50,26 +60,46 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type barbeiroControllerCriarResponse201 = {
-  data: void
+  data: BarbeiroRespostaDto
   status: 201
+}
+
+export type barbeiroControllerCriarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type barbeiroControllerCriarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type barbeiroControllerCriarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
 }
 
 export type barbeiroControllerCriarResponseSuccess = (barbeiroControllerCriarResponse201) & {
   headers: Headers;
 };
-;
+export type barbeiroControllerCriarResponseError = (barbeiroControllerCriarResponse400 | barbeiroControllerCriarResponse404 | barbeiroControllerCriarResponse409) & {
+  headers: Headers;
+};
 
-export type barbeiroControllerCriarResponse = (barbeiroControllerCriarResponseSuccess)
+export type barbeiroControllerCriarResponse = (barbeiroControllerCriarResponseSuccess | barbeiroControllerCriarResponseError)
 
 export const getBarbeiroControllerCriarUrl = () => {
 
 
 
 
-  return `/barbeiros`
+  return `${apiBaseUrl}/barbeiros`
 }
 
-export const barbeiroControllerCriar = async (criarBarbeiroDto: CriarBarbeiroDto, options?: RequestInit): Promise<barbeiroControllerCriarResponse> => {
+/**
+ * @summary Cria um barbeiro
+ */
+export const barbeiroControllerCriar = async (criarBarbeiroDto: CriarBarbeiroDto, options?: Parameters<typeof httpClient>[1]): Promise<barbeiroControllerCriarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -77,36 +107,29 @@ export const barbeiroControllerCriar = async (criarBarbeiroDto: CriarBarbeiroDto
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getBarbeiroControllerCriarUrl(),
+return httpClient<barbeiroControllerCriarResponse>(getBarbeiroControllerCriarUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(criarBarbeiroDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: barbeiroControllerCriarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as barbeiroControllerCriarResponse
-}
+);}
 
 
 
 
 
-export const getBarbeiroControllerCriarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+export const getBarbeiroControllerCriarMutationOptions = <TError = ErroRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext> => {
 
 const mutationKey = ['barbeiroControllerCriar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -114,7 +137,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof barbeiroControllerCriar>>, BarbeiroControllerCriarMutationVariables> = (props) => {
           const {data} = props ?? {};
 
-          return  barbeiroControllerCriar(data,fetchOptions)
+          return  barbeiroControllerCriar(data,requestOptions)
         }
 
 
@@ -126,11 +149,14 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
 
     export type BarbeiroControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerCriar>>>
     export type BarbeiroControllerCriarMutationBody = CriarBarbeiroDto
-    export type BarbeiroControllerCriarMutationError = unknown
+    export type BarbeiroControllerCriarMutationError = ErroRespostaDto
     export type BarbeiroControllerCriarMutationVariables = {data: CriarBarbeiroDto}
 
-    export const useBarbeiroControllerCriar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    /**
+ * @summary Cria um barbeiro
+ */
+export const useBarbeiroControllerCriar = <TError = ErroRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof barbeiroControllerCriar>>,
         TError,
@@ -140,18 +166,35 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       return useMutation(getBarbeiroControllerCriarMutationOptions(options), queryClient);
     }
     export type barbeiroControllerListarResponse200 = {
-  data: void
+  data: ListaBarbeirosRespostaDto
   status: 200
+}
+
+export type barbeiroControllerListarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type barbeiroControllerListarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type barbeiroControllerListarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
 }
 
 export type barbeiroControllerListarResponseSuccess = (barbeiroControllerListarResponse200) & {
   headers: Headers;
 };
-;
+export type barbeiroControllerListarResponseError = (barbeiroControllerListarResponse400 | barbeiroControllerListarResponse404 | barbeiroControllerListarResponse409) & {
+  headers: Headers;
+};
 
-export type barbeiroControllerListarResponse = (barbeiroControllerListarResponseSuccess)
+export type barbeiroControllerListarResponse = (barbeiroControllerListarResponseSuccess | barbeiroControllerListarResponseError)
 
-export const getBarbeiroControllerListarUrl = (params: BarbeiroControllerListarParams,) => {
+export const getBarbeiroControllerListarUrl = (params?: BarbeiroControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -163,26 +206,22 @@ export const getBarbeiroControllerListarUrl = (params: BarbeiroControllerListarP
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/barbeiros?${stringifiedParams}` : `/barbeiros`
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/barbeiros?${stringifiedParams}` : `${apiBaseUrl}/barbeiros`
 }
 
-export const barbeiroControllerListar = async (params: BarbeiroControllerListarParams, options?: RequestInit): Promise<barbeiroControllerListarResponse> => {
+/**
+ * @summary Lista os barbeiros de forma paginada
+ */
+export const barbeiroControllerListar = async (params?: BarbeiroControllerListarParams, options?: Parameters<typeof httpClient>[1]): Promise<barbeiroControllerListarResponse> => {
 
-  const res = await fetch(getBarbeiroControllerListarUrl(params),
+  return httpClient<barbeiroControllerListarResponse>(getBarbeiroControllerListarUrl(params),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: barbeiroControllerListarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as barbeiroControllerListarResponse
-}
+);}
 
 
 
@@ -190,21 +229,21 @@ export const barbeiroControllerListar = async (params: BarbeiroControllerListarP
 
 export const getBarbeiroControllerListarQueryKey = (params?: BarbeiroControllerListarParams,) => {
     return [
-    `/barbeiros`, ...(params ? [params] : [])
+    `${apiBaseUrl}/barbeiros`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getBarbeiroControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = unknown>(params: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, fetch?: RequestInit}
+export const getBarbeiroControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getBarbeiroControllerListarQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof barbeiroControllerListar>>> = ({ signal }) => barbeiroControllerListar(params, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof barbeiroControllerListar>>> = ({ signal }) => barbeiroControllerListar(params, { signal, ...requestOptions });
 
 
 
@@ -214,36 +253,39 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 }
 
 export type BarbeiroControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerListar>>>
-export type BarbeiroControllerListarQueryError = unknown
+export type BarbeiroControllerListarQueryError = ErroRespostaDto
 
 
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = unknown>(
- params: BarbeiroControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>> & Pick<
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+ params: undefined |  BarbeiroControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerListar>>,
           TError,
           Awaited<ReturnType<typeof barbeiroControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = unknown>(
- params: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>> & Pick<
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+ params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerListar>>,
           TError,
           Awaited<ReturnType<typeof barbeiroControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = unknown>(
- params: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, fetch?: RequestInit}
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+ params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Lista os barbeiros de forma paginada
+ */
 
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = unknown>(
- params: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, fetch?: RequestInit}
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+ params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -260,42 +302,55 @@ export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof ba
 
 
 export type barbeiroControllerBuscarResponse200 = {
-  data: void
+  data: BarbeiroRespostaDto
   status: 200
+}
+
+export type barbeiroControllerBuscarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type barbeiroControllerBuscarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type barbeiroControllerBuscarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
 }
 
 export type barbeiroControllerBuscarResponseSuccess = (barbeiroControllerBuscarResponse200) & {
   headers: Headers;
 };
-;
+export type barbeiroControllerBuscarResponseError = (barbeiroControllerBuscarResponse400 | barbeiroControllerBuscarResponse404 | barbeiroControllerBuscarResponse409) & {
+  headers: Headers;
+};
 
-export type barbeiroControllerBuscarResponse = (barbeiroControllerBuscarResponseSuccess)
+export type barbeiroControllerBuscarResponse = (barbeiroControllerBuscarResponseSuccess | barbeiroControllerBuscarResponseError)
 
 export const getBarbeiroControllerBuscarUrl = (id: number,) => {
 
 
 
 
-  return `/barbeiros/${id}`
+  return `${apiBaseUrl}/barbeiros/${id}`
 }
 
-export const barbeiroControllerBuscar = async (id: number, options?: RequestInit): Promise<barbeiroControllerBuscarResponse> => {
+/**
+ * @summary Busca um barbeiro pelo identificador
+ */
+export const barbeiroControllerBuscar = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<barbeiroControllerBuscarResponse> => {
 
-  const res = await fetch(getBarbeiroControllerBuscarUrl(id),
+  return httpClient<barbeiroControllerBuscarResponse>(getBarbeiroControllerBuscarUrl(id),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: barbeiroControllerBuscarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as barbeiroControllerBuscarResponse
-}
+);}
 
 
 
@@ -303,21 +358,21 @@ export const barbeiroControllerBuscar = async (id: number, options?: RequestInit
 
 export const getBarbeiroControllerBuscarQueryKey = (id: number,) => {
     return [
-    `/barbeiros/${id}`
+    `${apiBaseUrl}/barbeiros/${id}`
     ] as const;
     }
 
 
-export const getBarbeiroControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+export const getBarbeiroControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getBarbeiroControllerBuscarQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof barbeiroControllerBuscar>>> = ({ signal }) => barbeiroControllerBuscar(id, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof barbeiroControllerBuscar>>> = ({ signal }) => barbeiroControllerBuscar(id, { signal, ...requestOptions });
 
 
 
@@ -327,36 +382,39 @@ const {query: queryOptions, fetch: fetchOptions} = options ?? {};
 }
 
 export type BarbeiroControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerBuscar>>>
-export type BarbeiroControllerBuscarQueryError = unknown
+export type BarbeiroControllerBuscarQueryError = ErroRespostaDto
 
 
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = unknown>(
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerBuscar>>,
           TError,
           Awaited<ReturnType<typeof barbeiroControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = unknown>(
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerBuscar>>,
           TError,
           Awaited<ReturnType<typeof barbeiroControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Busca um barbeiro pelo identificador
+ */
 
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -373,27 +431,47 @@ export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof ba
 
 
 export type barbeiroControllerAtualizarResponse200 = {
-  data: void
+  data: BarbeiroRespostaDto
   status: 200
+}
+
+export type barbeiroControllerAtualizarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type barbeiroControllerAtualizarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type barbeiroControllerAtualizarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
 }
 
 export type barbeiroControllerAtualizarResponseSuccess = (barbeiroControllerAtualizarResponse200) & {
   headers: Headers;
 };
-;
+export type barbeiroControllerAtualizarResponseError = (barbeiroControllerAtualizarResponse400 | barbeiroControllerAtualizarResponse404 | barbeiroControllerAtualizarResponse409) & {
+  headers: Headers;
+};
 
-export type barbeiroControllerAtualizarResponse = (barbeiroControllerAtualizarResponseSuccess)
+export type barbeiroControllerAtualizarResponse = (barbeiroControllerAtualizarResponseSuccess | barbeiroControllerAtualizarResponseError)
 
 export const getBarbeiroControllerAtualizarUrl = (id: number,) => {
 
 
 
 
-  return `/barbeiros/${id}`
+  return `${apiBaseUrl}/barbeiros/${id}`
 }
 
+/**
+ * @summary Atualiza um barbeiro pelo identificador
+ */
 export const barbeiroControllerAtualizar = async (id: number,
-    atualizarBarbeiroDto: AtualizarBarbeiroDto, options?: RequestInit): Promise<barbeiroControllerAtualizarResponse> => {
+    atualizarBarbeiroDto: AtualizarBarbeiroDto, options?: Parameters<typeof httpClient>[1]): Promise<barbeiroControllerAtualizarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -401,36 +479,29 @@ export const barbeiroControllerAtualizar = async (id: number,
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getBarbeiroControllerAtualizarUrl(id),
+return httpClient<barbeiroControllerAtualizarResponse>(getBarbeiroControllerAtualizarUrl(id),
   {
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(atualizarBarbeiroDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: barbeiroControllerAtualizarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as barbeiroControllerAtualizarResponse
-}
+);}
 
 
 
 
 
-export const getBarbeiroControllerAtualizarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+export const getBarbeiroControllerAtualizarMutationOptions = <TError = ErroRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext> => {
 
 const mutationKey = ['barbeiroControllerAtualizar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -438,7 +509,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, BarbeiroControllerAtualizarMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
-          return  barbeiroControllerAtualizar(id,data,fetchOptions)
+          return  barbeiroControllerAtualizar(id,data,requestOptions)
         }
 
 
@@ -450,11 +521,14 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
 
     export type BarbeiroControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>>
     export type BarbeiroControllerAtualizarMutationBody = AtualizarBarbeiroDto
-    export type BarbeiroControllerAtualizarMutationError = unknown
+    export type BarbeiroControllerAtualizarMutationError = ErroRespostaDto
     export type BarbeiroControllerAtualizarMutationVariables = {id: number;data: AtualizarBarbeiroDto}
 
-    export const useBarbeiroControllerAtualizar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    /**
+ * @summary Atualiza um barbeiro pelo identificador
+ */
+export const useBarbeiroControllerAtualizar = <TError = ErroRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof barbeiroControllerAtualizar>>,
         TError,
@@ -468,53 +542,66 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
   status: 200
 }
 
+export type barbeiroControllerRemoverResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type barbeiroControllerRemoverResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type barbeiroControllerRemoverResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
 export type barbeiroControllerRemoverResponseSuccess = (barbeiroControllerRemoverResponse200) & {
   headers: Headers;
 };
-;
+export type barbeiroControllerRemoverResponseError = (barbeiroControllerRemoverResponse400 | barbeiroControllerRemoverResponse404 | barbeiroControllerRemoverResponse409) & {
+  headers: Headers;
+};
 
-export type barbeiroControllerRemoverResponse = (barbeiroControllerRemoverResponseSuccess)
+export type barbeiroControllerRemoverResponse = (barbeiroControllerRemoverResponseSuccess | barbeiroControllerRemoverResponseError)
 
 export const getBarbeiroControllerRemoverUrl = (id: number,) => {
 
 
 
 
-  return `/barbeiros/${id}`
+  return `${apiBaseUrl}/barbeiros/${id}`
 }
 
-export const barbeiroControllerRemover = async (id: number, options?: RequestInit): Promise<barbeiroControllerRemoverResponse> => {
+/**
+ * @summary Remove um barbeiro pelo identificador
+ */
+export const barbeiroControllerRemover = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<barbeiroControllerRemoverResponse> => {
 
-  const res = await fetch(getBarbeiroControllerRemoverUrl(id),
+  return httpClient<barbeiroControllerRemoverResponse>(getBarbeiroControllerRemoverUrl(id),
   {
     ...options,
     method: 'DELETE'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: barbeiroControllerRemoverResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as barbeiroControllerRemoverResponse
-}
+);}
 
 
 
 
 
-export const getBarbeiroControllerRemoverMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+export const getBarbeiroControllerRemoverMutationOptions = <TError = ErroRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext> => {
 
 const mutationKey = ['barbeiroControllerRemover'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -522,7 +609,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof barbeiroControllerRemover>>, BarbeiroControllerRemoverMutationVariables> = (props) => {
           const {id} = props ?? {};
 
-          return  barbeiroControllerRemover(id,fetchOptions)
+          return  barbeiroControllerRemover(id,requestOptions)
         }
 
 
@@ -534,11 +621,14 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
 
     export type BarbeiroControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerRemover>>>
 
-    export type BarbeiroControllerRemoverMutationError = unknown
+    export type BarbeiroControllerRemoverMutationError = ErroRespostaDto
     export type BarbeiroControllerRemoverMutationVariables = {id: number}
 
-    export const useBarbeiroControllerRemover = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    /**
+ * @summary Remove um barbeiro pelo identificador
+ */
+export const useBarbeiroControllerRemover = <TError = ErroRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof barbeiroControllerRemover>>,
         TError,

@@ -12,7 +12,9 @@ import {
 import { AtualizarFilialDto, CriarFilialDto, ListarFiliaisDto } from './dto/filial.dto';
 import { FilialService } from './filial.service';
 import { ApiTags } from '@nestjs/swagger';
+import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
 @ApiTags('Filiais')
+@ExigirPermissoes('GERENCIAR_FILIAIS')
 @Controller('filiais')
 export class FilialController {
   constructor(private readonly service: FilialService) {}

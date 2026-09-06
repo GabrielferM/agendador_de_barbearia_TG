@@ -12,7 +12,9 @@ import {
 import { AtualizarClienteDto, CriarClienteDto, ListarClientesDto } from './dto/cliente.dto';
 import { ClienteService } from './cliente.service';
 import { ApiTags } from '@nestjs/swagger';
+import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
 @ApiTags('Clientes')
+@ExigirPermissoes('GERENCIAR_USUARIOS')
 @Controller('clientes')
 export class ClienteController {
   constructor(private readonly service: ClienteService) {}

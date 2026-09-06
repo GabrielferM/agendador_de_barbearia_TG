@@ -5,16 +5,17 @@
  * Contrato OpenAPI da API REST do Agendador de Barbearia.
  * OpenAPI spec version: 1.0
  */
-import type { Object } from './object';
 
 export type ServicoControllerListarParams = {
 /**
+ * Número da página a ser retornada.
  * @minimum 1
  */
-pagina?: Object;
+pagina?: number;
 /**
+ * Quantidade de registros por página.
  * @minimum 1
  * @maximum 100
  */
-limite?: Object;
+limite?: number;
 };

@@ -24,16 +24,28 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import {
+  apiBaseUrl
+} from '../client';
+
 import type {
   AgendamentoControllerAtualizar200,
   AgendamentoControllerBuscar200,
   AgendamentoControllerCriar201,
+  AgendamentoControllerCriarHistorico201,
+  AgendamentoControllerListar200,
+  AgendamentoControllerListarHistorico200,
+  AgendamentoControllerListarHistoricoParams,
   AgendamentoControllerListarParams,
   AtualizarAgendamentoDto,
-  CriarAgendamentoDto
+  CriarAgendamentoDto,
+  CriarHistoricoStatusDto
 } from '../models';
 
+import { httpClient } from '.././http-client';
 
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
@@ -69,10 +81,10 @@ export const getAgendamentoControllerCriarUrl = () => {
 
 
 
-  return `/agendamentos`
+  return `${apiBaseUrl}/agendamentos`
 }
 
-export const agendamentoControllerCriar = async (criarAgendamentoDto: CriarAgendamentoDto, options?: RequestInit): Promise<agendamentoControllerCriarResponse> => {
+export const agendamentoControllerCriar = async (criarAgendamentoDto: CriarAgendamentoDto, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerCriarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -80,36 +92,29 @@ export const agendamentoControllerCriar = async (criarAgendamentoDto: CriarAgend
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getAgendamentoControllerCriarUrl(),
+return httpClient<agendamentoControllerCriarResponse>(getAgendamentoControllerCriarUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(criarAgendamentoDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: agendamentoControllerCriarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as agendamentoControllerCriarResponse
-}
+);}
 
 
 
 
 
 export const getAgendamentoControllerCriarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext> => {
 
 const mutationKey = ['agendamentoControllerCriar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -117,7 +122,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof agendamentoControllerCriar>>, AgendamentoControllerCriarMutationVariables> = (props) => {
           const {data} = props ?? {};
 
-          return  agendamentoControllerCriar(data,fetchOptions)
+          return  agendamentoControllerCriar(data,requestOptions)
         }
 
 
@@ -133,7 +138,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type AgendamentoControllerCriarMutationVariables = {data: CriarAgendamentoDto}
 
     export const useAgendamentoControllerCriar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof agendamentoControllerCriar>>,
         TError,
@@ -143,7 +148,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       return useMutation(getAgendamentoControllerCriarMutationOptions(options), queryClient);
     }
     export type agendamentoControllerListarResponse200 = {
-  data: void
+  data: AgendamentoControllerListar200
   status: 200
 }
 
@@ -154,7 +159,7 @@ export type agendamentoControllerListarResponseSuccess = (agendamentoControllerL
 
 export type agendamentoControllerListarResponse = (agendamentoControllerListarResponseSuccess)
 
-export const getAgendamentoControllerListarUrl = (params: AgendamentoControllerListarParams,) => {
+export const getAgendamentoControllerListarUrl = (params?: AgendamentoControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -166,26 +171,19 @@ export const getAgendamentoControllerListarUrl = (params: AgendamentoControllerL
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/agendamentos?${stringifiedParams}` : `/agendamentos`
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/agendamentos?${stringifiedParams}` : `${apiBaseUrl}/agendamentos`
 }
 
-export const agendamentoControllerListar = async (params: AgendamentoControllerListarParams, options?: RequestInit): Promise<agendamentoControllerListarResponse> => {
+export const agendamentoControllerListar = async (params?: AgendamentoControllerListarParams, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerListarResponse> => {
 
-  const res = await fetch(getAgendamentoControllerListarUrl(params),
+  return httpClient<agendamentoControllerListarResponse>(getAgendamentoControllerListarUrl(params),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: agendamentoControllerListarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as agendamentoControllerListarResponse
-}
+);}
 
 
 
@@ -193,21 +191,21 @@ export const agendamentoControllerListar = async (params: AgendamentoControllerL
 
 export const getAgendamentoControllerListarQueryKey = (params?: AgendamentoControllerListarParams,) => {
     return [
-    `/agendamentos`, ...(params ? [params] : [])
+    `${apiBaseUrl}/agendamentos`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getAgendamentoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(params: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, fetch?: RequestInit}
+export const getAgendamentoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getAgendamentoControllerListarQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof agendamentoControllerListar>>> = ({ signal }) => agendamentoControllerListar(params, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof agendamentoControllerListar>>> = ({ signal }) => agendamentoControllerListar(params, { signal, ...requestOptions });
 
 
 
@@ -221,32 +219,32 @@ export type AgendamentoControllerListarQueryError = unknown
 
 
 export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
- params: AgendamentoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>> & Pick<
+ params: undefined |  AgendamentoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof agendamentoControllerListar>>,
           TError,
           Awaited<ReturnType<typeof agendamentoControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
- params: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>> & Pick<
+ params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof agendamentoControllerListar>>,
           TError,
           Awaited<ReturnType<typeof agendamentoControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
- params: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
- params: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -262,7 +260,212 @@ export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof
 
 
 
-export type agendamentoControllerBuscarResponse200 = {
+export type agendamentoControllerListarHistoricoResponse200 = {
+  data: AgendamentoControllerListarHistorico200
+  status: 200
+}
+
+export type agendamentoControllerListarHistoricoResponseSuccess = (agendamentoControllerListarHistoricoResponse200) & {
+  headers: Headers;
+};
+;
+
+export type agendamentoControllerListarHistoricoResponse = (agendamentoControllerListarHistoricoResponseSuccess)
+
+export const getAgendamentoControllerListarHistoricoUrl = (id: number,
+    params?: AgendamentoControllerListarHistoricoParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/agendamentos/${id}/historico-status?${stringifiedParams}` : `${apiBaseUrl}/agendamentos/${id}/historico-status`
+}
+
+export const agendamentoControllerListarHistorico = async (id: number,
+    params?: AgendamentoControllerListarHistoricoParams, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerListarHistoricoResponse> => {
+
+  return httpClient<agendamentoControllerListarHistoricoResponse>(getAgendamentoControllerListarHistoricoUrl(id,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAgendamentoControllerListarHistoricoQueryKey = (id: number,
+    params?: AgendamentoControllerListarHistoricoParams,) => {
+    return [
+    `${apiBaseUrl}/agendamentos/${id}/historico-status`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAgendamentoControllerListarHistoricoQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(id: number,
+    params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAgendamentoControllerListarHistoricoQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>> = ({ signal }) => agendamentoControllerListarHistorico(id,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AgendamentoControllerListarHistoricoQueryResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>>
+export type AgendamentoControllerListarHistoricoQueryError = unknown
+
+
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+ id: number,
+    params: undefined |  AgendamentoControllerListarHistoricoParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>,
+          TError,
+          Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+ id: number,
+    params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>,
+          TError,
+          Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+ id: number,
+    params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+ id: number,
+    params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAgendamentoControllerListarHistoricoQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type agendamentoControllerCriarHistoricoResponse201 = {
+  data: AgendamentoControllerCriarHistorico201
+  status: 201
+}
+
+export type agendamentoControllerCriarHistoricoResponseSuccess = (agendamentoControllerCriarHistoricoResponse201) & {
+  headers: Headers;
+};
+;
+
+export type agendamentoControllerCriarHistoricoResponse = (agendamentoControllerCriarHistoricoResponseSuccess)
+
+export const getAgendamentoControllerCriarHistoricoUrl = (id: number,) => {
+
+
+
+
+  return `${apiBaseUrl}/agendamentos/${id}/historico-status`
+}
+
+export const agendamentoControllerCriarHistorico = async (id: number,
+    criarHistoricoStatusDto: CriarHistoricoStatusDto, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerCriarHistoricoResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return httpClient<agendamentoControllerCriarHistoricoResponse>(getAgendamentoControllerCriarHistoricoUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(criarHistoricoStatusDto)
+  }
+);}
+
+
+
+
+
+export const getAgendamentoControllerCriarHistoricoMutationOptions = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>, TError,AgendamentoControllerCriarHistoricoMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>, TError,AgendamentoControllerCriarHistoricoMutationVariables, TContext> => {
+
+const mutationKey = ['agendamentoControllerCriarHistorico'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>, AgendamentoControllerCriarHistoricoMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  agendamentoControllerCriarHistorico(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AgendamentoControllerCriarHistoricoMutationResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>>
+    export type AgendamentoControllerCriarHistoricoMutationBody = CriarHistoricoStatusDto
+    export type AgendamentoControllerCriarHistoricoMutationError = unknown
+    export type AgendamentoControllerCriarHistoricoMutationVariables = {id: number;data: CriarHistoricoStatusDto}
+
+    export const useAgendamentoControllerCriarHistorico = <TError = unknown,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>, TError,AgendamentoControllerCriarHistoricoMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>,
+        TError,
+        AgendamentoControllerCriarHistoricoMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAgendamentoControllerCriarHistoricoMutationOptions(options), queryClient);
+    }
+    export type agendamentoControllerBuscarResponse200 = {
   data: AgendamentoControllerBuscar200
   status: 200
 }
@@ -279,26 +482,19 @@ export const getAgendamentoControllerBuscarUrl = (id: number,) => {
 
 
 
-  return `/agendamentos/${id}`
+  return `${apiBaseUrl}/agendamentos/${id}`
 }
 
-export const agendamentoControllerBuscar = async (id: number, options?: RequestInit): Promise<agendamentoControllerBuscarResponse> => {
+export const agendamentoControllerBuscar = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerBuscarResponse> => {
 
-  const res = await fetch(getAgendamentoControllerBuscarUrl(id),
+  return httpClient<agendamentoControllerBuscarResponse>(getAgendamentoControllerBuscarUrl(id),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: agendamentoControllerBuscarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as agendamentoControllerBuscarResponse
-}
+);}
 
 
 
@@ -306,21 +502,21 @@ export const agendamentoControllerBuscar = async (id: number, options?: RequestI
 
 export const getAgendamentoControllerBuscarQueryKey = (id: number,) => {
     return [
-    `/agendamentos/${id}`
+    `${apiBaseUrl}/agendamentos/${id}`
     ] as const;
     }
 
 
-export const getAgendamentoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+export const getAgendamentoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getAgendamentoControllerBuscarQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof agendamentoControllerBuscar>>> = ({ signal }) => agendamentoControllerBuscar(id, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof agendamentoControllerBuscar>>> = ({ signal }) => agendamentoControllerBuscar(id, { signal, ...requestOptions });
 
 
 
@@ -340,7 +536,7 @@ export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof
           TError,
           Awaited<ReturnType<typeof agendamentoControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(
@@ -350,16 +546,16 @@ export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof
           TError,
           Awaited<ReturnType<typeof agendamentoControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -392,11 +588,11 @@ export const getAgendamentoControllerAtualizarUrl = (id: number,) => {
 
 
 
-  return `/agendamentos/${id}`
+  return `${apiBaseUrl}/agendamentos/${id}`
 }
 
 export const agendamentoControllerAtualizar = async (id: number,
-    atualizarAgendamentoDto: AtualizarAgendamentoDto, options?: RequestInit): Promise<agendamentoControllerAtualizarResponse> => {
+    atualizarAgendamentoDto: AtualizarAgendamentoDto, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerAtualizarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -404,36 +600,29 @@ export const agendamentoControllerAtualizar = async (id: number,
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getAgendamentoControllerAtualizarUrl(id),
+return httpClient<agendamentoControllerAtualizarResponse>(getAgendamentoControllerAtualizarUrl(id),
   {
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(atualizarAgendamentoDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: agendamentoControllerAtualizarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as agendamentoControllerAtualizarResponse
-}
+);}
 
 
 
 
 
 export const getAgendamentoControllerAtualizarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext> => {
 
 const mutationKey = ['agendamentoControllerAtualizar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -441,7 +630,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, AgendamentoControllerAtualizarMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
-          return  agendamentoControllerAtualizar(id,data,fetchOptions)
+          return  agendamentoControllerAtualizar(id,data,requestOptions)
         }
 
 
@@ -457,7 +646,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type AgendamentoControllerAtualizarMutationVariables = {id: number;data: AtualizarAgendamentoDto}
 
     export const useAgendamentoControllerAtualizar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof agendamentoControllerAtualizar>>,
         TError,
@@ -483,41 +672,34 @@ export const getAgendamentoControllerRemoverUrl = (id: number,) => {
 
 
 
-  return `/agendamentos/${id}`
+  return `${apiBaseUrl}/agendamentos/${id}`
 }
 
-export const agendamentoControllerRemover = async (id: number, options?: RequestInit): Promise<agendamentoControllerRemoverResponse> => {
+export const agendamentoControllerRemover = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerRemoverResponse> => {
 
-  const res = await fetch(getAgendamentoControllerRemoverUrl(id),
+  return httpClient<agendamentoControllerRemoverResponse>(getAgendamentoControllerRemoverUrl(id),
   {
     ...options,
     method: 'DELETE'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: agendamentoControllerRemoverResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as agendamentoControllerRemoverResponse
-}
+);}
 
 
 
 
 
 export const getAgendamentoControllerRemoverMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext> => {
 
 const mutationKey = ['agendamentoControllerRemover'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -525,7 +707,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof agendamentoControllerRemover>>, AgendamentoControllerRemoverMutationVariables> = (props) => {
           const {id} = props ?? {};
 
-          return  agendamentoControllerRemover(id,fetchOptions)
+          return  agendamentoControllerRemover(id,requestOptions)
         }
 
 
@@ -541,7 +723,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type AgendamentoControllerRemoverMutationVariables = {id: number}
 
     export const useAgendamentoControllerRemover = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof agendamentoControllerRemover>>,
         TError,

@@ -1,15 +1,24 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
 import pg from 'pg';
 import { CODIGOS_PAPEL } from '../../src/common/constants/papeis';
-import { BCRYPT_SALT_ROUNDS } from '../../src/common/constants/seguranca';
+import { gerarHashSenha } from '../../src/common/security/senha.service';
 import { obterSenhaSeed } from '../../src/common/utils/seed-password';
 
 const senhaSeed = obterSenhaSeed(process.env.SEED_DEFAULT_PASSWORD);
 
 const dadosPapeis = [
+  {
+    codigo: 'GERENCIAR_ACESSOS',
+    nome: 'Gerenciar acessos',
+    descricao: 'Administrar papeis e permissoes.',
+  },
+  {
+    codigo: 'GERENCIAR_COMISSOES',
+    nome: 'Gerenciar comissoes',
+    descricao: 'Visualizar e administrar comissoes.',
+  },
   {
     codigo: CODIGOS_PAPEL.ADMINISTRADOR,
     nome: 'Administrador',
@@ -159,7 +168,7 @@ async function main() {
     },
   });
 
-  const senhaHash = await bcrypt.hash(senhaSeed, BCRYPT_SALT_ROUNDS);
+  const senhaHash = await gerarHashSenha(senhaSeed);
   const administrador = await prisma.usuario.upsert({
     where: { email: 'admin@barbeariaexemplo.com' },
     update: {},

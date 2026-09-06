@@ -7,6 +7,6 @@ describe('obterSenhaSeed', () => {
   });
 
   it('retorna a senha fornecida sem alterá-la', () => {
-    expect(obterSenhaSeed('Senha de teste')).toBe('Senha de teste');
+    expect(obterSenhaSeed(' Senha de teste segura ')).toBe(' Senha de teste segura ');
   });
 });

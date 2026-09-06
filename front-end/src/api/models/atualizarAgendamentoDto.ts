@@ -6,11 +6,16 @@
  * OpenAPI spec version: 1.0
  */
 import type { AtualizarAgendamentoDtoStatus } from './atualizarAgendamentoDtoStatus';
+import type { ItemAgendamentoDto } from './itemAgendamentoDto';
 
 export interface AtualizarAgendamentoDto {
   inicio?: string;
   /** @minItems 1 */
+  servicos?: ItemAgendamentoDto[];
+  /** @minItems 1 */
   servicoIds?: number[];
-  observacao?: string;
+  observacaoCliente?: string;
+  observacaoInterna?: string;
   status?: AtualizarAgendamentoDtoStatus;
+  motivoCancelamento?: string;
 }

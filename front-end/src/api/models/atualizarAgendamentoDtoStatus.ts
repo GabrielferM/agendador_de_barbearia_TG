@@ -10,9 +10,9 @@ export type AtualizarAgendamentoDtoStatus = typeof AtualizarAgendamentoDtoStatus
 
 
 export const AtualizarAgendamentoDtoStatus = {
-  AGENDADO: 'AGENDADO',
+  PENDENTE: 'PENDENTE',
   CONFIRMADO: 'CONFIRMADO',
-  EM_ANDAMENTO: 'EM_ANDAMENTO',
+  EM_ATENDIMENTO: 'EM_ATENDIMENTO',
   CONCLUIDO: 'CONCLUIDO',
   CANCELADO: 'CANCELADO',
   NAO_COMPARECEU: 'NAO_COMPARECEU',

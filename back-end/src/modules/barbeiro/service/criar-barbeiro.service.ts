@@ -1,8 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { StatusBarbeiro } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
 import { CODIGOS_PAPEL } from '../../../common/constants/papeis';
-import { BCRYPT_SALT_ROUNDS } from '../../../common/constants/seguranca';
+import { SenhaService } from '../../../common/security/senha.service';
 import { normalizarEmail } from '../../../common/utils/documentos';
 import { semSenha } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -14,6 +13,7 @@ export class CriarBarbeiroService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly validarFilial: ValidarFilialBarbeiroService,
+    private readonly senhas: SenhaService,
   ) {}
 
   async execute(input: CriarBarbeiroDto) {
@@ -27,7 +27,7 @@ export class CriarBarbeiroService {
       data: {
         nome: input.nome.trim(),
         email,
-        senhaHash: await bcrypt.hash(input.senha, BCRYPT_SALT_ROUNDS),
+        senhaHash: await this.senhas.gerarHash(input.senha),
         idPapel: papel.id,
         barbeiro: {
           create: {

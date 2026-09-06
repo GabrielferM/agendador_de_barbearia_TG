@@ -8,6 +8,7 @@ describe('environment configuration', () => {
       validateEnvironment({
         DATABASE_URL: databaseUrl,
         NODE_ENV: 'production',
+        CSRF_SECRET: 'um-segredo-de-teste-com-mais-de-32-caracteres',
       }),
     ).toThrow('CORS_ORIGINS must be defined in production.');
   });
@@ -17,12 +18,24 @@ describe('environment configuration', () => {
       DATABASE_URL: databaseUrl,
       NODE_ENV: 'production',
       CORS_ORIGINS: 'https://app.example.com, https://admin.example.com',
+      CSRF_SECRET: 'um-segredo-de-teste-com-mais-de-32-caracteres',
     });
 
     expect(corsOriginFor(environment)).toEqual([
       'https://app.example.com',
       'https://admin.example.com',
     ]);
+  });
+
+  it('rejeita segredo CSRF curto em produção', () => {
+    expect(() =>
+      validateEnvironment({
+        DATABASE_URL: databaseUrl,
+        NODE_ENV: 'production',
+        CORS_ORIGINS: 'https://app.example.com',
+        CSRF_SECRET: 'curto',
+      }),
+    ).toThrow('CSRF_SECRET must contain at least 32 characters.');
   });
 
   it('allows only localhost origins outside production', () => {

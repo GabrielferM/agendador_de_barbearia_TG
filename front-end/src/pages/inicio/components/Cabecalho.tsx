@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const itensNavegacao = ['Início', 'Serviços', 'Barbeiros', 'Sobre', 'Contato']
 
 export function Cabecalho() {
@@ -30,12 +32,12 @@ export function Cabecalho() {
         ))}
       </nav>
 
-      <button
+      <Link
         className="cursor-pointer rounded-lg border border-secondary bg-secondary px-4 py-3 text-xs font-bold text-foreground transition-colors hover:bg-surface sm:px-5"
-        type="button"
+        to="/login"
       >
         Agendar horário
-      </button>
+      </Link>
     </header>
   )
 }

@@ -6,13 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 import type { AtualizarEnderecoDto } from './atualizarEnderecoDto';
+import type { AtualizarFilialDtoStatus } from './atualizarFilialDtoStatus';
 
 export interface AtualizarFilialDto {
-  endereco?: AtualizarEnderecoDto;
   nome?: string;
   cnpj?: string;
   telefone?: string;
   email?: string;
-  horarioAbertura?: string;
-  horarioFechamento?: string;
+  status?: AtualizarFilialDtoStatus;
+  endereco?: AtualizarEnderecoDto;
 }

@@ -14,6 +14,16 @@ export default defineConfig({
       client: "react-query",
       httpClient: "fetch",
       mode: "tags-split",
+      override: {
+        mutator: {
+          path: "./src/api/http-client.ts",
+          name: "httpClient",
+        },
+      },
+      baseUrl: {
+        runtime: "apiBaseUrl",
+        imports: [{ name: "apiBaseUrl", importPath: "./client" }],
+      },
     },
   },
 });

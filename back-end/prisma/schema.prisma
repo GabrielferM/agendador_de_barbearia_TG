@@ -63,10 +63,27 @@ model Usuario {
   barbeiro           Barbeiro?                    @relation("UsuarioBarbeiro")
   administrador      Administrador?               @relation("UsuarioAdministrador")
   alteracoesDeStatus HistoricoStatusAgendamento[] @relation("UsuarioHistoricoStatus")
+  sessoes            Sessao[]                     @relation("UsuarioSessoes")
 
   @@index([idPapel])
   @@index([status])
   @@map("usuario")
+}
+
+model Sessao {
+  id             String    @id @default(uuid())
+  idUsuario      Int
+  tokenHash      String    @unique
+  dataCriacao    DateTime  @default(now())
+  ultimoUso      DateTime  @default(now())
+  dataExpiracao  DateTime
+  dataRevogacao  DateTime?
+  usuario        Usuario   @relation("UsuarioSessoes", fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario])
+  @@index([dataExpiracao])
+  @@index([dataRevogacao])
+  @@map("sessao")
 }
 
 model Papel {

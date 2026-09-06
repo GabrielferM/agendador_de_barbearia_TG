@@ -41,37 +41,86 @@ export class CriarAgendamentoDto {
   @IsOptional() @IsString() observacaoInterna?: string;
 }
 export class AtualizarAgendamentoDto {
-  @IsOptional() @IsDateString() inicio?: string;
+  @IsOptional()
+  @IsDateString()
+  inicio?: string;
+
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)
   @Type(() => ItemAgendamentoDto)
   @ValidateNested({ each: true })
   servicos?: ItemAgendamentoDto[];
+
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)
   @Type(() => Number)
   @IsInt({ each: true })
   servicoIds?: number[];
-  @IsOptional() @IsString() observacaoCliente?: string;
-  @IsOptional() @IsString() observacaoInterna?: string;
-  @IsOptional() @IsEnum(StatusAgendamento) status?: StatusAgendamento;
-  @IsOptional() @IsString() motivoCancelamento?: string;
+
+  @IsOptional()
+  @IsString()
+  observacaoCliente?: string;
+
+  @IsOptional()
+  @IsString()
+  observacaoInterna?: string;
+
+  @IsOptional()
+  @IsEnum(StatusAgendamento)
+  status?: StatusAgendamento;
+
+  @IsOptional()
+  @IsString()
+  motivoCancelamento?: string;
 }
 export class ListarAgendamentosDto extends PaginacaoDto {
-  @IsOptional() @Type(() => Number) @IsInt() idCliente?: number;
-  @IsOptional() @Type(() => Number) @IsInt() idBarbeiro?: number;
-  @IsOptional() @Type(() => Number) @IsInt() idFilial?: number;
-  @IsOptional() @IsEnum(StatusAgendamento) status?: StatusAgendamento;
-  @IsOptional() @IsDateString() inicioDe?: string;
-  @IsOptional() @IsDateString() inicioAte?: string;
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  idCliente?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  idBarbeiro?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  idFilial?: number;
+
+  @IsOptional()
+  @IsEnum(StatusAgendamento)
+  status?: StatusAgendamento;
+
+  @IsOptional()
+  @IsDateString()
+  inicioDe?: string;
+
+  @IsOptional()
+  @IsDateString()
+  inicioAte?: string;
 }
 export class ListarHistoricoStatusDto extends PaginacaoDto {}
 export class CriarHistoricoStatusDto {
-  @Type(() => Number) @IsInt() idUsuarioResponsavel!: number;
-  @IsOptional() @IsEnum(StatusAgendamento) statusAnterior?: StatusAgendamento;
-  @IsEnum(StatusAgendamento) statusNovo!: StatusAgendamento;
-  @IsOptional() @IsString() motivo?: string;
-  @IsOptional() @IsString() observacao?: string;
+  @Type(() => Number)
+  @IsInt()
+  idUsuarioResponsavel!: number;
+
+  @IsOptional()
+  @IsEnum(StatusAgendamento)
+  statusAnterior?: StatusAgendamento;
+
+  @IsEnum(StatusAgendamento)
+  statusNovo!: StatusAgendamento;
+
+  @IsOptional()
+  @IsString()
+  motivo?: string;
+
+  @IsOptional()
+  @IsString()
+  observacao?: string;
 }

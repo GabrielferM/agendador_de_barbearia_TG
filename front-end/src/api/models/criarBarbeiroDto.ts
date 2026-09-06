@@ -5,16 +5,21 @@
  * Contrato OpenAPI da API REST do Agendador de Barbearia.
  * OpenAPI spec version: 1.0
  */
-import type { CriarBarbeiroDtoStatus } from './criarBarbeiroDtoStatus';
+import type { CriarBarbeiroDtoStatusProfissional } from './criarBarbeiroDtoStatusProfissional';
 
 export interface CriarBarbeiroDto {
   /** @minLength 2 */
   nome: string;
   email: string;
-  /** @minLength 8 */
+  /**
+     * @minLength 15
+     * @maxLength 128
+     */
   senha: string;
   idFilial: number;
+  nomeProfissional?: string;
   descricao?: string;
+  fotoUrl?: string;
   dataAdmissao?: string;
-  status?: CriarBarbeiroDtoStatus;
+  statusProfissional?: CriarBarbeiroDtoStatusProfissional;
 }

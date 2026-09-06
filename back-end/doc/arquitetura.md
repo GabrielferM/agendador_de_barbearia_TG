@@ -176,3 +176,9 @@ O nome do arquivo em `service/` descreve a operação, por exemplo `criar-<domin
 3. Registre o novo módulo em AppModule e importe PrismaModule onde necessário.
 4. Execute npm run prisma:generate, npm run build e npm test a partir de back-end/.
 5. Revise imports circulares, chamadas diretas ao Prisma em controllers e exposição de dados sensíveis.
+
+## Autenticação e autorização
+
+O módulo `autenticacao` segue o fluxo padrão: controller → `AutenticacaoService` (fachada) → `LoginService`/`SessaoService` → `PrismaService`. A sessão é opaca; somente o SHA-256 do token fica no banco. Senhas novas usam Argon2id e bcrypt é aceito apenas para migração gradual no login.
+
+Os guards globais executam limitação de requisições, autenticação, CSRF e permissões. `@Publico()` é uma exceção explícita para saúde, raiz, login e catálogo sanitizado. `@ExigirPermissoes()` protege os recursos administrativos, enquanto a fachada de agendamentos impõe propriedade do cliente ou barbeiro. Cookies e CSRF são tratados em `common/security`, pois são controles transversais.

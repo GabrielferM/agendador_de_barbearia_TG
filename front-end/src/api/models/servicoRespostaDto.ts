@@ -11,7 +11,10 @@ export interface ServicoRespostaDto {
   nome: string;
   /** @nullable */
   descricao?: string | null;
-  /** Decimal serializado como string. */
-  preco: string;
+  /** Valor decimal serializado como texto. */
+  precoBase: string;
   duracaoMinutos: number;
+  ativo: boolean;
+  dataCadastro: string;
+  dataAtualizacao: string;
 }

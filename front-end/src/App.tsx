@@ -1,7 +1,8 @@
-import { Inicio } from './pages/inicio'
+import { AppRouter } from './routers'
+import { ProvedorAutenticacao } from './auth/contexto-autenticacao'
 
 export function App() {
-  return <Inicio />
+  return <ProvedorAutenticacao><AppRouter /></ProvedorAutenticacao>
 }
 
 export default App

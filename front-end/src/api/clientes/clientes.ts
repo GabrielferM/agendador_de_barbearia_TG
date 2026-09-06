@@ -24,13 +24,20 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import {
+  apiBaseUrl
+} from '../client';
+
 import type {
   AtualizarClienteDto,
   ClienteControllerListarParams,
   CriarClienteDto
 } from '../models';
 
+import { httpClient } from '.././http-client';
 
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
@@ -66,10 +73,10 @@ export const getClienteControllerCriarUrl = () => {
 
 
 
-  return `/clientes`
+  return `${apiBaseUrl}/clientes`
 }
 
-export const clienteControllerCriar = async (criarClienteDto: CriarClienteDto, options?: RequestInit): Promise<clienteControllerCriarResponse> => {
+export const clienteControllerCriar = async (criarClienteDto: CriarClienteDto, options?: Parameters<typeof httpClient>[1]): Promise<clienteControllerCriarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -77,36 +84,29 @@ export const clienteControllerCriar = async (criarClienteDto: CriarClienteDto, o
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getClienteControllerCriarUrl(),
+return httpClient<clienteControllerCriarResponse>(getClienteControllerCriarUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(criarClienteDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: clienteControllerCriarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as clienteControllerCriarResponse
-}
+);}
 
 
 
 
 
 export const getClienteControllerCriarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext> => {
 
 const mutationKey = ['clienteControllerCriar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -114,7 +114,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof clienteControllerCriar>>, ClienteControllerCriarMutationVariables> = (props) => {
           const {data} = props ?? {};
 
-          return  clienteControllerCriar(data,fetchOptions)
+          return  clienteControllerCriar(data,requestOptions)
         }
 
 
@@ -130,7 +130,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type ClienteControllerCriarMutationVariables = {data: CriarClienteDto}
 
     export const useClienteControllerCriar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof clienteControllerCriar>>,
         TError,
@@ -151,7 +151,7 @@ export type clienteControllerListarResponseSuccess = (clienteControllerListarRes
 
 export type clienteControllerListarResponse = (clienteControllerListarResponseSuccess)
 
-export const getClienteControllerListarUrl = (params: ClienteControllerListarParams,) => {
+export const getClienteControllerListarUrl = (params?: ClienteControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -163,26 +163,19 @@ export const getClienteControllerListarUrl = (params: ClienteControllerListarPar
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/clientes?${stringifiedParams}` : `/clientes`
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/clientes?${stringifiedParams}` : `${apiBaseUrl}/clientes`
 }
 
-export const clienteControllerListar = async (params: ClienteControllerListarParams, options?: RequestInit): Promise<clienteControllerListarResponse> => {
+export const clienteControllerListar = async (params?: ClienteControllerListarParams, options?: Parameters<typeof httpClient>[1]): Promise<clienteControllerListarResponse> => {
 
-  const res = await fetch(getClienteControllerListarUrl(params),
+  return httpClient<clienteControllerListarResponse>(getClienteControllerListarUrl(params),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: clienteControllerListarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as clienteControllerListarResponse
-}
+);}
 
 
 
@@ -190,21 +183,21 @@ export const clienteControllerListar = async (params: ClienteControllerListarPar
 
 export const getClienteControllerListarQueryKey = (params?: ClienteControllerListarParams,) => {
     return [
-    `/clientes`, ...(params ? [params] : [])
+    `${apiBaseUrl}/clientes`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getClienteControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(params: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, fetch?: RequestInit}
+export const getClienteControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getClienteControllerListarQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof clienteControllerListar>>> = ({ signal }) => clienteControllerListar(params, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof clienteControllerListar>>> = ({ signal }) => clienteControllerListar(params, { signal, ...requestOptions });
 
 
 
@@ -218,32 +211,32 @@ export type ClienteControllerListarQueryError = unknown
 
 
 export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
- params: ClienteControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>> & Pick<
+ params: undefined |  ClienteControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof clienteControllerListar>>,
           TError,
           Awaited<ReturnType<typeof clienteControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
- params: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>> & Pick<
+ params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof clienteControllerListar>>,
           TError,
           Awaited<ReturnType<typeof clienteControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
- params: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
- params: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -276,26 +269,19 @@ export const getClienteControllerBuscarUrl = (id: number,) => {
 
 
 
-  return `/clientes/${id}`
+  return `${apiBaseUrl}/clientes/${id}`
 }
 
-export const clienteControllerBuscar = async (id: number, options?: RequestInit): Promise<clienteControllerBuscarResponse> => {
+export const clienteControllerBuscar = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<clienteControllerBuscarResponse> => {
 
-  const res = await fetch(getClienteControllerBuscarUrl(id),
+  return httpClient<clienteControllerBuscarResponse>(getClienteControllerBuscarUrl(id),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: clienteControllerBuscarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as clienteControllerBuscarResponse
-}
+);}
 
 
 
@@ -303,21 +289,21 @@ export const clienteControllerBuscar = async (id: number, options?: RequestInit)
 
 export const getClienteControllerBuscarQueryKey = (id: number,) => {
     return [
-    `/clientes/${id}`
+    `${apiBaseUrl}/clientes/${id}`
     ] as const;
     }
 
 
-export const getClienteControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+export const getClienteControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getClienteControllerBuscarQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof clienteControllerBuscar>>> = ({ signal }) => clienteControllerBuscar(id, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof clienteControllerBuscar>>> = ({ signal }) => clienteControllerBuscar(id, { signal, ...requestOptions });
 
 
 
@@ -337,7 +323,7 @@ export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof cli
           TError,
           Awaited<ReturnType<typeof clienteControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(
@@ -347,16 +333,16 @@ export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof cli
           TError,
           Awaited<ReturnType<typeof clienteControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -389,11 +375,11 @@ export const getClienteControllerAtualizarUrl = (id: number,) => {
 
 
 
-  return `/clientes/${id}`
+  return `${apiBaseUrl}/clientes/${id}`
 }
 
 export const clienteControllerAtualizar = async (id: number,
-    atualizarClienteDto: AtualizarClienteDto, options?: RequestInit): Promise<clienteControllerAtualizarResponse> => {
+    atualizarClienteDto: AtualizarClienteDto, options?: Parameters<typeof httpClient>[1]): Promise<clienteControllerAtualizarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -401,36 +387,29 @@ export const clienteControllerAtualizar = async (id: number,
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getClienteControllerAtualizarUrl(id),
+return httpClient<clienteControllerAtualizarResponse>(getClienteControllerAtualizarUrl(id),
   {
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(atualizarClienteDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: clienteControllerAtualizarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as clienteControllerAtualizarResponse
-}
+);}
 
 
 
 
 
 export const getClienteControllerAtualizarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext> => {
 
 const mutationKey = ['clienteControllerAtualizar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -438,7 +417,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof clienteControllerAtualizar>>, ClienteControllerAtualizarMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
-          return  clienteControllerAtualizar(id,data,fetchOptions)
+          return  clienteControllerAtualizar(id,data,requestOptions)
         }
 
 
@@ -454,7 +433,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type ClienteControllerAtualizarMutationVariables = {id: number;data: AtualizarClienteDto}
 
     export const useClienteControllerAtualizar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof clienteControllerAtualizar>>,
         TError,
@@ -480,41 +459,34 @@ export const getClienteControllerRemoverUrl = (id: number,) => {
 
 
 
-  return `/clientes/${id}`
+  return `${apiBaseUrl}/clientes/${id}`
 }
 
-export const clienteControllerRemover = async (id: number, options?: RequestInit): Promise<clienteControllerRemoverResponse> => {
+export const clienteControllerRemover = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<clienteControllerRemoverResponse> => {
 
-  const res = await fetch(getClienteControllerRemoverUrl(id),
+  return httpClient<clienteControllerRemoverResponse>(getClienteControllerRemoverUrl(id),
   {
     ...options,
     method: 'DELETE'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: clienteControllerRemoverResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as clienteControllerRemoverResponse
-}
+);}
 
 
 
 
 
 export const getClienteControllerRemoverMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext> => {
 
 const mutationKey = ['clienteControllerRemover'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -522,7 +494,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof clienteControllerRemover>>, ClienteControllerRemoverMutationVariables> = (props) => {
           const {id} = props ?? {};
 
-          return  clienteControllerRemover(id,fetchOptions)
+          return  clienteControllerRemover(id,requestOptions)
         }
 
 
@@ -538,7 +510,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type ClienteControllerRemoverMutationVariables = {id: number}
 
     export const useClienteControllerRemover = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof clienteControllerRemover>>,
         TError,

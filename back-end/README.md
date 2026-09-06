@@ -39,6 +39,7 @@ Create a `.env` file with a PostgreSQL connection URL:
 DATABASE_URL="postgresql://user:password@localhost:5432/barbearia"
 PORT=3000
 NODE_ENV=development
+CSRF_SECRET="gere-um-segredo-aleatorio-com-pelo-menos-32-caracteres"
 ```
 
 In production, `CORS_ORIGINS` is required and must contain a comma-separated list of allowed origins:
@@ -46,6 +47,10 @@ In production, `CORS_ORIGINS` is required and must contain a comma-separated lis
 ```env
 CORS_ORIGINS="https://app.example.com,https://admin.example.com"
 ```
+
+## Authentication
+
+The API uses opaque PostgreSQL-backed sessions, not JWT. Login creates an HttpOnly cookie and a signed CSRF cookie. Call `GET /auth/csrf` to renew the CSRF value and send it in `X-CSRF-Token` on `POST`, `PUT`, `PATCH` and `DELETE`. Administrative routes require their respective permissions; public catalog routes live under `/publico`.
 
 ## Compile and run the project
 

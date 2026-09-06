@@ -6,22 +6,23 @@
  * OpenAPI spec version: 1.0
  */
 import type { AgendamentoControllerListarStatus } from './agendamentoControllerListarStatus';
-import type { Object } from './object';
 
 export type AgendamentoControllerListarParams = {
+/**
+ * Número da página a ser retornada.
+ * @minimum 1
+ */
+pagina?: number;
+/**
+ * Quantidade de registros por página.
+ * @minimum 1
+ * @maximum 100
+ */
+limite?: number;
 idCliente?: number;
 idBarbeiro?: number;
 idFilial?: number;
 status?: AgendamentoControllerListarStatus;
 inicioDe?: string;
 inicioAte?: string;
-/**
- * @minimum 1
- */
-pagina?: Object;
-/**
- * @minimum 1
- * @maximum 100
- */
-limite?: Object;
 };

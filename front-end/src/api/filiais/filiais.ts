@@ -24,6 +24,10 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import {
+  apiBaseUrl
+} from '../client';
+
 import type {
   AtualizarFilialDto,
   CriarFilialDto,
@@ -33,7 +37,10 @@ import type {
   FilialControllerListarParams
 } from '../models';
 
+import { httpClient } from '.././http-client';
 
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
@@ -69,10 +76,10 @@ export const getFilialControllerCriarUrl = () => {
 
 
 
-  return `/filiais`
+  return `${apiBaseUrl}/filiais`
 }
 
-export const filialControllerCriar = async (criarFilialDto: CriarFilialDto, options?: RequestInit): Promise<filialControllerCriarResponse> => {
+export const filialControllerCriar = async (criarFilialDto: CriarFilialDto, options?: Parameters<typeof httpClient>[1]): Promise<filialControllerCriarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -80,36 +87,29 @@ export const filialControllerCriar = async (criarFilialDto: CriarFilialDto, opti
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getFilialControllerCriarUrl(),
+return httpClient<filialControllerCriarResponse>(getFilialControllerCriarUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(criarFilialDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: filialControllerCriarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as filialControllerCriarResponse
-}
+);}
 
 
 
 
 
 export const getFilialControllerCriarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext> => {
 
 const mutationKey = ['filialControllerCriar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -117,7 +117,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof filialControllerCriar>>, FilialControllerCriarMutationVariables> = (props) => {
           const {data} = props ?? {};
 
-          return  filialControllerCriar(data,fetchOptions)
+          return  filialControllerCriar(data,requestOptions)
         }
 
 
@@ -133,7 +133,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type FilialControllerCriarMutationVariables = {data: CriarFilialDto}
 
     export const useFilialControllerCriar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof filialControllerCriar>>,
         TError,
@@ -154,7 +154,7 @@ export type filialControllerListarResponseSuccess = (filialControllerListarRespo
 
 export type filialControllerListarResponse = (filialControllerListarResponseSuccess)
 
-export const getFilialControllerListarUrl = (params: FilialControllerListarParams,) => {
+export const getFilialControllerListarUrl = (params?: FilialControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -166,26 +166,19 @@ export const getFilialControllerListarUrl = (params: FilialControllerListarParam
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/filiais?${stringifiedParams}` : `/filiais`
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/filiais?${stringifiedParams}` : `${apiBaseUrl}/filiais`
 }
 
-export const filialControllerListar = async (params: FilialControllerListarParams, options?: RequestInit): Promise<filialControllerListarResponse> => {
+export const filialControllerListar = async (params?: FilialControllerListarParams, options?: Parameters<typeof httpClient>[1]): Promise<filialControllerListarResponse> => {
 
-  const res = await fetch(getFilialControllerListarUrl(params),
+  return httpClient<filialControllerListarResponse>(getFilialControllerListarUrl(params),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: filialControllerListarResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as filialControllerListarResponse
-}
+);}
 
 
 
@@ -193,21 +186,21 @@ export const filialControllerListar = async (params: FilialControllerListarParam
 
 export const getFilialControllerListarQueryKey = (params?: FilialControllerListarParams,) => {
     return [
-    `/filiais`, ...(params ? [params] : [])
+    `${apiBaseUrl}/filiais`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getFilialControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(params: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, fetch?: RequestInit}
+export const getFilialControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getFilialControllerListarQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof filialControllerListar>>> = ({ signal }) => filialControllerListar(params, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof filialControllerListar>>> = ({ signal }) => filialControllerListar(params, { signal, ...requestOptions });
 
 
 
@@ -221,32 +214,32 @@ export type FilialControllerListarQueryError = unknown
 
 
 export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
- params: FilialControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>> & Pick<
+ params: undefined |  FilialControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof filialControllerListar>>,
           TError,
           Awaited<ReturnType<typeof filialControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
- params: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>> & Pick<
+ params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof filialControllerListar>>,
           TError,
           Awaited<ReturnType<typeof filialControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
- params: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
- params: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -279,26 +272,19 @@ export const getFilialControllerBuscarUrl = (id: number,) => {
 
 
 
-  return `/filiais/${id}`
+  return `${apiBaseUrl}/filiais/${id}`
 }
 
-export const filialControllerBuscar = async (id: number, options?: RequestInit): Promise<filialControllerBuscarResponse> => {
+export const filialControllerBuscar = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<filialControllerBuscarResponse> => {
 
-  const res = await fetch(getFilialControllerBuscarUrl(id),
+  return httpClient<filialControllerBuscarResponse>(getFilialControllerBuscarUrl(id),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: filialControllerBuscarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as filialControllerBuscarResponse
-}
+);}
 
 
 
@@ -306,21 +292,21 @@ export const filialControllerBuscar = async (id: number, options?: RequestInit):
 
 export const getFilialControllerBuscarQueryKey = (id: number,) => {
     return [
-    `/filiais/${id}`
+    `${apiBaseUrl}/filiais/${id}`
     ] as const;
     }
 
 
-export const getFilialControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+export const getFilialControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getFilialControllerBuscarQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof filialControllerBuscar>>> = ({ signal }) => filialControllerBuscar(id, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof filialControllerBuscar>>> = ({ signal }) => filialControllerBuscar(id, { signal, ...requestOptions });
 
 
 
@@ -340,7 +326,7 @@ export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof fili
           TError,
           Awaited<ReturnType<typeof filialControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(
@@ -350,16 +336,16 @@ export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof fili
           TError,
           Awaited<ReturnType<typeof filialControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -392,11 +378,11 @@ export const getFilialControllerAtualizarUrl = (id: number,) => {
 
 
 
-  return `/filiais/${id}`
+  return `${apiBaseUrl}/filiais/${id}`
 }
 
 export const filialControllerAtualizar = async (id: number,
-    atualizarFilialDto: AtualizarFilialDto, options?: RequestInit): Promise<filialControllerAtualizarResponse> => {
+    atualizarFilialDto: AtualizarFilialDto, options?: Parameters<typeof httpClient>[1]): Promise<filialControllerAtualizarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -404,36 +390,29 @@ export const filialControllerAtualizar = async (id: number,
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getFilialControllerAtualizarUrl(id),
+return httpClient<filialControllerAtualizarResponse>(getFilialControllerAtualizarUrl(id),
   {
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(atualizarFilialDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: filialControllerAtualizarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as filialControllerAtualizarResponse
-}
+);}
 
 
 
 
 
 export const getFilialControllerAtualizarMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext> => {
 
 const mutationKey = ['filialControllerAtualizar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -441,7 +420,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof filialControllerAtualizar>>, FilialControllerAtualizarMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
-          return  filialControllerAtualizar(id,data,fetchOptions)
+          return  filialControllerAtualizar(id,data,requestOptions)
         }
 
 
@@ -457,7 +436,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type FilialControllerAtualizarMutationVariables = {id: number;data: AtualizarFilialDto}
 
     export const useFilialControllerAtualizar = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof filialControllerAtualizar>>,
         TError,
@@ -483,41 +462,34 @@ export const getFilialControllerRemoverUrl = (id: number,) => {
 
 
 
-  return `/filiais/${id}`
+  return `${apiBaseUrl}/filiais/${id}`
 }
 
-export const filialControllerRemover = async (id: number, options?: RequestInit): Promise<filialControllerRemoverResponse> => {
+export const filialControllerRemover = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<filialControllerRemoverResponse> => {
 
-  const res = await fetch(getFilialControllerRemoverUrl(id),
+  return httpClient<filialControllerRemoverResponse>(getFilialControllerRemoverUrl(id),
   {
     ...options,
     method: 'DELETE'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: filialControllerRemoverResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as filialControllerRemoverResponse
-}
+);}
 
 
 
 
 
 export const getFilialControllerRemoverMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext> => {
 
 const mutationKey = ['filialControllerRemover'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -525,7 +497,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof filialControllerRemover>>, FilialControllerRemoverMutationVariables> = (props) => {
           const {id} = props ?? {};
 
-          return  filialControllerRemover(id,fetchOptions)
+          return  filialControllerRemover(id,requestOptions)
         }
 
 
@@ -541,7 +513,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type FilialControllerRemoverMutationVariables = {id: number}
 
     export const useFilialControllerRemover = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof filialControllerRemover>>,
         TError,

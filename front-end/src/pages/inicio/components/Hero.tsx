@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export function Hero() {
   return (
     <section className="grid min-h-[27px] items-center gap-10 py-14 lg:grid-cols-[1fr_0.8fr] lg:py-20" id="inicio">
@@ -11,12 +13,12 @@ export function Hero() {
           Agende seu corte com quem entende do assunto e aproveite uma experiência feita para você.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <button
+          <Link
             className="cursor-pointer rounded-lg border border-secondary bg-secondary px-6 py-3 text-sm font-bold text-foreground transition-colors hover:bg-surface"
-            type="button"
+            to="/login"
           >
             ◷ Agendar agora
-          </button>
+          </Link>
           <button
             className="cursor-pointer rounded-lg border border-secondary bg-transparent px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-surface hover:text-foreground"
             type="button"

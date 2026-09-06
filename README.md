@@ -44,9 +44,10 @@ DATABASE_URL="postgresql://usuario:senha@localhost:5432/agendador_barbearia?sche
 PORT=3000
 NODE_ENV=development
 CORS_ORIGINS=http://localhost:5173
+CSRF_SECRET="gere-um-segredo-aleatorio-com-pelo-menos-32-caracteres"
 ```
 
-`PORT` e `NODE_ENV` possuem, respectivamente, os valores padrão `3000` e `development`. Em produção, `CORS_ORIGINS` é obrigatório e pode conter várias origens separadas por vírgula.
+`PORT` e `NODE_ENV` possuem, respectivamente, os valores padrão `3000` e `development`. Em produção, `CORS_ORIGINS` e um `CSRF_SECRET` exclusivo são obrigatórios.
 
 ## Executar localmente
 
@@ -76,6 +77,8 @@ Endereços padrão:
 | Saúde da API | `http://localhost:3000/health` |
 
 ## Recursos da API
+
+Autenticação por sessão: `POST /auth/login`, `GET /auth/me`, `GET /auth/csrf` e `POST /auth/logout`. O catálogo anônimo usa `GET /publico/servicos`, `/publico/barbeiros` e `/publico/filiais`. Os CRUDs administrativos exigem sessão e permissão.
 
 Os recursos abaixo possuem operações de criação, listagem, busca por ID, atualização e remoção:
 

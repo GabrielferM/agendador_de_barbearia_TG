@@ -5,6 +5,7 @@ export interface EnvironmentVariables {
   PORT: number;
   NODE_ENV: NodeEnvironment;
   CORS_ORIGINS: string[];
+  CSRF_SECRET: string;
 }
 
 type RawEnvironment = Record<string, unknown>;
@@ -96,12 +97,19 @@ function parseCorsOrigins(value: unknown, environment: NodeEnvironment): string[
 
 export function validateEnvironment(config: RawEnvironment): EnvironmentVariables {
   const nodeEnvironment = parseNodeEnvironment(config.NODE_ENV);
+  const segredoInformado = config.CSRF_SECRET;
+  const csrfSecret =
+    segredoInformado === undefined && nodeEnvironment !== 'production'
+      ? 'segredo-local-apenas-para-desenvolvimento-123456'
+      : requiredString(segredoInformado, 'CSRF_SECRET');
+  if (csrfSecret.length < 32) throw new Error('CSRF_SECRET must contain at least 32 characters.');
 
   return {
     DATABASE_URL: parseDatabaseUrl(config.DATABASE_URL),
     PORT: parsePort(config.PORT),
     NODE_ENV: nodeEnvironment,
     CORS_ORIGINS: parseCorsOrigins(config.CORS_ORIGINS, nodeEnvironment),
+    CSRF_SECRET: csrfSecret,
   };
 }
 

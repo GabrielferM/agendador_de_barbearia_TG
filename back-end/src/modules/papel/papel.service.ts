@@ -1,119 +1,67 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { respostaPaginada } from '../../common/dto/paginacao.dto';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from '@nestjs/common';
 import {
   AtualizarPapelDto,
   AtualizarPapelPermissaoDto,
   CriarPapelDto,
   ListarPapeisDto,
 } from './dto/papel.dto';
+import { BuscarPapelService } from './service/buscar-papel.service';
+import { CriarPapelService } from './service/criar-papel.service';
+import { DesvincularPermissaoPapelService } from './service/desvincular-permissao-papel.service';
+import { EditarPapelService } from './service/editar-papel.service';
+import { EditarVinculoPapelPermissaoService } from './service/editar-vinculo-papel-permissao.service';
+import { ListarPapeisService } from './service/listar-papeis.service';
+import { ListarPermissoesPapelService } from './service/listar-permissoes-papel.service';
+import { RemoverPapelService } from './service/remover-papel.service';
+import { VincularPermissaoPapelService } from './service/vincular-permissao-papel.service';
 
 @Injectable()
 export class PapelService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly criarService: CriarPapelService,
+    private readonly listarService: ListarPapeisService,
+    private readonly buscarService: BuscarPapelService,
+    private readonly editarService: EditarPapelService,
+    private readonly removerService: RemoverPapelService,
+    private readonly listarPermissoesService: ListarPermissoesPapelService,
+    private readonly vincularPermissaoService: VincularPermissaoPapelService,
+    private readonly editarVinculoService: EditarVinculoPapelPermissaoService,
+    private readonly desvincularPermissaoService: DesvincularPermissaoPapelService,
+  ) {}
+
   async criar(dto: CriarPapelDto) {
-    try {
-      return await this.prisma.papel.create({
-        data: {
-          codigo: dto.codigo.trim().toUpperCase(),
-          nome: dto.nome.trim(),
-          descricao: dto.descricao?.trim(),
-        },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')
-        throw new ConflictException('Código de papel já cadastrado.');
-      throw e;
-    }
+    return this.criarService.execute(dto);
   }
+
   async listar(query: ListarPapeisDto) {
-    const where = query.ativo === undefined ? {} : { ativo: query.ativo };
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.papel.findMany({
-        where,
-        orderBy: { codigo: 'asc' },
-        skip: (query.pagina - 1) * query.limite,
-        take: query.limite,
-      }),
-      this.prisma.papel.count({ where }),
-    ]);
-    return respostaPaginada(data, total, query.pagina, query.limite);
+    return this.listarService.execute(query);
   }
+
   async buscar(id: number) {
-    const papel = await this.prisma.papel.findUnique({ where: { id } });
-    if (!papel) throw new NotFoundException('Papel não encontrado.');
-    return papel;
+    return this.buscarService.execute(id);
   }
+
   async atualizar(id: number, dto: AtualizarPapelDto) {
-    await this.buscar(id);
-    try {
-      return await this.prisma.papel.update({
-        where: { id },
-        data: {
-          ...(dto.codigo !== undefined ? { codigo: dto.codigo.trim().toUpperCase() } : {}),
-          ...(dto.nome !== undefined ? { nome: dto.nome.trim() } : {}),
-          ...(dto.descricao !== undefined ? { descricao: dto.descricao.trim() } : {}),
-          ...(dto.ativo !== undefined ? { ativo: dto.ativo } : {}),
-        },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')
-        throw new ConflictException('Código de papel já cadastrado.');
-      throw e;
-    }
+    return this.editarService.execute(id, dto);
   }
+
   async remover(id: number) {
-    await this.buscar(id);
-    const [usuarios, vinculos] = await this.prisma.$transaction([
-      this.prisma.usuario.count({ where: { idPapel: id } }),
-      this.prisma.papelPermissao.count({ where: { idPapel: id } }),
-    ]);
-    if (usuarios || vinculos)
-      throw new ConflictException('Papel possui vínculos que impedem a exclusão.');
-    await this.prisma.papel.delete({ where: { id } });
+    return this.removerService.execute(id);
   }
+
   async listarPermissoes(idPapel: number) {
-    await this.buscar(idPapel);
-    return this.prisma.papelPermissao.findMany({
-      where: { idPapel },
-      include: { permissao: true },
-      orderBy: { idPermissao: 'asc' },
-    });
+    return this.listarPermissoesService.execute(idPapel);
   }
+
   async vincular(idPapel: number, idPermissao: number) {
-    await this.buscar(idPapel);
-    if (!(await this.prisma.permissao.findUnique({ where: { id: idPermissao } })))
-      throw new NotFoundException('Permissão não encontrada.');
-    try {
-      return await this.prisma.papelPermissao.create({ data: { idPapel, idPermissao } });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')
-        throw new ConflictException('Permissão já vinculada ao papel.');
-      throw e;
-    }
+    return this.vincularPermissaoService.execute(idPapel, idPermissao);
   }
+
   async atualizarVinculo(idPapel: number, idPermissao: number, dto: AtualizarPapelPermissaoDto) {
-    try {
-      return await this.prisma.papelPermissao.update({
-        where: { idPapel_idPermissao: { idPapel, idPermissao } },
-        data: dto,
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025')
-        throw new NotFoundException('Vínculo não encontrado.');
-      throw e;
-    }
+    return this.editarVinculoService.execute(idPapel, idPermissao, dto);
   }
+
   async desvincular(idPapel: number, idPermissao: number) {
-    try {
-      await this.prisma.papelPermissao.delete({
-        where: { idPapel_idPermissao: { idPapel, idPermissao } },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025')
-        throw new NotFoundException('Vínculo não encontrado.');
-      throw e;
-    }
+    return this.desvincularPermissaoService.execute(idPapel, idPermissao);
   }
 }

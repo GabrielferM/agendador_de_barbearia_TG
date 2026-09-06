@@ -10,9 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
 import { AtualizarPermissaoDto, CriarPermissaoDto, ListarPermissoesDto } from './dto/permissao.dto';
 import { PermissaoService } from './permissao.service';
 @ApiTags('Permissões')
+@ExigirPermissoes('GERENCIAR_ACESSOS')
 @Controller('permissoes')
 export class PermissaoController {
   constructor(private readonly service: PermissaoService) {}

@@ -1,5 +1,6 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { HealthService } from './health.service';
+import { Publico } from '../../common/auth/publico.decorator';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -9,6 +10,7 @@ import {
 
 @ApiTags('Health')
 @Controller('health')
+@Publico()
 export class HealthController {
   constructor(private readonly healthService: HealthService) {}
 

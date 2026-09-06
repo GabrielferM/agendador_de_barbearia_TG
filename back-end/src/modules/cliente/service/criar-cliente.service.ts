@@ -1,7 +1,6 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { CODIGOS_PAPEL } from '../../../common/constants/papeis';
-import { BCRYPT_SALT_ROUNDS } from '../../../common/constants/seguranca';
+import { SenhaService } from '../../../common/security/senha.service';
 import { normalizarCpf, normalizarEmail } from '../../../common/utils/documentos';
 import { semSenha } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -9,7 +8,10 @@ import { CriarClienteDto } from '../dto/cliente.dto';
 
 @Injectable()
 export class CriarClienteService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly senhas: SenhaService,
+  ) {}
 
   async execute(input: CriarClienteDto) {
     let cpf: string;
@@ -29,7 +31,7 @@ export class CriarClienteService {
       data: {
         nome: input.nome.trim(),
         email,
-        senhaHash: await bcrypt.hash(input.senha, BCRYPT_SALT_ROUNDS),
+        senhaHash: await this.senhas.gerarHash(input.senha),
         telefone: input.telefone?.trim(),
         idPapel: papel.id,
         cliente: {

@@ -10,9 +10,9 @@ export type AgendamentoControllerListarStatus = typeof AgendamentoControllerList
 
 
 export const AgendamentoControllerListarStatus = {
-  AGENDADO: 'AGENDADO',
+  PENDENTE: 'PENDENTE',
   CONFIRMADO: 'CONFIRMADO',
-  EM_ANDAMENTO: 'EM_ANDAMENTO',
+  EM_ATENDIMENTO: 'EM_ATENDIMENTO',
   CONCLUIDO: 'CONCLUIDO',
   CANCELADO: 'CANCELADO',
   NAO_COMPARECEU: 'NAO_COMPARECEU',

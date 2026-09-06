@@ -10,8 +10,13 @@ export interface CriarClienteDto {
   /** @minLength 2 */
   nome: string;
   email: string;
-  /** @minLength 8 */
+  /**
+     * @minLength 15
+     * @maxLength 128
+     */
   senha: string;
   cpf: string;
+  telefone?: string;
   dataNascimento?: string;
+  observacao?: string;
 }

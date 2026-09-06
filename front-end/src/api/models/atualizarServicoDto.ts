@@ -11,7 +11,7 @@ export interface AtualizarServicoDto {
   nome?: string;
   descricao?: string;
   /** @minimum 1 */
-  preco?: number;
+  precoBase?: number;
   /** @minimum 1 */
   duracaoMinutos?: number;
 }

@@ -24,6 +24,10 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import {
+  apiBaseUrl
+} from '../client';
+
 import type {
   AtualizarServicoDto,
   CriarServicoDto,
@@ -33,7 +37,10 @@ import type {
   ServicoRespostaDto
 } from '../models';
 
+import { httpClient } from '.././http-client';
 
+
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
@@ -86,13 +93,13 @@ export const getServicoControllerCriarUrl = () => {
 
 
 
-  return `/servicos`
+  return `${apiBaseUrl}/servicos`
 }
 
 /**
  * @summary Cria um serviço
  */
-export const servicoControllerCriar = async (criarServicoDto: CriarServicoDto, options?: RequestInit): Promise<servicoControllerCriarResponse> => {
+export const servicoControllerCriar = async (criarServicoDto: CriarServicoDto, options?: Parameters<typeof httpClient>[1]): Promise<servicoControllerCriarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -100,36 +107,29 @@ export const servicoControllerCriar = async (criarServicoDto: CriarServicoDto, o
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getServicoControllerCriarUrl(),
+return httpClient<servicoControllerCriarResponse>(getServicoControllerCriarUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(criarServicoDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: servicoControllerCriarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as servicoControllerCriarResponse
-}
+);}
 
 
 
 
 
 export const getServicoControllerCriarMutationOptions = <TError = ErroRespostaDto,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext> => {
 
 const mutationKey = ['servicoControllerCriar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -137,7 +137,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof servicoControllerCriar>>, ServicoControllerCriarMutationVariables> = (props) => {
           const {data} = props ?? {};
 
-          return  servicoControllerCriar(data,fetchOptions)
+          return  servicoControllerCriar(data,requestOptions)
         }
 
 
@@ -156,7 +156,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
  * @summary Cria um serviço
  */
 export const useServicoControllerCriar = <TError = ErroRespostaDto,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicoControllerCriar>>,
         TError,
@@ -194,7 +194,7 @@ export type servicoControllerListarResponseError = (servicoControllerListarRespo
 
 export type servicoControllerListarResponse = (servicoControllerListarResponseSuccess | servicoControllerListarResponseError)
 
-export const getServicoControllerListarUrl = (params: ServicoControllerListarParams,) => {
+export const getServicoControllerListarUrl = (params?: ServicoControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -206,29 +206,22 @@ export const getServicoControllerListarUrl = (params: ServicoControllerListarPar
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/servicos?${stringifiedParams}` : `/servicos`
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/servicos?${stringifiedParams}` : `${apiBaseUrl}/servicos`
 }
 
 /**
- * @summary Lista serviços paginados
+ * @summary Lista os serviços de forma paginada
  */
-export const servicoControllerListar = async (params: ServicoControllerListarParams, options?: RequestInit): Promise<servicoControllerListarResponse> => {
+export const servicoControllerListar = async (params?: ServicoControllerListarParams, options?: Parameters<typeof httpClient>[1]): Promise<servicoControllerListarResponse> => {
 
-  const res = await fetch(getServicoControllerListarUrl(params),
+  return httpClient<servicoControllerListarResponse>(getServicoControllerListarUrl(params),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: servicoControllerListarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as servicoControllerListarResponse
-}
+);}
 
 
 
@@ -236,21 +229,21 @@ export const servicoControllerListar = async (params: ServicoControllerListarPar
 
 export const getServicoControllerListarQueryKey = (params?: ServicoControllerListarParams,) => {
     return [
-    `/servicos`, ...(params ? [params] : [])
+    `${apiBaseUrl}/servicos`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getServicoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(params: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, fetch?: RequestInit}
+export const getServicoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getServicoControllerListarQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof servicoControllerListar>>> = ({ signal }) => servicoControllerListar(params, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof servicoControllerListar>>> = ({ signal }) => servicoControllerListar(params, { signal, ...requestOptions });
 
 
 
@@ -264,35 +257,35 @@ export type ServicoControllerListarQueryError = ErroRespostaDto
 
 
 export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
- params: ServicoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>> & Pick<
+ params: undefined |  ServicoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof servicoControllerListar>>,
           TError,
           Awaited<ReturnType<typeof servicoControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
- params: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>> & Pick<
+ params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof servicoControllerListar>>,
           TError,
           Awaited<ReturnType<typeof servicoControllerListar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
- params: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Lista serviços paginados
+ * @summary Lista os serviços de forma paginada
  */
 
 export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
- params: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, fetch?: RequestInit}
+ params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -342,29 +335,22 @@ export const getServicoControllerBuscarUrl = (id: number,) => {
 
 
 
-  return `/servicos/${id}`
+  return `${apiBaseUrl}/servicos/${id}`
 }
 
 /**
- * @summary Busca um serviço
+ * @summary Busca um serviço pelo identificador
  */
-export const servicoControllerBuscar = async (id: number, options?: RequestInit): Promise<servicoControllerBuscarResponse> => {
+export const servicoControllerBuscar = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<servicoControllerBuscarResponse> => {
 
-  const res = await fetch(getServicoControllerBuscarUrl(id),
+  return httpClient<servicoControllerBuscarResponse>(getServicoControllerBuscarUrl(id),
   {
     ...options,
     method: 'GET'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: servicoControllerBuscarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as servicoControllerBuscarResponse
-}
+);}
 
 
 
@@ -372,21 +358,21 @@ export const servicoControllerBuscar = async (id: number, options?: RequestInit)
 
 export const getServicoControllerBuscarQueryKey = (id: number,) => {
     return [
-    `/servicos/${id}`
+    `${apiBaseUrl}/servicos/${id}`
     ] as const;
     }
 
 
-export const getServicoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+export const getServicoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
-const {query: queryOptions, fetch: fetchOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getServicoControllerBuscarQueryKey(id);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof servicoControllerBuscar>>> = ({ signal }) => servicoControllerBuscar(id, { signal, ...fetchOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof servicoControllerBuscar>>> = ({ signal }) => servicoControllerBuscar(id, { signal, ...requestOptions });
 
 
 
@@ -406,7 +392,7 @@ export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof ser
           TError,
           Awaited<ReturnType<typeof servicoControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(
@@ -416,19 +402,19 @@ export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof ser
           TError,
           Awaited<ReturnType<typeof servicoControllerBuscar>>
         > , 'initialData'
-      >, fetch?: RequestInit}
+      >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Busca um serviço
+ * @summary Busca um serviço pelo identificador
  */
 
 export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(
- id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, fetch?: RequestInit}
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -478,14 +464,14 @@ export const getServicoControllerAtualizarUrl = (id: number,) => {
 
 
 
-  return `/servicos/${id}`
+  return `${apiBaseUrl}/servicos/${id}`
 }
 
 /**
- * @summary Atualiza um serviço
+ * @summary Atualiza um serviço pelo identificador
  */
 export const servicoControllerAtualizar = async (id: number,
-    atualizarServicoDto: AtualizarServicoDto, options?: RequestInit): Promise<servicoControllerAtualizarResponse> => {
+    atualizarServicoDto: AtualizarServicoDto, options?: Parameters<typeof httpClient>[1]): Promise<servicoControllerAtualizarResponse> => {
 
     const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
     if (!h) return {};
@@ -493,36 +479,29 @@ export const servicoControllerAtualizar = async (id: number,
     if (Array.isArray(h)) return Object.fromEntries(h);
     return h;
   };
-const res = await fetch(getServicoControllerAtualizarUrl(id),
+return httpClient<servicoControllerAtualizarResponse>(getServicoControllerAtualizarUrl(id),
   {
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
     body: JSON.stringify(atualizarServicoDto)
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: servicoControllerAtualizarResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as servicoControllerAtualizarResponse
-}
+);}
 
 
 
 
 
 export const getServicoControllerAtualizarMutationOptions = <TError = ErroRespostaDto,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext> => {
 
 const mutationKey = ['servicoControllerAtualizar'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -530,7 +509,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof servicoControllerAtualizar>>, ServicoControllerAtualizarMutationVariables> = (props) => {
           const {id,data} = props ?? {};
 
-          return  servicoControllerAtualizar(id,data,fetchOptions)
+          return  servicoControllerAtualizar(id,data,requestOptions)
         }
 
 
@@ -546,10 +525,10 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type ServicoControllerAtualizarMutationVariables = {id: number;data: AtualizarServicoDto}
 
     /**
- * @summary Atualiza um serviço
+ * @summary Atualiza um serviço pelo identificador
  */
 export const useServicoControllerAtualizar = <TError = ErroRespostaDto,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicoControllerAtualizar>>,
         TError,
@@ -558,9 +537,9 @@ export const useServicoControllerAtualizar = <TError = ErroRespostaDto,
       > => {
       return useMutation(getServicoControllerAtualizarMutationOptions(options), queryClient);
     }
-    export type servicoControllerRemoverResponse204 = {
+    export type servicoControllerRemoverResponse200 = {
   data: void
-  status: 204
+  status: 200
 }
 
 export type servicoControllerRemoverResponse400 = {
@@ -578,7 +557,7 @@ export type servicoControllerRemoverResponse409 = {
   status: 409
 }
 
-export type servicoControllerRemoverResponseSuccess = (servicoControllerRemoverResponse204) & {
+export type servicoControllerRemoverResponseSuccess = (servicoControllerRemoverResponse200) & {
   headers: Headers;
 };
 export type servicoControllerRemoverResponseError = (servicoControllerRemoverResponse400 | servicoControllerRemoverResponse404 | servicoControllerRemoverResponse409) & {
@@ -592,44 +571,37 @@ export const getServicoControllerRemoverUrl = (id: number,) => {
 
 
 
-  return `/servicos/${id}`
+  return `${apiBaseUrl}/servicos/${id}`
 }
 
 /**
- * @summary Remove um serviço e agendamentos vinculados
+ * @summary Remove um serviço pelo identificador
  */
-export const servicoControllerRemover = async (id: number, options?: RequestInit): Promise<servicoControllerRemoverResponse> => {
+export const servicoControllerRemover = async (id: number, options?: Parameters<typeof httpClient>[1]): Promise<servicoControllerRemoverResponse> => {
 
-  const res = await fetch(getServicoControllerRemoverUrl(id),
+  return httpClient<servicoControllerRemoverResponse>(getServicoControllerRemoverUrl(id),
   {
     ...options,
     method: 'DELETE'
 
 
   }
-)
-
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-  const data: servicoControllerRemoverResponse['data'] = body ? JSON.parse(body) : undefined
-  return { data, status: res.status, headers: res.headers } as servicoControllerRemoverResponse
-}
+);}
 
 
 
 
 
 export const getServicoControllerRemoverMutationOptions = <TError = ErroRespostaDto,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext> => {
 
 const mutationKey = ['servicoControllerRemover'];
-const {mutation: mutationOptions, fetch: fetchOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, fetch: undefined};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -637,7 +609,7 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof servicoControllerRemover>>, ServicoControllerRemoverMutationVariables> = (props) => {
           const {id} = props ?? {};
 
-          return  servicoControllerRemover(id,fetchOptions)
+          return  servicoControllerRemover(id,requestOptions)
         }
 
 
@@ -653,10 +625,10 @@ const {mutation: mutationOptions, fetch: fetchOptions} = options ?
     export type ServicoControllerRemoverMutationVariables = {id: number}
 
     /**
- * @summary Remove um serviço e agendamentos vinculados
+ * @summary Remove um serviço pelo identificador
  */
 export const useServicoControllerRemover = <TError = ErroRespostaDto,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext>, fetch?: RequestInit}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicoControllerRemover>>,
         TError,
