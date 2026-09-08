@@ -1,6 +1,6 @@
-import { Card } from '@heroui/react'
-import { FormularioLogin } from './components/FormularioLogin'
-import { IdentidadeLogin } from './components/IdentidadeLogin'
+import { Card } from "@heroui/react";
+import { FormularioLogin } from "./components/FormularioLogin";
+import { IdentidadeLogin } from "./components/IdentidadeLogin";
 
 export function Login() {
   return (
@@ -11,8 +11,12 @@ export function Login() {
         <section className="grid place-items-center px-6 py-10 sm:px-12 lg:px-16">
           <Card className="w-full max-w-md border-0 bg-surface shadow-none">
             <Card.Header className="block px-0 pb-8">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">Acesse sua conta</p>
-              <Card.Title className="mt-2 font-serif text-3xl font-bold">Entrar</Card.Title>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary">
+                Acesse sua conta
+              </p>
+              <Card.Title className="mt-2 font-serif text-3xl font-bold">
+                Entrar
+              </Card.Title>
               <Card.Description className="mt-3 leading-6 text-muted">
                 Use o e-mail e a senha cadastrados para continuar.
               </Card.Description>
@@ -24,5 +28,5 @@ export function Login() {
         </section>
       </div>
     </main>
-  )
+  );
 }

@@ -22,6 +22,8 @@ import { AutenticacaoGuard } from './common/auth/autenticacao.guard';
 import { CsrfGuard } from './common/auth/csrf.guard';
 import { PermissaoGuard } from './common/auth/permissao.guard';
 import { CatalogoPublicoModule } from './modules/publico/catalogo-publico.module';
+import { DashboardAdministradorModule } from './modules/dashboard-administrador/dashboard-administrador.module';
+import { DashboardBarbeiroModule } from './modules/dashboard-barbeiro/dashboard-barbeiro.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { CatalogoPublicoModule } from './modules/publico/catalogo-publico.module
     PrismaModule,
     AutenticacaoModule,
     CatalogoPublicoModule,
+    DashboardAdministradorModule,
+    DashboardBarbeiroModule,
     HealthModule,
     ServicoModule,
     AdministradorModule,

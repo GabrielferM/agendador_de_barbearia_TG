@@ -1,22 +1,26 @@
-import type { CredenciaisLogin } from '../types'
+import type { CredenciaisLogin } from "../types";
 
-export type ErrosFormularioLogin = Partial<Record<keyof CredenciaisLogin, string>>
+export type ErrosFormularioLogin = Partial<
+  Record<keyof CredenciaisLogin, string>
+>;
 
-const PADRAO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const PADRAO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function validarFormularioLogin(valores: CredenciaisLogin): ErrosFormularioLogin {
-  const erros: ErrosFormularioLogin = {}
-  const email = valores.email.trim()
+export function validarFormularioLogin(
+  valores: CredenciaisLogin,
+): ErrosFormularioLogin {
+  const erros: ErrosFormularioLogin = {};
+  const email = valores.email.trim();
 
   if (!email) {
-    erros.email = 'Informe seu e-mail.'
+    erros.email = "Informe seu e-mail.";
   } else if (!PADRAO_EMAIL.test(email)) {
-    erros.email = 'Informe um e-mail válido.'
+    erros.email = "Informe um e-mail válido.";
   }
 
   if (!valores.senha) {
-    erros.senha = 'Informe sua senha.'
+    erros.senha = "Informe sua senha.";
   }
 
-  return erros
+  return erros;
 }

@@ -1,16 +1,17 @@
-import { useCatalogoPublicoControllerBarbeiros } from '../../../api/catálogo-público/catálogo-público'
+import { useCatalogoPublicoControllerBarbeiros } from "../../../api/catálogo-público/catálogo-público";
 
 export interface BarbeiroInicio {
-  id: number
-  nome: string
-  descricao: string | null
-  fotoUrl: string | null
+  id: number;
+  nome: string;
+  descricao: string | null;
+  fotoUrl: string | null;
 }
 
 export function useBarbeirosInicio() {
-  const query = useCatalogoPublicoControllerBarbeiros({ pagina: 1, limite: 3 })
-  const resposta = query.data?.status === 200 ? query.data.data : undefined
-  const comErro = query.isError || (query.data !== undefined && query.data.status !== 200)
+  const query = useCatalogoPublicoControllerBarbeiros({ pagina: 1, limite: 3 });
+  const resposta = query.data?.status === 200 ? query.data.data : undefined;
+  const comErro =
+    query.isError || (query.data !== undefined && query.data.status !== 200);
 
   return {
     ...query,
@@ -21,5 +22,5 @@ export function useBarbeirosInicio() {
       descricao: barbeiro.descricao ?? null,
       fotoUrl: barbeiro.fotoUrl ?? null,
     })),
-  }
+  };
 }

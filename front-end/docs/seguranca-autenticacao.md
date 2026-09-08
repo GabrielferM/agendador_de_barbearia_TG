@@ -83,6 +83,13 @@ Referências: [NIST SP 800-63B](https://pages.nist.gov/800-63-4/sp800-63b.html) 
 - Todas as permissões devem ser verificadas no servidor em cada operação. O padrão deve ser negar acesso quando papel ou permissão não forem reconhecidos.
 - Registrar sucessos, falhas, bloqueios, recuperações e mudanças de privilégio sem gravar senhas, cookies ou tokens. Alertar sobre padrões anormais.
 
+### Dashboards protegidos
+
+- `GET /dashboard/administrador` exige `GERENCIAR_AGENDAMENTOS` e retorna somente métricas agregadas e resumos operacionais.
+- `GET /dashboard/barbeiro` exige `GERENCIAR_PROPRIA_AGENDA`; o barbeiro é identificado exclusivamente pela sessão e nunca por um identificador enviado pelo navegador.
+- As duas respostas usam `Cache-Control: no-store` e não incluem e-mail, telefone, observações internas, cookies ou tokens.
+- `/admin` e `/barbeiro` também verificam o papel no React para evitar a renderização indevida durante a navegação, mantendo o servidor como autoridade final.
+
 Referência: [OWASP Forgot Password Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html).
 
 ## Cabeçalhos e publicação

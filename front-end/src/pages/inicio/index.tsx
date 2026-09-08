@@ -1,33 +1,33 @@
-import { Barbeiro } from './components/Barbeiros'
-import { Cabecalho } from './components/Cabecalho'
-import { Diferenciais, type Diferencial } from './components/Diferenciais'
-import { Disponibilidade } from './components/Disponibilidade'
-import { Hero } from './components/Hero'
-import { Servicos } from './components/Servicos'
-import { useBarbeirosInicio } from './hooks/use-barbeiros-inicio'
-import { useServicosInicio } from './hooks/use-servicos-inicio'
+import { Barbeiro } from "./components/Barbeiros";
+import { Cabecalho } from "./components/Cabecalho";
+import { Diferenciais, type Diferencial } from "./components/Diferenciais";
+import { Disponibilidade } from "./components/Disponibilidade";
+import { Hero } from "./components/Hero";
+import { Servicos } from "./components/Servicos";
+import { useBarbeirosInicio } from "./hooks/use-barbeiros-inicio";
+import { useServicosInicio } from "./hooks/use-servicos-inicio";
 
 const diferenciais: Diferencial[] = [
   {
-    icone: '▣',
-    titulo: 'Agendamento online',
-    descricao: 'Rápido e prático',
+    icone: "▣",
+    titulo: "Agendamento online",
+    descricao: "Rápido e prático",
   },
   {
-    icone: '♙',
-    titulo: 'Profissionais',
-    descricao: 'Experientes e atentos',
+    icone: "♙",
+    titulo: "Profissionais",
+    descricao: "Experientes e atentos",
   },
   {
-    icone: '✦',
-    titulo: 'Ambiente',
-    descricao: 'Confortável e moderno',
+    icone: "✦",
+    titulo: "Ambiente",
+    descricao: "Confortável e moderno",
   },
-]
+];
 
 export function Inicio() {
-  const servicos = useServicosInicio()
-  const barbeiros = useBarbeirosInicio()
+  const servicos = useServicosInicio();
+  const barbeiros = useBarbeirosInicio();
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -50,5 +50,5 @@ export function Inicio() {
         <Disponibilidade />
       </div>
     </main>
-  )
+  );
 }

@@ -23,6 +23,8 @@ export function configurarSwagger(app: INestApplication, environment: Environmen
     .addTag('Comissões')
     .addTag('Serviços')
     .addTag('Agendamentos')
+    .addTag('Dashboard administrativo')
+    .addTag('Dashboard do barbeiro')
     .build();
   SwaggerModule.setup('api', app, SwaggerModule.createDocument(app, config), {
     raw: ['json', 'yaml'],

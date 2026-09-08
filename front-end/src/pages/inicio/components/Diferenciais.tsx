@@ -1,16 +1,19 @@
 export interface Diferencial {
-  icone: string
-  titulo: string
-  descricao: string
+  icone: string;
+  titulo: string;
+  descricao: string;
 }
 
 interface DiferenciaisProps {
-  itens: Diferencial[]
+  itens: Diferencial[];
 }
 
 export function Diferenciais({ itens }: DiferenciaisProps) {
   return (
-    <section aria-label="Diferenciais" className="grid gap-5 border-t border-secondary pt-7 sm:grid-cols-3 sm:gap-8">
+    <section
+      aria-label="Diferenciais"
+      className="grid gap-5 border-t border-secondary pt-7 sm:grid-cols-3 sm:gap-8"
+    >
       {itens.map((item) => (
         <article className="flex items-center gap-3" key={item.titulo}>
           <span
@@ -26,5 +29,5 @@ export function Diferenciais({ itens }: DiferenciaisProps) {
         </article>
       ))}
     </section>
-  )
+  );
 }

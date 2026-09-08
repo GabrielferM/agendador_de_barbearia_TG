@@ -4,7 +4,7 @@ import { defineConfig, env } from "prisma/config";
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
-    seed: "ts-node --esm --experimentalSpecifierResolution node prisma/seed/index.ts",
+    seed: "ts-node --transpile-only prisma/seed/index.ts",
     path: "prisma/migrations",
   },
   // A URL é usada pelos comandos Prisma Migrate, não pelo schema.

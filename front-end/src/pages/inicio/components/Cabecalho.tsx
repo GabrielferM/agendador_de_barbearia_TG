@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
 
-const itensNavegacao = ['Início', 'Serviços', 'Barbeiros', 'Sobre', 'Contato']
+const itensNavegacao = ["Início", "Serviços", "Barbeiros", "Sobre", "Contato"];
 
 export function Cabecalho() {
   return (
@@ -13,14 +13,19 @@ export function Cabecalho() {
           ✂
         </span>
         <span className="leading-none">
-          <strong className="block font-serif text-lg tracking-wide sm:text-xl">CORTE CERTO</strong>
+          <strong className="block font-serif text-lg tracking-wide sm:text-xl">
+            CORTE CERTO
+          </strong>
           <span className="block pt-1 text-[0.65rem] font-semibold tracking-[0.28em] text-secondary">
             BARBEARIA
           </span>
         </span>
       </div>
 
-      <nav aria-label="Navegação principal" className="hidden items-center gap-6 lg:flex">
+      <nav
+        aria-label="Navegação principal"
+        className="hidden items-center gap-6 lg:flex"
+      >
         {itensNavegacao.map((item) => (
           <button
             className="cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-white transition-opacity hover:opacity-75"
@@ -39,5 +44,5 @@ export function Cabecalho() {
         Agendar horário
       </Link>
     </header>
-  )
+  );
 }
