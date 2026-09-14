@@ -14,7 +14,7 @@ import type {
   IndicadorDashboardDto,
   PontoSerieDashboardDto,
   ServicoDashboardDto,
-} from '../dashboard-administrador/dto/dashboard-administrador-resposta.dto';
+} from '../../common/dto/dashboard-resposta.dto';
 
 const STATUS_VALIDOS = { not: StatusAgendamento.CANCELADO } as const;
 

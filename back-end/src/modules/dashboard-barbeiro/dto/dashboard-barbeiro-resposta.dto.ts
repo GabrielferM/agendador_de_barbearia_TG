@@ -4,7 +4,7 @@ import {
   IndicadorDashboardDto,
   PontoSerieDashboardDto,
   ServicoDashboardDto,
-} from '../../dashboard-administrador/dto/dashboard-administrador-resposta.dto';
+} from '../../../common/dto/dashboard-resposta.dto';
 
 export class DashboardBarbeiroRespostaDto {
   @ApiProperty() geradoEm!: string;

@@ -41,7 +41,7 @@ export function Cabecalho() {
         className="cursor-pointer rounded-lg border border-secondary bg-secondary px-4 py-3 text-xs font-bold text-foreground transition-colors hover:bg-surface sm:px-5"
         to="/login"
       >
-        Agendar horário
+        Login
       </Link>
     </header>
   );

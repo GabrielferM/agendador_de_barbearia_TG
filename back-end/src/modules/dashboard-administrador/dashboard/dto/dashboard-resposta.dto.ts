@@ -1,20 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-export class IndicadorDashboardDto {
-  @ApiProperty() valor!: number;
-  @ApiProperty() variacaoPercentual!: number;
-}
-
-export class PontoSerieDashboardDto {
-  @ApiProperty() data!: string;
-  @ApiProperty() valor!: number;
-}
-
-export class ServicoDashboardDto {
-  @ApiProperty() nome!: string;
-  @ApiProperty() quantidade!: number;
-  @ApiProperty() percentual!: number;
-}
+import {
+  AgendamentoResumoDashboardDto,
+  IndicadorDashboardDto,
+  PontoSerieDashboardDto,
+  ServicoDashboardDto,
+} from '../../../../common/dto/dashboard-resposta.dto';
 
 export class BarbeiroDesempenhoDashboardDto {
   @ApiProperty() id!: number;
@@ -22,16 +12,6 @@ export class BarbeiroDesempenhoDashboardDto {
   @ApiProperty({ nullable: true, required: false }) fotoUrl?: string | null;
   @ApiProperty() atendimentos!: number;
   @ApiProperty() receita!: number;
-}
-
-export class AgendamentoResumoDashboardDto {
-  @ApiProperty() id!: number;
-  @ApiProperty() inicio!: string;
-  @ApiProperty() cliente!: string;
-  @ApiProperty() barbeiro!: string;
-  @ApiProperty({ type: [String] }) servicos!: string[];
-  @ApiProperty() status!: string;
-  @ApiProperty() total!: number;
 }
 
 export class DashboardAdministradorRespostaDto {

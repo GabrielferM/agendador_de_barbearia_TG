@@ -1,30 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { StatusAgendamento } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { serializarResposta } from '../../common/utils/resposta';
+import type {
+  AgendamentoResumoDashboardDto,
+  IndicadorDashboardDto,
+  PontoSerieDashboardDto,
+  ServicoDashboardDto,
+} from '../../../../common/dto/dashboard-resposta.dto';
 import {
   adicionarDias,
   chaveDiaBarbearia,
   inicioDiaBarbearia,
   inicioMesBarbearia,
-} from '../../common/utils/periodo-dashboard';
-import type {
-  AgendamentoResumoDashboardDto,
-  BarbeiroDesempenhoDashboardDto,
-  IndicadorDashboardDto,
-  PontoSerieDashboardDto,
-  ServicoDashboardDto,
-} from './dto/dashboard-administrador-resposta.dto';
-
-const STATUS_VALIDOS = { not: StatusAgendamento.CANCELADO } as const;
-
-function variacao(atual: number, anterior: number) {
-  if (anterior === 0) return atual === 0 ? 0 : 100;
-  return Math.round(((atual - anterior) / anterior) * 100);
-}
+} from '../../../../common/utils/periodo-dashboard';
+import { serializarResposta } from '../../../../common/utils/resposta';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { STATUS_AGENDAMENTO_VALIDO } from '../constants/dashboard.constants';
+import type { BarbeiroDesempenho } from '../types/dashboard.types';
+import { calcularVariacao } from '../validator/variacao-dashboard.validator';
 
 @Injectable()
-export class DashboardAdministradorService {
+export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async obter() {
@@ -46,10 +41,10 @@ export class DashboardAdministradorService {
       atendimentosConcluidosNoMes,
     ] = await this.prisma.$transaction([
       this.prisma.agendamento.count({
-        where: { inicioPrevisto: { gte: hoje, lt: amanha }, status: STATUS_VALIDOS },
+        where: { inicioPrevisto: { gte: hoje, lt: amanha }, status: STATUS_AGENDAMENTO_VALIDO },
       }),
       this.prisma.agendamento.count({
-        where: { inicioPrevisto: { gte: ontem, lt: hoje }, status: STATUS_VALIDOS },
+        where: { inicioPrevisto: { gte: ontem, lt: hoje }, status: STATUS_AGENDAMENTO_VALIDO },
       }),
       this.prisma.agendamentoServico.findMany({
         where: {
@@ -102,16 +97,10 @@ export class DashboardAdministradorService {
       receitaPorDia.set(chave, (receitaPorDia.get(chave) ?? 0) + Number(item.subtotal));
     }
 
-    const receitaHoje =
-      [...receitaPorDia.entries()].find(
-        ([data]) => data === hoje.toISOString().slice(0, 10),
-      )?.[1] ?? 0;
-    const receitaOntem =
-      [...receitaPorDia.entries()].find(
-        ([data]) => data === ontem.toISOString().slice(0, 10),
-      )?.[1] ?? 0;
+    const chaveHoje = hoje.toISOString().slice(0, 10);
+    const chaveOntem = ontem.toISOString().slice(0, 10);
     const servicos = new Map<number, { nome: string; quantidade: number }>();
-    const barbeiros = new Map<number, BarbeiroDesempenhoDashboardDto>();
+    const barbeiros = new Map<number, BarbeiroDesempenho>();
 
     for (const atendimento of atendimentosConcluidosNoMes) {
       const atual = barbeiros.get(atendimento.idBarbeiro) ?? {
@@ -124,7 +113,10 @@ export class DashboardAdministradorService {
       atual.atendimentos += 1;
       for (const item of atendimento.servicos) {
         atual.receita += Number(item.subtotal);
-        const servico = servicos.get(item.servico.id) ?? { nome: item.servico.nome, quantidade: 0 };
+        const servico = servicos.get(item.servico.id) ?? {
+          nome: item.servico.nome,
+          quantidade: 0,
+        };
         servico.quantidade += 1;
         servicos.set(item.servico.id, servico);
       }
@@ -135,15 +127,18 @@ export class DashboardAdministradorService {
       (total, item) => total + item.quantidade,
       0,
     );
-    const resposta = {
+    return serializarResposta({
       geradoEm: agora.toISOString(),
       agendamentosHoje: {
         valor: agendamentosHoje,
-        variacaoPercentual: variacao(agendamentosHoje, agendamentosOntem),
+        variacaoPercentual: calcularVariacao(agendamentosHoje, agendamentosOntem),
       } satisfies IndicadorDashboardDto,
       receitaHoje: {
-        valor: receitaHoje,
-        variacaoPercentual: variacao(receitaHoje, receitaOntem),
+        valor: receitaPorDia.get(chaveHoje) ?? 0,
+        variacaoPercentual: calcularVariacao(
+          receitaPorDia.get(chaveHoje) ?? 0,
+          receitaPorDia.get(chaveOntem) ?? 0,
+        ),
       } satisfies IndicadorDashboardDto,
       clientesAtivos,
       novosClientesNoMes,
@@ -170,7 +165,6 @@ export class DashboardAdministradorService {
         status: item.status,
         total: item.servicos.reduce((total, servico) => total + Number(servico.subtotal), 0),
       })) satisfies AgendamentoResumoDashboardDto[],
-    };
-    return serializarResposta(resposta);
+    });
   }
 }

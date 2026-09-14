@@ -30,3 +30,8 @@ export function inicioMesBarbearia(data: Date) {
 export function chaveDiaBarbearia(data: Date) {
   return inicioDiaBarbearia(data).toISOString().slice(0, 10);
 }
+
+/** Converte datas de filtros sem deixar uma data ISO sem horário recuar um dia no fuso local. */
+export function dataConsultaBarbearia(valor: string) {
+  return new Date(/^\d{4}-\d{2}-\d{2}$/.test(valor) ? `${valor}T12:00:00-03:00` : valor);
+}

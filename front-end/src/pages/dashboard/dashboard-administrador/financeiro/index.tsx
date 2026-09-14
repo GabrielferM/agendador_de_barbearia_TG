@@ -12,12 +12,7 @@ import {
   TabelaComissoes,
   TabelaMovimentacoes,
 } from "./components/components";
-import {
-  comissoesMock,
-  fluxoFinanceiroMock,
-  formasPagamentoMock,
-  movimentacoesMock,
-} from "./dados-mock";
+import { comissoesMock, fluxoFinanceiroMock, formasPagamentoMock, movimentacoesMock } from "./mock/dados-mock";
 
 export function FinanceiroAdministrador() {
   const demonstracao = usarDadosMockados();

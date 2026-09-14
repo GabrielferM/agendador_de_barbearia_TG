@@ -1,12 +1,12 @@
 import { PERMISSOES_EXIGIDAS } from '../../common/auth/exigir-permissoes.decorator';
 import type { UsuarioAutenticado } from '../../common/auth/auth.types';
-import { DashboardAdministradorController } from '../dashboard-administrador/dashboard-administrador.controller';
+import { DashboardController } from '../dashboard-administrador/dashboard/controller/dashboard.controller';
 import { DashboardBarbeiroController } from './dashboard-barbeiro.controller';
 import { DashboardBarbeiroService } from './dashboard-barbeiro.service';
 
 describe('segurança dos dashboards', () => {
   it('exige a permissão administrativa no endpoint administrativo', () => {
-    expect(Reflect.getMetadata(PERMISSOES_EXIGIDAS, DashboardAdministradorController)).toEqual([
+    expect(Reflect.getMetadata(PERMISSOES_EXIGIDAS, DashboardController)).toEqual([
       'GERENCIAR_AGENDAMENTOS',
     ]);
   });
