@@ -32,6 +32,7 @@ import type {
   AtualizarServicoDto,
   CriarServicoDto,
   ErroRespostaDto,
+  LimiteRequisicoesRespostaDto,
   ListaServicosRespostaDto,
   ServicoControllerListarParams,
   ServicoRespostaDto
@@ -69,6 +70,16 @@ export type servicoControllerCriarResponse400 = {
   status: 400
 }
 
+export type servicoControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type servicoControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type servicoControllerCriarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -79,10 +90,15 @@ export type servicoControllerCriarResponse409 = {
   status: 409
 }
 
+export type servicoControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type servicoControllerCriarResponseSuccess = (servicoControllerCriarResponse201) & {
   headers: Headers;
 };
-export type servicoControllerCriarResponseError = (servicoControllerCriarResponse400 | servicoControllerCriarResponse404 | servicoControllerCriarResponse409) & {
+export type servicoControllerCriarResponseError = (servicoControllerCriarResponse400 | servicoControllerCriarResponse401 | servicoControllerCriarResponse403 | servicoControllerCriarResponse404 | servicoControllerCriarResponse409 | servicoControllerCriarResponse429) & {
   headers: Headers;
 };
 
@@ -120,7 +136,7 @@ return httpClient<servicoControllerCriarResponse>(getServicoControllerCriarUrl()
 
 
 
-export const getServicoControllerCriarMutationOptions = <TError = ErroRespostaDto,
+export const getServicoControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext> => {
 
@@ -149,13 +165,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ServicoControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof servicoControllerCriar>>>
     export type ServicoControllerCriarMutationBody = CriarServicoDto
-    export type ServicoControllerCriarMutationError = ErroRespostaDto
+    export type ServicoControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ServicoControllerCriarMutationVariables = {data: CriarServicoDto}
 
     /**
  * @summary Cria um serviço
  */
-export const useServicoControllerCriar = <TError = ErroRespostaDto,
+export const useServicoControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerCriar>>, TError,ServicoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicoControllerCriar>>,
@@ -175,6 +191,16 @@ export type servicoControllerListarResponse400 = {
   status: 400
 }
 
+export type servicoControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type servicoControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type servicoControllerListarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -185,10 +211,15 @@ export type servicoControllerListarResponse409 = {
   status: 409
 }
 
+export type servicoControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type servicoControllerListarResponseSuccess = (servicoControllerListarResponse200) & {
   headers: Headers;
 };
-export type servicoControllerListarResponseError = (servicoControllerListarResponse400 | servicoControllerListarResponse404 | servicoControllerListarResponse409) & {
+export type servicoControllerListarResponseError = (servicoControllerListarResponse400 | servicoControllerListarResponse401 | servicoControllerListarResponse403 | servicoControllerListarResponse404 | servicoControllerListarResponse409 | servicoControllerListarResponse429) & {
   headers: Headers;
 };
 
@@ -234,7 +265,7 @@ export const getServicoControllerListarQueryKey = (params?: ServicoControllerLis
     }
 
 
-export const getServicoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getServicoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -253,10 +284,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ServicoControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof servicoControllerListar>>>
-export type ServicoControllerListarQueryError = ErroRespostaDto
+export type ServicoControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
+export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  ServicoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof servicoControllerListar>>,
@@ -266,7 +297,7 @@ export function useServicoControllerListar<TData = Awaited<ReturnType<typeof ser
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
+export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof servicoControllerListar>>,
@@ -276,7 +307,7 @@ export function useServicoControllerListar<TData = Awaited<ReturnType<typeof ser
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
+export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -284,7 +315,7 @@ export function useServicoControllerListar<TData = Awaited<ReturnType<typeof ser
  * @summary Lista os serviços de forma paginada
  */
 
-export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto>(
+export function useServicoControllerListar<TData = Awaited<ReturnType<typeof servicoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ServicoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -311,6 +342,16 @@ export type servicoControllerBuscarResponse400 = {
   status: 400
 }
 
+export type servicoControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type servicoControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type servicoControllerBuscarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -321,10 +362,15 @@ export type servicoControllerBuscarResponse409 = {
   status: 409
 }
 
+export type servicoControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type servicoControllerBuscarResponseSuccess = (servicoControllerBuscarResponse200) & {
   headers: Headers;
 };
-export type servicoControllerBuscarResponseError = (servicoControllerBuscarResponse400 | servicoControllerBuscarResponse404 | servicoControllerBuscarResponse409) & {
+export type servicoControllerBuscarResponseError = (servicoControllerBuscarResponse400 | servicoControllerBuscarResponse401 | servicoControllerBuscarResponse403 | servicoControllerBuscarResponse404 | servicoControllerBuscarResponse409 | servicoControllerBuscarResponse429) & {
   headers: Headers;
 };
 
@@ -363,7 +409,7 @@ export const getServicoControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getServicoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getServicoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -382,10 +428,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ServicoControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof servicoControllerBuscar>>>
-export type ServicoControllerBuscarQueryError = ErroRespostaDto
+export type ServicoControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(
+export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof servicoControllerBuscar>>,
@@ -395,7 +441,7 @@ export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof ser
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(
+export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof servicoControllerBuscar>>,
@@ -405,7 +451,7 @@ export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof ser
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(
+export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -413,7 +459,7 @@ export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof ser
  * @summary Busca um serviço pelo identificador
  */
 
-export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto>(
+export function useServicoControllerBuscar<TData = Awaited<ReturnType<typeof servicoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof servicoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -440,6 +486,16 @@ export type servicoControllerAtualizarResponse400 = {
   status: 400
 }
 
+export type servicoControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type servicoControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type servicoControllerAtualizarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -450,10 +506,15 @@ export type servicoControllerAtualizarResponse409 = {
   status: 409
 }
 
+export type servicoControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type servicoControllerAtualizarResponseSuccess = (servicoControllerAtualizarResponse200) & {
   headers: Headers;
 };
-export type servicoControllerAtualizarResponseError = (servicoControllerAtualizarResponse400 | servicoControllerAtualizarResponse404 | servicoControllerAtualizarResponse409) & {
+export type servicoControllerAtualizarResponseError = (servicoControllerAtualizarResponse400 | servicoControllerAtualizarResponse401 | servicoControllerAtualizarResponse403 | servicoControllerAtualizarResponse404 | servicoControllerAtualizarResponse409 | servicoControllerAtualizarResponse429) & {
   headers: Headers;
 };
 
@@ -492,7 +553,7 @@ return httpClient<servicoControllerAtualizarResponse>(getServicoControllerAtuali
 
 
 
-export const getServicoControllerAtualizarMutationOptions = <TError = ErroRespostaDto,
+export const getServicoControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext> => {
 
@@ -521,13 +582,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ServicoControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof servicoControllerAtualizar>>>
     export type ServicoControllerAtualizarMutationBody = AtualizarServicoDto
-    export type ServicoControllerAtualizarMutationError = ErroRespostaDto
+    export type ServicoControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ServicoControllerAtualizarMutationVariables = {id: number;data: AtualizarServicoDto}
 
     /**
  * @summary Atualiza um serviço pelo identificador
  */
-export const useServicoControllerAtualizar = <TError = ErroRespostaDto,
+export const useServicoControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerAtualizar>>, TError,ServicoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicoControllerAtualizar>>,
@@ -547,6 +608,16 @@ export type servicoControllerRemoverResponse400 = {
   status: 400
 }
 
+export type servicoControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type servicoControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type servicoControllerRemoverResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -557,10 +628,15 @@ export type servicoControllerRemoverResponse409 = {
   status: 409
 }
 
+export type servicoControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type servicoControllerRemoverResponseSuccess = (servicoControllerRemoverResponse200) & {
   headers: Headers;
 };
-export type servicoControllerRemoverResponseError = (servicoControllerRemoverResponse400 | servicoControllerRemoverResponse404 | servicoControllerRemoverResponse409) & {
+export type servicoControllerRemoverResponseError = (servicoControllerRemoverResponse400 | servicoControllerRemoverResponse401 | servicoControllerRemoverResponse403 | servicoControllerRemoverResponse404 | servicoControllerRemoverResponse409 | servicoControllerRemoverResponse429) & {
   headers: Headers;
 };
 
@@ -592,7 +668,7 @@ export const servicoControllerRemover = async (id: number, options?: Parameters<
 
 
 
-export const getServicoControllerRemoverMutationOptions = <TError = ErroRespostaDto,
+export const getServicoControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext> => {
 
@@ -621,13 +697,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ServicoControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof servicoControllerRemover>>>
 
-    export type ServicoControllerRemoverMutationError = ErroRespostaDto
+    export type ServicoControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ServicoControllerRemoverMutationVariables = {id: number}
 
     /**
  * @summary Remove um serviço pelo identificador
  */
-export const useServicoControllerRemover = <TError = ErroRespostaDto,
+export const useServicoControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof servicoControllerRemover>>, TError,ServicoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof servicoControllerRemover>>,

@@ -1,107 +1,59 @@
 # Segurança da autenticação
 
-Este documento descreve as proteções implementadas no React e no NestJS. A proteção de rota no React melhora a experiência; a autoridade final continua sendo o back-end.
+Este é o guia compartilhado de sessão e autenticação. Distingue o que existe das regras para evolução. A navegação protegida no React melhora a experiência; a autorização efetiva pertence ao backend.
 
-## Contrato implementado
+## Implementado: contrato de login
 
-O formulário envia `POST /auth/login` com JSON no formato abaixo e inclui cookies com `credentials: "include"`:
-
-```json
-{
-  "email": "pessoa@exemplo.com",
-  "senha": "senha informada sem alteração"
-}
-```
-
-Uma resposta de sucesso deve usar o status `200` e este formato:
+O frontend envia `POST /auth/login`, JSON e cookies:
 
 ```json
-{
-  "usuario": {
-    "id": 1,
-    "nome": "Nome da pessoa",
-    "email": "pessoa@exemplo.com",
-    "papel": "CLIENTE",
-    "permissoes": ["CRIAR_AGENDAMENTO"]
-  }
-}
+{"email":"pessoa@exemplo.com","senha":"senha informada sem alteração"}
 ```
 
-`papel` aceita `CLIENTE`, `BARBEIRO` ou `ADMINISTRADOR`. Respostas `401` e `403` geram a mesma mensagem genérica. A resposta `429` pode fornecer `Retry-After`. Outros erros e respostas fora do contrato são apresentados como indisponibilidade, sem repassar detalhes internos.
+A resposta esperada é 200:
 
-O front-end:
+```json
+{"usuario":{"id":1,"nome":"Nome da pessoa","email":"pessoa@exemplo.com","papel":"CLIENTE","permissoes":["CRIAR_AGENDAMENTO"]}}
+```
 
-- não persiste senha, identificador de sessão, JWT ou refresh token em `localStorage` ou `sessionStorage`;
-- não registra credenciais no console;
-- altera somente os espaços externos do e-mail e preserva a senha exatamente como digitada;
-- impede envios duplicados enquanto a requisição está pendente;
-- usa `autocomplete="username"` e `autocomplete="current-password"` para permitir gerenciadores de senha;
-- não usa as rotas provisórias como mecanismo de autorização.
+O frontend reconhece CLIENTE, BARBEIRO e ADMINISTRADOR. O modelo Papel no banco usa código textual. O [serviço de login do frontend](../src/pages/login/services/login-api.ts) remove espaços externos do e-mail, preserva a senha, traduz 401/403 para a mesma mensagem e interpreta Retry-After em 429. O backend normaliza o e-mail e exige JSON; o [controller](../../back-end/src/modules/autenticacao/autenticacao.controller.ts) verifica Origin no login e dispensa sua ausência somente fora de produção.
 
-O cliente HTTP é gerado pelo Orval. O mutator comum envia cookies em todas as chamadas e lê somente o cookie CSRF para operações mutáveis. A sessão é restaurada por `GET /auth/me`, mantida apenas em memória e encerrada por `POST /auth/logout`.
+A sessão é restaurada por GET /auth/me e o logout solicitado pelo usuário chama POST /auth/logout. O [contexto](../src/auth/contexto-autenticacao.tsx) mantém usuário em memória e não armazena token em localStorage/sessionStorage. Logout, expiração e troca de usuário cancelam consultas em andamento e limpam QueryCache e MutationCache. Um logout remoto sem sucesso ainda encerra o estado local e produz um aviso na tela de login de que a revogação no servidor não foi confirmada.
 
-## Sessão e transporte
+## Implementado: sessão, cookies e CSRF
 
-- Servir toda a aplicação por HTTPS e ativar HSTS em produção.
-- A sessão opaca é persistida no PostgreSQL somente como SHA-256 do token. Em produção usa `__Host-sessao`; em desenvolvimento, `sessao`.
-- O cookie possui `HttpOnly`, `Secure` em produção, `SameSite=Lax`, `Path=/`, sem `Domain` e duração máxima de sete dias.
-- Nunca retornar o identificador da sessão no corpo nem disponibilizá-lo ao JavaScript.
-- Gerar um novo identificador após o login e qualquer mudança de privilégio, evitando fixação de sessão.
-- A sessão expira após oito horas sem uso ou sete dias desde sua criação. `ultimoUso` é atualizado no máximo uma vez a cada cinco minutos; logout revoga a sessão.
-- Retornar `Cache-Control: no-store` em respostas de autenticação e conteúdo privado.
+- [SessaoService](../../back-end/src/modules/autenticacao/service/sessao.service.ts) gera token aleatório, persiste apenas SHA-256 e verifica usuário/papel ativo, expiração e revogação.
+- Duração absoluta de sete dias, inatividade máxima de oito horas e atualização de último uso a cada cinco minutos, conforme [constantes](../../back-end/src/common/constants/seguranca.ts).
+- [CookieService](../../back-end/src/common/security/cookie.service.ts) usa `sessao` no desenvolvimento e `__Host-sessao` em produção; HttpOnly, SameSite=Lax, Path=/, sem Domain e Secure em produção. O cookie CSRF é legível por JavaScript.
+- [CsrfService](../../back-end/src/common/security/csrf.service.ts) assina o token com HMAC vinculado à sessão. O guard compara cookie, X-CSRF-Token e assinatura nas operações POST/PUT/PATCH/DELETE, salvo isenção explícita.
+- GET /auth/csrf emite token para a sessão atual. O mutator lê o cookie existente; não há renovação automática universal seguida de repetição de requisições.
+- CORS permite credenciais; em produção usa a lista configurada, fora de produção aceita origens localhost conforme [environment.ts](../../back-end/src/config/environment.ts).
 
-Referência: [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+A verificação explícita de Origin está no login. O guard CSRF atual não valida Origin/Referer em todas as operações mutáveis. Cookies sem Domain e leitura do CSRF pelo frontend exigem atenção ao desenho de hospedagem; não assuma que qualquer combinação de domínios funciona apenas habilitando CORS.
 
-## CORS e CSRF
+## Implementado: senhas, permissões e transporte
 
-O NestJS habilita credenciais apenas para origens configuradas. O CSRF usa double-submit assinado por HMAC e vinculado à sessão: o cookie legível precisa coincidir com `X-CSRF-Token` e ter assinatura válida.
+Novos hashes usam Argon2id, 19 MiB, duas iterações e paralelismo 1. Bcrypt com prefixos `$2a$`/`$2b$` é aceito e migrado após login correto. DTOs de cliente, barbeiro e administrador usam mínimo de 15 e máximo de 128 caracteres para novas senhas. Não há lista de senhas comprometidas implementada nesse fluxo.
 
-- Validar `Origin` e, como defesa adicional, `Referer` nas operações mutáveis.
-- Adotar token CSRF sincronizado ou double-submit assinado para requisições que alteram estado.
-- Tratar `SameSite` como defesa adicional, não como substituto universal do controle CSRF.
-- Não permitir que rotas `GET`, `HEAD` ou `OPTIONS` modifiquem dados.
+O [LoginService](../../back-end/src/modules/autenticacao/service/login.service.ts) usa hash fictício para usuário inexistente, mensagem genérica e limite por e-mail de cinco falhas na janela de quinze minutos, armazenado em memória do processo. Há também throttling Nest global e de login. Isso não equivale a um controle distribuído entre várias instâncias.
 
-Referência: [OWASP Cross-Site Request Forgery Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
+Guards globais verificam sessão e permissões; a fachada de agendamentos aplica regras de propriedade. Dashboards exigem as permissões correspondentes; o painel do barbeiro obtém a identidade da sessão. Endpoints de autenticação e dashboards definem Cache-Control: no-store; não há aqui garantia universal para toda resposta privada.
 
-## Senhas e proteção contra abuso
+[main.ts](../../back-end/src/main.ts) usa Helmet; a CSP é desabilitada fora de produção. Configuração de HTTPS, proxy e hospedagem do frontend não é comprovada pela presença desse middleware.
 
-Novas senhas usam Argon2id com 19 MiB, duas iterações e paralelismo 1. Hashes bcrypt `$2a$` e `$2b$` continuam válidos temporariamente e são migrados para Argon2id após um login correto.
+## Regra para novas alterações
 
-- Para senha usada como fator único, adotar no cadastro um mínimo de 15 caracteres e aceitar ao menos 64 caracteres, inclusive espaços e Unicode.
-- Não exigir combinações arbitrárias de maiúsculas, números e símbolos, nem trocas periódicas sem indício de comprometimento.
-- Comparar novas senhas com uma lista de valores comuns e comprometidos.
-- Aplicar limites independentes por conta e por origem/IP, com atraso progressivo. Controles de bot devem ser acionados por risco para não bloquear indiscriminadamente pessoas legítimas.
-- Manter a mesma mensagem, código HTTP e comportamento observável para e-mail inexistente, senha incorreta, conta inativa ou bloqueada, reduzindo enumeração de usuários.
-- Oferecer MFA e, preferencialmente, passkeys/WebAuthn para administradores e equipe.
+- Nunca retornar ou registrar senha, hash, token de sessão, cookie ou segredo. Não persistir credenciais no navegador.
+- Manter autenticação e autorização no servidor para cada operação; verificar propriedade quando necessário, além da permissão geral.
+- Preservar senha exatamente como digitada e permitir gerenciadores de senha; impedir envios duplicados.
+- Manter mensagens de login genéricas, inclusive para conta inexistente, inativa ou bloqueada.
+- Não introduzir operações de negócio mutáveis em GET/HEAD/OPTIONS; isso não exclui atualização interna do último uso de sessão.
+- Validar HTTPS, cookies, CORS, CSP e fallback da SPA ao preparar publicação. SameSite é defesa adicional, não substitui CSRF.
 
-Referências: [NIST SP 800-63B](https://pages.nist.gov/800-63-4/sp800-63b.html) e [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html).
+## Melhorias pendentes
 
-## Recuperação, autorização e auditoria
+Recuperação de senha e cadastro público ainda são telas em construção. MFA/passkeys, lista de senhas comprometidas, auditoria centralizada, limites distribuídos, rotação/revogação coordenada após mudanças de privilégios e validação adicional de Origin/Referer são trabalhos separados. Não são controles garantidos por esta documentação.
 
-- A recuperação de senha deve sempre responder de forma genérica e em tempo semelhante, exista ou não uma conta para o e-mail.
-- Tokens de recuperação devem ser criptograficamente aleatórios, armazenados de forma segura, ter expiração curta e aceitar um único uso.
-- Todas as permissões devem ser verificadas no servidor em cada operação. O padrão deve ser negar acesso quando papel ou permissão não forem reconhecidos.
-- Registrar sucessos, falhas, bloqueios, recuperações e mudanças de privilégio sem gravar senhas, cookies ou tokens. Alertar sobre padrões anormais.
+## Referências
 
-### Dashboards protegidos
-
-- `GET /dashboard/administrador` exige `GERENCIAR_AGENDAMENTOS` e retorna somente métricas agregadas e resumos operacionais.
-- `GET /dashboard/barbeiro` exige `GERENCIAR_PROPRIA_AGENDA`; o barbeiro é identificado exclusivamente pela sessão e nunca por um identificador enviado pelo navegador.
-- As duas respostas usam `Cache-Control: no-store` e não incluem e-mail, telefone, observações internas, cookies ou tokens.
-- `/admin` e `/barbeiro` também verificam o papel no React para evitar a renderização indevida durante a navegação, mantendo o servidor como autoridade final.
-
-Referência: [OWASP Forgot Password Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html).
-
-## Cabeçalhos e publicação
-
-Configurar no proxy ou no NestJS:
-
-- `Content-Security-Policy`, começando restritiva e liberando somente origens necessárias;
-- `frame-ancestors 'none'` ou política equivalente contra clickjacking;
-- `X-Content-Type-Options: nosniff`;
-- `Referrer-Policy: strict-origin-when-cross-origin` ou mais restritiva;
-- `Strict-Transport-Security` somente depois que HTTPS estiver correto em todos os subdomínios afetados.
-
-O servidor que hospedar o front-end também precisa reescrever rotas da SPA, como `/login`, para `index.html`.
-
-Referência: [OWASP HTTP Headers Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html).
+Fontes para orientar evolução, sem substituir a evidência de implementação acima: [OWASP Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html), [CSRF Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), [Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html) e [HTTP Headers](https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html).

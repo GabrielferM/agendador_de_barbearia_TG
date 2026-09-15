@@ -152,8 +152,11 @@ export function DashboardLayout({
           className="mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-white/10 lg:mt-auto"
           type="button"
           onClick={async () => {
-            await sair();
-            navigate("/login", { replace: true });
+            const confirmado = await sair();
+            navigate("/login", {
+              replace: true,
+              state: confirmado ? undefined : { logoutNaoConfirmado: true },
+            });
           }}
         >
           <Icone nome="sair" />

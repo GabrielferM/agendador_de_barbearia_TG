@@ -31,7 +31,9 @@ import {
 import type {
   AtualizarClienteDto,
   ClienteControllerListarParams,
-  CriarClienteDto
+  CriarClienteDto,
+  ErroRespostaDto,
+  LimiteRequisicoesRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -61,12 +63,44 @@ export type clienteControllerCriarResponse201 = {
   status: 201
 }
 
+export type clienteControllerCriarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type clienteControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type clienteControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type clienteControllerCriarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type clienteControllerCriarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type clienteControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type clienteControllerCriarResponseSuccess = (clienteControllerCriarResponse201) & {
   headers: Headers;
 };
-;
+export type clienteControllerCriarResponseError = (clienteControllerCriarResponse400 | clienteControllerCriarResponse401 | clienteControllerCriarResponse403 | clienteControllerCriarResponse404 | clienteControllerCriarResponse409 | clienteControllerCriarResponse429) & {
+  headers: Headers;
+};
 
-export type clienteControllerCriarResponse = (clienteControllerCriarResponseSuccess)
+export type clienteControllerCriarResponse = (clienteControllerCriarResponseSuccess | clienteControllerCriarResponseError)
 
 export const getClienteControllerCriarUrl = () => {
 
@@ -97,7 +131,7 @@ return httpClient<clienteControllerCriarResponse>(getClienteControllerCriarUrl()
 
 
 
-export const getClienteControllerCriarMutationOptions = <TError = unknown,
+export const getClienteControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext> => {
 
@@ -126,10 +160,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ClienteControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof clienteControllerCriar>>>
     export type ClienteControllerCriarMutationBody = CriarClienteDto
-    export type ClienteControllerCriarMutationError = unknown
+    export type ClienteControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ClienteControllerCriarMutationVariables = {data: CriarClienteDto}
 
-    export const useClienteControllerCriar = <TError = unknown,
+    export const useClienteControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerCriar>>, TError,ClienteControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof clienteControllerCriar>>,
@@ -144,12 +178,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type clienteControllerListarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type clienteControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type clienteControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type clienteControllerListarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type clienteControllerListarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type clienteControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type clienteControllerListarResponseSuccess = (clienteControllerListarResponse200) & {
   headers: Headers;
 };
-;
+export type clienteControllerListarResponseError = (clienteControllerListarResponse400 | clienteControllerListarResponse401 | clienteControllerListarResponse403 | clienteControllerListarResponse404 | clienteControllerListarResponse409 | clienteControllerListarResponse429) & {
+  headers: Headers;
+};
 
-export type clienteControllerListarResponse = (clienteControllerListarResponseSuccess)
+export type clienteControllerListarResponse = (clienteControllerListarResponseSuccess | clienteControllerListarResponseError)
 
 export const getClienteControllerListarUrl = (params?: ClienteControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -188,7 +254,7 @@ export const getClienteControllerListarQueryKey = (params?: ClienteControllerLis
     }
 
 
-export const getClienteControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getClienteControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -207,10 +273,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ClienteControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof clienteControllerListar>>>
-export type ClienteControllerListarQueryError = unknown
+export type ClienteControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
+export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  ClienteControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof clienteControllerListar>>,
@@ -220,7 +286,7 @@ export function useClienteControllerListar<TData = Awaited<ReturnType<typeof cli
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
+export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof clienteControllerListar>>,
@@ -230,12 +296,12 @@ export function useClienteControllerListar<TData = Awaited<ReturnType<typeof cli
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
+export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = unknown>(
+export function useClienteControllerListar<TData = Awaited<ReturnType<typeof clienteControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ClienteControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -257,12 +323,44 @@ export type clienteControllerBuscarResponse200 = {
   status: 200
 }
 
+export type clienteControllerBuscarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type clienteControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type clienteControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type clienteControllerBuscarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type clienteControllerBuscarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type clienteControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type clienteControllerBuscarResponseSuccess = (clienteControllerBuscarResponse200) & {
   headers: Headers;
 };
-;
+export type clienteControllerBuscarResponseError = (clienteControllerBuscarResponse400 | clienteControllerBuscarResponse401 | clienteControllerBuscarResponse403 | clienteControllerBuscarResponse404 | clienteControllerBuscarResponse409 | clienteControllerBuscarResponse429) & {
+  headers: Headers;
+};
 
-export type clienteControllerBuscarResponse = (clienteControllerBuscarResponseSuccess)
+export type clienteControllerBuscarResponse = (clienteControllerBuscarResponseSuccess | clienteControllerBuscarResponseError)
 
 export const getClienteControllerBuscarUrl = (id: number,) => {
 
@@ -294,7 +392,7 @@ export const getClienteControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getClienteControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getClienteControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -313,10 +411,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ClienteControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof clienteControllerBuscar>>>
-export type ClienteControllerBuscarQueryError = unknown
+export type ClienteControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(
+export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof clienteControllerBuscar>>,
@@ -326,7 +424,7 @@ export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof cli
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(
+export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof clienteControllerBuscar>>,
@@ -336,12 +434,12 @@ export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof cli
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(
+export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = unknown>(
+export function useClienteControllerBuscar<TData = Awaited<ReturnType<typeof clienteControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof clienteControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -363,12 +461,44 @@ export type clienteControllerAtualizarResponse200 = {
   status: 200
 }
 
+export type clienteControllerAtualizarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type clienteControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type clienteControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type clienteControllerAtualizarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type clienteControllerAtualizarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type clienteControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type clienteControllerAtualizarResponseSuccess = (clienteControllerAtualizarResponse200) & {
   headers: Headers;
 };
-;
+export type clienteControllerAtualizarResponseError = (clienteControllerAtualizarResponse400 | clienteControllerAtualizarResponse401 | clienteControllerAtualizarResponse403 | clienteControllerAtualizarResponse404 | clienteControllerAtualizarResponse409 | clienteControllerAtualizarResponse429) & {
+  headers: Headers;
+};
 
-export type clienteControllerAtualizarResponse = (clienteControllerAtualizarResponseSuccess)
+export type clienteControllerAtualizarResponse = (clienteControllerAtualizarResponseSuccess | clienteControllerAtualizarResponseError)
 
 export const getClienteControllerAtualizarUrl = (id: number,) => {
 
@@ -400,7 +530,7 @@ return httpClient<clienteControllerAtualizarResponse>(getClienteControllerAtuali
 
 
 
-export const getClienteControllerAtualizarMutationOptions = <TError = unknown,
+export const getClienteControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext> => {
 
@@ -429,10 +559,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ClienteControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof clienteControllerAtualizar>>>
     export type ClienteControllerAtualizarMutationBody = AtualizarClienteDto
-    export type ClienteControllerAtualizarMutationError = unknown
+    export type ClienteControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ClienteControllerAtualizarMutationVariables = {id: number;data: AtualizarClienteDto}
 
-    export const useClienteControllerAtualizar = <TError = unknown,
+    export const useClienteControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerAtualizar>>, TError,ClienteControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof clienteControllerAtualizar>>,
@@ -447,12 +577,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type clienteControllerRemoverResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type clienteControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type clienteControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type clienteControllerRemoverResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type clienteControllerRemoverResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type clienteControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type clienteControllerRemoverResponseSuccess = (clienteControllerRemoverResponse200) & {
   headers: Headers;
 };
-;
+export type clienteControllerRemoverResponseError = (clienteControllerRemoverResponse400 | clienteControllerRemoverResponse401 | clienteControllerRemoverResponse403 | clienteControllerRemoverResponse404 | clienteControllerRemoverResponse409 | clienteControllerRemoverResponse429) & {
+  headers: Headers;
+};
 
-export type clienteControllerRemoverResponse = (clienteControllerRemoverResponseSuccess)
+export type clienteControllerRemoverResponse = (clienteControllerRemoverResponseSuccess | clienteControllerRemoverResponseError)
 
 export const getClienteControllerRemoverUrl = (id: number,) => {
 
@@ -477,7 +639,7 @@ export const clienteControllerRemover = async (id: number, options?: Parameters<
 
 
 
-export const getClienteControllerRemoverMutationOptions = <TError = unknown,
+export const getClienteControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext> => {
 
@@ -506,10 +668,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ClienteControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof clienteControllerRemover>>>
 
-    export type ClienteControllerRemoverMutationError = unknown
+    export type ClienteControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ClienteControllerRemoverMutationVariables = {id: number}
 
-    export const useClienteControllerRemover = <TError = unknown,
+    export const useClienteControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clienteControllerRemover>>, TError,ClienteControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof clienteControllerRemover>>,

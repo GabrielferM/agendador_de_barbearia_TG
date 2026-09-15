@@ -6,7 +6,11 @@ import { ItemAgendamentoDto } from '../dto/agendamento.dto';
 @Injectable()
 export class PrepararItensAgendamentoService {
   constructor(private readonly prisma: PrismaService) {}
-  async execute(itens?: ItemAgendamentoDto[], servicoIds?: number[]) {
+  async execute(
+    itens?: ItemAgendamentoDto[],
+    servicoIds?: number[],
+    cliente: Prisma.TransactionClient | PrismaService = this.prisma,
+  ) {
     if (itens && servicoIds)
       throw new BadRequestException('Informe itens detalhados ou servicoIds, não ambos.');
     const origem =
@@ -14,7 +18,7 @@ export class PrepararItensAgendamentoService {
     if (!origem?.length) throw new BadRequestException('Informe ao menos um serviço.');
     if (new Set(origem.map((item) => item.idServico)).size !== origem.length)
       throw new BadRequestException('Serviços não podem se repetir.');
-    const servicos = await this.prisma.servico.findMany({
+    const servicos = await cliente.servico.findMany({
       where: { id: { in: origem.map((item) => item.idServico) }, ativo: true },
     });
     if (servicos.length !== origem.length)

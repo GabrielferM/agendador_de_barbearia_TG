@@ -20,7 +20,10 @@ import {
 import { ApiTags } from '@nestjs/swagger';
 import { UsuarioAtual } from '../../common/auth/usuario-atual.decorator';
 import type { UsuarioAutenticado } from '../../common/auth/auth.types';
+import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 @ApiTags('Agendamentos')
+@ApiErrosAutenticados()
+@ApiCrudErrors()
 @Controller('agendamentos')
 export class AgendamentoController {
   constructor(private readonly service: AgendamentoService) {}

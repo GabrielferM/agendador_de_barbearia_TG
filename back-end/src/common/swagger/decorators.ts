@@ -1,11 +1,15 @@
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiCookieAuth,
   ApiConflictResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiParam,
+  ApiTooManyRequestsResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ErroRespostaDto } from './respostas.dto';
+import { ErroRespostaDto, LimiteRequisicoesRespostaDto } from './respostas.dto';
 
 export const ApiIdParam = () =>
   ApiParam({
@@ -22,5 +26,22 @@ export const ApiCrudErrors = () =>
     ApiConflictResponse({
       type: ErroRespostaDto,
       description: 'Conflito com regra de negócio ou unicidade.',
+    }),
+  );
+
+export const ApiErrosAutenticados = () =>
+  applyDecorators(
+    ApiCookieAuth('sessao'),
+    ApiUnauthorizedResponse({
+      type: ErroRespostaDto,
+      description: 'Sessão ausente, inválida ou expirada.',
+    }),
+    ApiForbiddenResponse({
+      type: ErroRespostaDto,
+      description: 'Permissão, propriedade do recurso ou token CSRF inválido.',
+    }),
+    ApiTooManyRequestsResponse({
+      type: LimiteRequisicoesRespostaDto,
+      description: 'Limite de requisições excedido.',
     }),
   );

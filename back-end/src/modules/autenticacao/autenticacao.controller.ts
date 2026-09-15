@@ -15,11 +15,15 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiBadRequestResponse,
   ApiCookieAuth,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
+  ApiUnsupportedMediaTypeResponse,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
@@ -33,6 +37,8 @@ import { CsrfService } from '../../common/security/csrf.service';
 import { AutenticacaoService } from './autenticacao.service';
 import { AutenticacaoRespostaDto, LoginDto } from './dto/login.dto';
 import { corsOriginFor, EnvironmentVariables } from '../../config/environment';
+import { ErroRespostaDto, LimiteRequisicoesRespostaDto } from '../../common/swagger/respostas.dto';
+import { ApiErrosAutenticados } from '../../common/swagger/decorators';
 
 @ApiTags('Autenticação')
 @Controller('auth')
@@ -51,7 +57,17 @@ export class AutenticacaoController {
   @Throttle({ login: { limit: 10, ttl: 60_000 } })
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ type: AutenticacaoRespostaDto })
-  @ApiUnauthorizedResponse({ description: 'E-mail ou senha inválidos.' })
+  @ApiBadRequestResponse({ type: ErroRespostaDto, description: 'Dados de entrada inválidos.' })
+  @ApiUnauthorizedResponse({ type: ErroRespostaDto, description: 'E-mail ou senha inválidos.' })
+  @ApiForbiddenResponse({ type: ErroRespostaDto, description: 'Origem não permitida.' })
+  @ApiUnsupportedMediaTypeResponse({
+    type: ErroRespostaDto,
+    description: 'O login aceita somente application/json.',
+  })
+  @ApiTooManyRequestsResponse({
+    type: LimiteRequisicoesRespostaDto,
+    description: 'Muitas tentativas de acesso.',
+  })
   @Header('Cache-Control', 'no-store')
   async login(
     @Body() dto: LoginDto,
@@ -80,6 +96,7 @@ export class AutenticacaoController {
   }
 
   @Get('me')
+  @ApiErrosAutenticados()
   @ApiCookieAuth('sessao')
   @ApiOkResponse({ type: AutenticacaoRespostaDto })
   @Header('Cache-Control', 'no-store')
@@ -88,6 +105,7 @@ export class AutenticacaoController {
   }
 
   @Get('csrf')
+  @ApiErrosAutenticados()
   @ApiOperation({ summary: 'Renova o token CSRF da sessão atual' })
   @Header('Cache-Control', 'no-store')
   csrfToken(
@@ -100,6 +118,7 @@ export class AutenticacaoController {
   }
 
   @Post('logout')
+  @ApiErrosAutenticados()
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'no-store')
   async logout(

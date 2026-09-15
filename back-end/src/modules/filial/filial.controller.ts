@@ -13,7 +13,10 @@ import { AtualizarFilialDto, CriarFilialDto, ListarFiliaisDto } from './dto/fili
 import { FilialService } from './filial.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
+import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 @ApiTags('Filiais')
+@ApiErrosAutenticados()
+@ApiCrudErrors()
 @ExigirPermissoes('GERENCIAR_FILIAIS')
 @Controller('filiais')
 export class FilialController {

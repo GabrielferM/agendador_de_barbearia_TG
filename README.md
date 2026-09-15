@@ -1,125 +1,74 @@
 # Agendador de Barbearia
 
-Aplicação full-stack para organizar a operação de uma barbearia: cadastro de usuários, clientes, barbeiros, filiais, endereços e serviços, além do gerenciamento de agendamentos.
+Aplicação para gestão de clientes, barbeiros, filiais, serviços e agendamentos. O backend expõe uma API REST; o frontend inclui catálogo, login, dashboards e áreas ainda em desenvolvimento.
 
-O backend disponibiliza uma API REST documentada com Swagger. O frontend em React está em desenvolvimento e concentra a interface da aplicação.
+## Tecnologias e documentação
 
-## Tecnologias
+| Área | Stack | Entrada |
+| --- | --- | --- |
+| Backend | NestJS, TypeScript, Prisma, PostgreSQL, Swagger | [Execução](back-end/README.md) · [Guias](back-end/doc/README.md) |
+| Frontend | React, Vite, TypeScript, Tailwind CSS, HeroUI, TanStack Query, Orval | [Execução](front-end/README.md) · [Guias](front-end/docs/README.md) |
+| Trabalho com agentes | Regras gerais e específicas por aplicação | [AGENTS](AGENTS.md) |
+| Artefatos do domínio | Diagramas e materiais do projeto | [pasta](pasta/) |
 
-- **Backend:** NestJS, TypeScript, Prisma e PostgreSQL
-- **Frontend:** React, Vite, TypeScript, Tailwind CSS e HeroUI
-- **Documentação da API:** Swagger/OpenAPI
-
-## Estrutura
-
-```text
-.
-├── back-end/          # API NestJS e Prisma
-├── front-end/         # Interface React/Vite
-└── pasta/             # Diagramas de domínio e BPMN
-```
+Os guias distinguem implementação, regras para novas alterações e melhorias pendentes. A explicação de [AGENTS, docs e Codex](back-end/doc/README.md) orienta onde manter cada informação.
 
 ## Pré-requisitos
 
-- Node.js 20.19 ou superior
-- npm
-- PostgreSQL
+- Node.js `^20.19.0`, `^22.12.0` ou `>=24.0.0`. O arquivo [.nvmrc](.nvmrc) seleciona a versão 22.12.0 como padrão com nvm.
+- npm e dependências instaladas separadamente em cada aplicação.
+- PostgreSQL acessível para executar a API com dados reais.
 
-## Configuração
+Os manifests e lockfiles de cada aplicação registram suas dependências; não há instalação única na raiz.
 
-Instale as dependências de cada aplicação:
+## Preparar o ambiente
 
-```bash
-cd back-end
-npm install
-
-cd ../front-end
-npm install
-```
-
-Crie o arquivo `back-end/.env` com as variáveis abaixo:
+Crie `back-end/.env` com valores locais:
 
 ```env
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/agendador_barbearia?schema=public"
 PORT=3000
 NODE_ENV=development
 CORS_ORIGINS=http://localhost:5173
-CSRF_SECRET="gere-um-segredo-aleatorio-com-pelo-menos-32-caracteres"
+CSRF_SECRET="substitua-por-um-segredo-local-de-pelo-menos-32-caracteres"
 ```
 
-`PORT` e `NODE_ENV` possuem, respectivamente, os valores padrão `3000` e `development`. Em produção, `CORS_ORIGINS` e um `CSRF_SECRET` exclusivo são obrigatórios.
+Não versione credenciais reais. A [validação de ambiente](back-end/src/config/environment.ts) define defaults e restrições: em produção, CORS_ORIGINS e CSRF_SECRET são obrigatórios. Fora de produção, a política CORS aceita localhost, em vez de usar a lista configurada.
 
-## Executar localmente
-
-Em um terminal, prepare o banco e inicie a API:
+Em um terminal:
 
 ```bash
 cd back-end
+npm ci
 npm run prisma:generate
 npm run prisma:migrate
 npm run start:dev
 ```
 
-Em outro terminal, inicie o frontend:
+`prisma:migrate` modifica o banco de desenvolvimento; não o execute como parte de uma simples revisão documental.
+
+Em outro terminal:
 
 ```bash
 cd front-end
+npm ci
 npm run dev
 ```
 
-Endereços padrão:
+A base HTTP do frontend é `http://localhost:3000`, sobrescrita por `VITE_API_URL` em `.env.local`. Veja [configuração do frontend](front-end/README.md).
 
-| Serviço | Endereço |
+## Endereços locais
+
+| Serviço | Endereço padrão |
 | --- | --- |
-| Frontend | `http://localhost:5173` |
+| Interface | `http://localhost:5173` |
 | API | `http://localhost:3000` |
-| Swagger (desenvolvimento) | `http://localhost:3000/api` |
-| Saúde da API | `http://localhost:3000/health` |
+| Swagger, fora de produção | `http://localhost:3000/api` |
+| OpenAPI, fora de produção | `http://localhost:3000/api-json` |
+| Saúde do banco pela API | `http://localhost:3000/health` |
 
-## Recursos da API
+## Desenvolvimento e qualidade
 
-Autenticação por sessão: `POST /auth/login`, `GET /auth/me`, `GET /auth/csrf` e `POST /auth/logout`. O catálogo anônimo usa `GET /publico/servicos`, `/publico/barbeiros` e `/publico/filiais`. Os CRUDs administrativos exigem sessão e permissão.
+Antes de alterar código, siga os AGENTS e a arquitetura da aplicação. Para verificações, consulte [testes do backend](back-end/doc/testes.md) e [testes do frontend](front-end/docs/testes.md). Contratos atuais estão no Swagger; arquivos gerados antigos não garantem que uma rota continue disponível.
 
-Os recursos abaixo possuem operações de criação, listagem, busca por ID, atualização e remoção:
-
-| Recurso | Rota base |
-| --- | --- |
-| Usuários | `/usuarios` |
-| Clientes | `/clientes` |
-| Barbeiros | `/barbeiros` |
-| Filiais | `/filiais` |
-| Endereços | `/enderecos` |
-| Serviços | `/servicos` |
-| Agendamentos | `/agendamentos` |
-
-Consulte contratos, exemplos de requisição e filtros disponíveis diretamente no Swagger. A rota `GET /health` confirma a disponibilidade do banco de dados.
-
-## Comandos úteis
-
-### Backend
-
-```bash
-cd back-end
-npm run build
-npm run lint
-npm run test
-npm run test:e2e
-npm run prisma:studio
-```
-
-### Frontend
-
-```bash
-cd front-end
-npm run build
-npm run lint
-npm run preview
-```
-
-## Banco de dados
-
-O esquema e o histórico de migrações ficam em [`back-end/prisma`](back-end/prisma). Para alterar o modelo em desenvolvimento, atualize o esquema Prisma e execute `npm run prisma:migrate` dentro de `back-end/`.
-
-## Materiais do projeto
-
-Os diagramas entidade-relacionamento e BPMN estão em [`pasta/`](pasta/), e a referência da arquitetura do backend está em [`back-end/doc/arquitetura.md`](back-end/doc/arquitetura.md).
+O [schema Prisma](back-end/prisma/schema.prisma) é a fonte oficial de persistência. A arquitetura adotada usa serviços de caso de uso e PrismaService centralizado, sem repositories adicionais. A [segurança compartilhada](front-end/docs/seguranca-autenticacao.md) explica sessão, autorização e controles ainda pendentes.

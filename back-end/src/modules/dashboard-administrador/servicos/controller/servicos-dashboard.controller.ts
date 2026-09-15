@@ -6,8 +6,10 @@ import {
   ServicosDashboardRespostaDto,
 } from '../dto/servicos-dashboard.dto';
 import { ServicosDashboardService } from '../services/servicos-dashboard.service';
+import { ApiErrosAutenticados } from '../../../../common/swagger/decorators';
 
 @ApiTags('Dashboard administrativo - serviços')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_SERVICOS')
 @Controller('dashboard/administrador/servicos')
 export class ServicosDashboardController {

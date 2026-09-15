@@ -6,8 +6,10 @@ import {
   ConsultarBarbeirosDashboardDto,
 } from '../dto/barbeiro-dashboard.dto';
 import { BarbeiroDashboardService } from '../services/barbeiro-dashboard.service';
+import { ApiErrosAutenticados } from '../../../../common/swagger/decorators';
 
 @ApiTags('Dashboard administrativo - barbeiros')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_USUARIOS')
 @Controller('dashboard/administrador/barbeiros')
 export class BarbeiroDashboardController {

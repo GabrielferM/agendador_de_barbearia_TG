@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { ApiCrudErrors, ApiIdParam } from '../../common/swagger/decorators';
+import { ApiCrudErrors, ApiErrosAutenticados, ApiIdParam } from '../../common/swagger/decorators';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
 import { AtualizarServicoDto } from './dto/atualizar-servico.dto';
 import { CriarServicoDto } from './dto/criar-servico.dto';
@@ -20,6 +20,7 @@ import { ListaServicosRespostaDto, ServicoRespostaDto } from './dto/servico-resp
 import { ServicoService } from './servico.service';
 
 @ApiTags('Serviços')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_SERVICOS')
 @Controller('servicos')
 export class ServicoController {

@@ -34,7 +34,9 @@ import type {
   ComissaoControllerBuscar200,
   ComissaoControllerCriar201,
   ComissaoControllerListarParams,
-  CriarComissaoDto
+  CriarComissaoDto,
+  ErroRespostaDto,
+  LimiteRequisicoesRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -64,12 +66,44 @@ export type comissaoControllerCriarResponse201 = {
   status: 201
 }
 
+export type comissaoControllerCriarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type comissaoControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type comissaoControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type comissaoControllerCriarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type comissaoControllerCriarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type comissaoControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type comissaoControllerCriarResponseSuccess = (comissaoControllerCriarResponse201) & {
   headers: Headers;
 };
-;
+export type comissaoControllerCriarResponseError = (comissaoControllerCriarResponse400 | comissaoControllerCriarResponse401 | comissaoControllerCriarResponse403 | comissaoControllerCriarResponse404 | comissaoControllerCriarResponse409 | comissaoControllerCriarResponse429) & {
+  headers: Headers;
+};
 
-export type comissaoControllerCriarResponse = (comissaoControllerCriarResponseSuccess)
+export type comissaoControllerCriarResponse = (comissaoControllerCriarResponseSuccess | comissaoControllerCriarResponseError)
 
 export const getComissaoControllerCriarUrl = () => {
 
@@ -100,7 +134,7 @@ return httpClient<comissaoControllerCriarResponse>(getComissaoControllerCriarUrl
 
 
 
-export const getComissaoControllerCriarMutationOptions = <TError = unknown,
+export const getComissaoControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof comissaoControllerCriar>>, TError,ComissaoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof comissaoControllerCriar>>, TError,ComissaoControllerCriarMutationVariables, TContext> => {
 
@@ -129,10 +163,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ComissaoControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof comissaoControllerCriar>>>
     export type ComissaoControllerCriarMutationBody = CriarComissaoDto
-    export type ComissaoControllerCriarMutationError = unknown
+    export type ComissaoControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ComissaoControllerCriarMutationVariables = {data: CriarComissaoDto}
 
-    export const useComissaoControllerCriar = <TError = unknown,
+    export const useComissaoControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof comissaoControllerCriar>>, TError,ComissaoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof comissaoControllerCriar>>,
@@ -147,12 +181,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type comissaoControllerListarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type comissaoControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type comissaoControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type comissaoControllerListarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type comissaoControllerListarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type comissaoControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type comissaoControllerListarResponseSuccess = (comissaoControllerListarResponse200) & {
   headers: Headers;
 };
-;
+export type comissaoControllerListarResponseError = (comissaoControllerListarResponse400 | comissaoControllerListarResponse401 | comissaoControllerListarResponse403 | comissaoControllerListarResponse404 | comissaoControllerListarResponse409 | comissaoControllerListarResponse429) & {
+  headers: Headers;
+};
 
-export type comissaoControllerListarResponse = (comissaoControllerListarResponseSuccess)
+export type comissaoControllerListarResponse = (comissaoControllerListarResponseSuccess | comissaoControllerListarResponseError)
 
 export const getComissaoControllerListarUrl = (params?: ComissaoControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -191,7 +257,7 @@ export const getComissaoControllerListarQueryKey = (params?: ComissaoControllerL
     }
 
 
-export const getComissaoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = unknown>(params?: ComissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getComissaoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: ComissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -210,10 +276,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ComissaoControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof comissaoControllerListar>>>
-export type ComissaoControllerListarQueryError = unknown
+export type ComissaoControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = unknown>(
+export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  ComissaoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof comissaoControllerListar>>,
@@ -223,7 +289,7 @@ export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof co
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = unknown>(
+export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ComissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof comissaoControllerListar>>,
@@ -233,12 +299,12 @@ export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof co
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = unknown>(
+export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ComissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = unknown>(
+export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof comissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: ComissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -260,12 +326,44 @@ export type comissaoControllerBuscarResponse200 = {
   status: 200
 }
 
+export type comissaoControllerBuscarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type comissaoControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type comissaoControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type comissaoControllerBuscarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type comissaoControllerBuscarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type comissaoControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type comissaoControllerBuscarResponseSuccess = (comissaoControllerBuscarResponse200) & {
   headers: Headers;
 };
-;
+export type comissaoControllerBuscarResponseError = (comissaoControllerBuscarResponse400 | comissaoControllerBuscarResponse401 | comissaoControllerBuscarResponse403 | comissaoControllerBuscarResponse404 | comissaoControllerBuscarResponse409 | comissaoControllerBuscarResponse429) & {
+  headers: Headers;
+};
 
-export type comissaoControllerBuscarResponse = (comissaoControllerBuscarResponseSuccess)
+export type comissaoControllerBuscarResponse = (comissaoControllerBuscarResponseSuccess | comissaoControllerBuscarResponseError)
 
 export const getComissaoControllerBuscarUrl = (id: number,) => {
 
@@ -297,7 +395,7 @@ export const getComissaoControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getComissaoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getComissaoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -316,10 +414,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type ComissaoControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof comissaoControllerBuscar>>>
-export type ComissaoControllerBuscarQueryError = unknown
+export type ComissaoControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = unknown>(
+export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof comissaoControllerBuscar>>,
@@ -329,7 +427,7 @@ export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof co
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = unknown>(
+export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof comissaoControllerBuscar>>,
@@ -339,12 +437,12 @@ export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof co
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = unknown>(
+export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = unknown>(
+export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -366,12 +464,44 @@ export type comissaoControllerAtualizarResponse200 = {
   status: 200
 }
 
+export type comissaoControllerAtualizarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type comissaoControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type comissaoControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type comissaoControllerAtualizarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type comissaoControllerAtualizarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type comissaoControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type comissaoControllerAtualizarResponseSuccess = (comissaoControllerAtualizarResponse200) & {
   headers: Headers;
 };
-;
+export type comissaoControllerAtualizarResponseError = (comissaoControllerAtualizarResponse400 | comissaoControllerAtualizarResponse401 | comissaoControllerAtualizarResponse403 | comissaoControllerAtualizarResponse404 | comissaoControllerAtualizarResponse409 | comissaoControllerAtualizarResponse429) & {
+  headers: Headers;
+};
 
-export type comissaoControllerAtualizarResponse = (comissaoControllerAtualizarResponseSuccess)
+export type comissaoControllerAtualizarResponse = (comissaoControllerAtualizarResponseSuccess | comissaoControllerAtualizarResponseError)
 
 export const getComissaoControllerAtualizarUrl = (id: number,) => {
 
@@ -403,7 +533,7 @@ return httpClient<comissaoControllerAtualizarResponse>(getComissaoControllerAtua
 
 
 
-export const getComissaoControllerAtualizarMutationOptions = <TError = unknown,
+export const getComissaoControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof comissaoControllerAtualizar>>, TError,ComissaoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof comissaoControllerAtualizar>>, TError,ComissaoControllerAtualizarMutationVariables, TContext> => {
 
@@ -432,10 +562,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ComissaoControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof comissaoControllerAtualizar>>>
     export type ComissaoControllerAtualizarMutationBody = AtualizarComissaoDto
-    export type ComissaoControllerAtualizarMutationError = unknown
+    export type ComissaoControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type ComissaoControllerAtualizarMutationVariables = {id: number;data: AtualizarComissaoDto}
 
-    export const useComissaoControllerAtualizar = <TError = unknown,
+    export const useComissaoControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof comissaoControllerAtualizar>>, TError,ComissaoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof comissaoControllerAtualizar>>,

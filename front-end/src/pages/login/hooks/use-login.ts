@@ -15,8 +15,8 @@ export function useLogin() {
   const { definirUsuario } = useAutenticacao();
   const mutation = useMutation({
     mutationFn: (credenciais: CredenciaisLogin) => autenticar(credenciais),
-    onSuccess: ({ usuario }) => {
-      definirUsuario(usuario);
+    onSuccess: async ({ usuario }) => {
+      await definirUsuario(usuario);
       navigate(ROTA_POR_PAPEL[usuario.papel], { replace: true });
     },
   });

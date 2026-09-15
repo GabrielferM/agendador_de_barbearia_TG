@@ -11,13 +11,14 @@ import {
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { ApiCrudErrors, ApiIdParam } from '../../common/swagger/decorators';
+import { ApiCrudErrors, ApiErrosAutenticados, ApiIdParam } from '../../common/swagger/decorators';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
 import { BarbeiroService } from './barbeiro.service';
 import { BarbeiroRespostaDto, ListaBarbeirosRespostaDto } from './dto/barbeiro-resposta.dto';
 import { AtualizarBarbeiroDto, CriarBarbeiroDto, ListarBarbeirosDto } from './dto/barbeiro.dto';
 
 @ApiTags('Barbeiros')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_USUARIOS')
 @Controller('barbeiros')
 export class BarbeiroController {

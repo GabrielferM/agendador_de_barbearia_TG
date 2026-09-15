@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -7,10 +7,14 @@ import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
 import { configurarSwagger } from './../src/config/swagger';
 import { SenhaService } from './../src/common/security/senha.service';
+import { configurarValidacao } from './../src/config/validacao';
 
 interface OpenApiDocument {
-  paths: Record<string, unknown>;
+  paths: Record<string, Record<string, { responses?: Record<string, unknown> } | undefined>>;
   tags: Array<{ name: string }>;
+  components?: {
+    schemas?: Record<string, Record<string, unknown>>;
+  };
 }
 
 describe('AppController (e2e)', () => {
@@ -92,7 +96,7 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.use(cookieParser());
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    configurarValidacao(app);
     configurarSwagger(app, {
       DATABASE_URL: process.env.DATABASE_URL,
       PORT: 3000,
@@ -145,6 +149,21 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer()).get('/servicos').expect(401);
   });
 
+  it('uses the production validation policy without exposing rejected values', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('Content-Type', 'application/json')
+      .send({
+        email: 'cliente@teste.local',
+        senha: 'senha correta de teste',
+        campoDesconhecido: 'valor-que-nao-deve-aparecer',
+      })
+      .expect(400);
+
+    expect(response.body).toMatchObject({ statusCode: 400 });
+    expect(JSON.stringify(response.body)).not.toContain('valor-que-nao-deve-aparecer');
+  });
+
   it('completes login, me, CSRF logout and rejects the revoked session', async () => {
     const agente = request.agent(app.getHttpServer());
     const login = await agente
@@ -194,5 +213,15 @@ describe('AppController (e2e)', () => {
       ]),
     );
     expect(document.tags.map((tag) => tag.name)).toEqual(expect.arrayContaining(['Serviços']));
+    expect(Object.keys(document.paths['/auth/login'].post?.responses ?? {})).toEqual(
+      expect.arrayContaining(['200', '400', '401', '403', '415', '429']),
+    );
+    expect(Object.keys(document.paths['/servicos'].get?.responses ?? {})).toEqual(
+      expect.arrayContaining(['200', '400', '401', '403', '404', '409', '429']),
+    );
+    const schemaErro = document.components?.schemas?.ErroRespostaDto as
+      { required?: string[] } | undefined;
+    expect(schemaErro?.required ?? []).not.toContain('error');
+    expect(document.components?.schemas?.LimiteRequisicoesRespostaDto).toBeDefined();
   });
 });

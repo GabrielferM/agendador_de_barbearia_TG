@@ -20,14 +20,21 @@ function RotaProtegida({
   papel: CodigoPapel;
   children: ReactNode;
 }) {
-  const { usuario, carregando } = useAutenticacao();
+  const { usuario, carregando, logoutNaoConfirmado } = useAutenticacao();
   if (carregando)
     return (
       <main className="grid min-h-screen place-items-center">
         Carregando sessão…
       </main>
     );
-  if (!usuario) return <Navigate replace to="/login" />;
+  if (!usuario)
+    return (
+      <Navigate
+        replace
+        state={logoutNaoConfirmado ? { logoutNaoConfirmado: true } : undefined}
+        to="/login"
+      />
+    );
   if (usuario.papel !== papel)
     return (
       <Navigate

@@ -39,7 +39,9 @@ import type {
   AgendamentoControllerListarParams,
   AtualizarAgendamentoDto,
   CriarAgendamentoDto,
-  CriarHistoricoStatusDto
+  CriarHistoricoStatusDto,
+  ErroRespostaDto,
+  LimiteRequisicoesRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -69,12 +71,44 @@ export type agendamentoControllerCriarResponse201 = {
   status: 201
 }
 
+export type agendamentoControllerCriarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerCriarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerCriarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type agendamentoControllerCriarResponseSuccess = (agendamentoControllerCriarResponse201) & {
   headers: Headers;
 };
-;
+export type agendamentoControllerCriarResponseError = (agendamentoControllerCriarResponse400 | agendamentoControllerCriarResponse401 | agendamentoControllerCriarResponse403 | agendamentoControllerCriarResponse404 | agendamentoControllerCriarResponse409 | agendamentoControllerCriarResponse429) & {
+  headers: Headers;
+};
 
-export type agendamentoControllerCriarResponse = (agendamentoControllerCriarResponseSuccess)
+export type agendamentoControllerCriarResponse = (agendamentoControllerCriarResponseSuccess | agendamentoControllerCriarResponseError)
 
 export const getAgendamentoControllerCriarUrl = () => {
 
@@ -105,7 +139,7 @@ return httpClient<agendamentoControllerCriarResponse>(getAgendamentoControllerCr
 
 
 
-export const getAgendamentoControllerCriarMutationOptions = <TError = unknown,
+export const getAgendamentoControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext> => {
 
@@ -134,10 +168,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AgendamentoControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerCriar>>>
     export type AgendamentoControllerCriarMutationBody = CriarAgendamentoDto
-    export type AgendamentoControllerCriarMutationError = unknown
+    export type AgendamentoControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AgendamentoControllerCriarMutationVariables = {data: CriarAgendamentoDto}
 
-    export const useAgendamentoControllerCriar = <TError = unknown,
+    export const useAgendamentoControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriar>>, TError,AgendamentoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof agendamentoControllerCriar>>,
@@ -152,12 +186,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type agendamentoControllerListarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerListarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerListarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type agendamentoControllerListarResponseSuccess = (agendamentoControllerListarResponse200) & {
   headers: Headers;
 };
-;
+export type agendamentoControllerListarResponseError = (agendamentoControllerListarResponse400 | agendamentoControllerListarResponse401 | agendamentoControllerListarResponse403 | agendamentoControllerListarResponse404 | agendamentoControllerListarResponse409 | agendamentoControllerListarResponse429) & {
+  headers: Headers;
+};
 
-export type agendamentoControllerListarResponse = (agendamentoControllerListarResponseSuccess)
+export type agendamentoControllerListarResponse = (agendamentoControllerListarResponseSuccess | agendamentoControllerListarResponseError)
 
 export const getAgendamentoControllerListarUrl = (params?: AgendamentoControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -196,7 +262,7 @@ export const getAgendamentoControllerListarQueryKey = (params?: AgendamentoContr
     }
 
 
-export const getAgendamentoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getAgendamentoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -215,10 +281,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AgendamentoControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerListar>>>
-export type AgendamentoControllerListarQueryError = unknown
+export type AgendamentoControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
+export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  AgendamentoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof agendamentoControllerListar>>,
@@ -228,7 +294,7 @@ export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
+export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof agendamentoControllerListar>>,
@@ -238,12 +304,12 @@ export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
+export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = unknown>(
+export function useAgendamentoControllerListar<TData = Awaited<ReturnType<typeof agendamentoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: AgendamentoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -265,12 +331,44 @@ export type agendamentoControllerListarHistoricoResponse200 = {
   status: 200
 }
 
+export type agendamentoControllerListarHistoricoResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerListarHistoricoResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerListarHistoricoResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerListarHistoricoResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerListarHistoricoResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerListarHistoricoResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type agendamentoControllerListarHistoricoResponseSuccess = (agendamentoControllerListarHistoricoResponse200) & {
   headers: Headers;
 };
-;
+export type agendamentoControllerListarHistoricoResponseError = (agendamentoControllerListarHistoricoResponse400 | agendamentoControllerListarHistoricoResponse401 | agendamentoControllerListarHistoricoResponse403 | agendamentoControllerListarHistoricoResponse404 | agendamentoControllerListarHistoricoResponse409 | agendamentoControllerListarHistoricoResponse429) & {
+  headers: Headers;
+};
 
-export type agendamentoControllerListarHistoricoResponse = (agendamentoControllerListarHistoricoResponseSuccess)
+export type agendamentoControllerListarHistoricoResponse = (agendamentoControllerListarHistoricoResponseSuccess | agendamentoControllerListarHistoricoResponseError)
 
 export const getAgendamentoControllerListarHistoricoUrl = (id: number,
     params?: AgendamentoControllerListarHistoricoParams,) => {
@@ -312,7 +410,7 @@ export const getAgendamentoControllerListarHistoricoQueryKey = (id: number,
     }
 
 
-export const getAgendamentoControllerListarHistoricoQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(id: number,
+export const getAgendamentoControllerListarHistoricoQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number,
     params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
@@ -332,10 +430,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AgendamentoControllerListarHistoricoQueryResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>>
-export type AgendamentoControllerListarHistoricoQueryError = unknown
+export type AgendamentoControllerListarHistoricoQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number,
     params: undefined |  AgendamentoControllerListarHistoricoParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
@@ -346,7 +444,7 @@ export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnTy
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number,
     params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
@@ -357,13 +455,13 @@ export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnTy
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number,
     params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = unknown>(
+export function useAgendamentoControllerListarHistorico<TData = Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number,
     params?: AgendamentoControllerListarHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerListarHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
@@ -386,12 +484,44 @@ export type agendamentoControllerCriarHistoricoResponse201 = {
   status: 201
 }
 
+export type agendamentoControllerCriarHistoricoResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerCriarHistoricoResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerCriarHistoricoResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerCriarHistoricoResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerCriarHistoricoResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerCriarHistoricoResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type agendamentoControllerCriarHistoricoResponseSuccess = (agendamentoControllerCriarHistoricoResponse201) & {
   headers: Headers;
 };
-;
+export type agendamentoControllerCriarHistoricoResponseError = (agendamentoControllerCriarHistoricoResponse400 | agendamentoControllerCriarHistoricoResponse401 | agendamentoControllerCriarHistoricoResponse403 | agendamentoControllerCriarHistoricoResponse404 | agendamentoControllerCriarHistoricoResponse409 | agendamentoControllerCriarHistoricoResponse429) & {
+  headers: Headers;
+};
 
-export type agendamentoControllerCriarHistoricoResponse = (agendamentoControllerCriarHistoricoResponseSuccess)
+export type agendamentoControllerCriarHistoricoResponse = (agendamentoControllerCriarHistoricoResponseSuccess | agendamentoControllerCriarHistoricoResponseError)
 
 export const getAgendamentoControllerCriarHistoricoUrl = (id: number,) => {
 
@@ -423,7 +553,7 @@ return httpClient<agendamentoControllerCriarHistoricoResponse>(getAgendamentoCon
 
 
 
-export const getAgendamentoControllerCriarHistoricoMutationOptions = <TError = unknown,
+export const getAgendamentoControllerCriarHistoricoMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>, TError,AgendamentoControllerCriarHistoricoMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>, TError,AgendamentoControllerCriarHistoricoMutationVariables, TContext> => {
 
@@ -452,10 +582,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AgendamentoControllerCriarHistoricoMutationResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>>
     export type AgendamentoControllerCriarHistoricoMutationBody = CriarHistoricoStatusDto
-    export type AgendamentoControllerCriarHistoricoMutationError = unknown
+    export type AgendamentoControllerCriarHistoricoMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AgendamentoControllerCriarHistoricoMutationVariables = {id: number;data: CriarHistoricoStatusDto}
 
-    export const useAgendamentoControllerCriarHistorico = <TError = unknown,
+    export const useAgendamentoControllerCriarHistorico = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>, TError,AgendamentoControllerCriarHistoricoMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof agendamentoControllerCriarHistorico>>,
@@ -470,12 +600,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type agendamentoControllerBuscarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerBuscarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerBuscarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type agendamentoControllerBuscarResponseSuccess = (agendamentoControllerBuscarResponse200) & {
   headers: Headers;
 };
-;
+export type agendamentoControllerBuscarResponseError = (agendamentoControllerBuscarResponse400 | agendamentoControllerBuscarResponse401 | agendamentoControllerBuscarResponse403 | agendamentoControllerBuscarResponse404 | agendamentoControllerBuscarResponse409 | agendamentoControllerBuscarResponse429) & {
+  headers: Headers;
+};
 
-export type agendamentoControllerBuscarResponse = (agendamentoControllerBuscarResponseSuccess)
+export type agendamentoControllerBuscarResponse = (agendamentoControllerBuscarResponseSuccess | agendamentoControllerBuscarResponseError)
 
 export const getAgendamentoControllerBuscarUrl = (id: number,) => {
 
@@ -507,7 +669,7 @@ export const getAgendamentoControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getAgendamentoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getAgendamentoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -526,10 +688,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AgendamentoControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerBuscar>>>
-export type AgendamentoControllerBuscarQueryError = unknown
+export type AgendamentoControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(
+export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof agendamentoControllerBuscar>>,
@@ -539,7 +701,7 @@ export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(
+export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof agendamentoControllerBuscar>>,
@@ -549,12 +711,12 @@ export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(
+export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = unknown>(
+export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -576,12 +738,44 @@ export type agendamentoControllerAtualizarResponse200 = {
   status: 200
 }
 
+export type agendamentoControllerAtualizarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerAtualizarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerAtualizarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type agendamentoControllerAtualizarResponseSuccess = (agendamentoControllerAtualizarResponse200) & {
   headers: Headers;
 };
-;
+export type agendamentoControllerAtualizarResponseError = (agendamentoControllerAtualizarResponse400 | agendamentoControllerAtualizarResponse401 | agendamentoControllerAtualizarResponse403 | agendamentoControllerAtualizarResponse404 | agendamentoControllerAtualizarResponse409 | agendamentoControllerAtualizarResponse429) & {
+  headers: Headers;
+};
 
-export type agendamentoControllerAtualizarResponse = (agendamentoControllerAtualizarResponseSuccess)
+export type agendamentoControllerAtualizarResponse = (agendamentoControllerAtualizarResponseSuccess | agendamentoControllerAtualizarResponseError)
 
 export const getAgendamentoControllerAtualizarUrl = (id: number,) => {
 
@@ -613,7 +807,7 @@ return httpClient<agendamentoControllerAtualizarResponse>(getAgendamentoControll
 
 
 
-export const getAgendamentoControllerAtualizarMutationOptions = <TError = unknown,
+export const getAgendamentoControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext> => {
 
@@ -642,10 +836,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AgendamentoControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>>
     export type AgendamentoControllerAtualizarMutationBody = AtualizarAgendamentoDto
-    export type AgendamentoControllerAtualizarMutationError = unknown
+    export type AgendamentoControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AgendamentoControllerAtualizarMutationVariables = {id: number;data: AtualizarAgendamentoDto}
 
-    export const useAgendamentoControllerAtualizar = <TError = unknown,
+    export const useAgendamentoControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerAtualizar>>, TError,AgendamentoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof agendamentoControllerAtualizar>>,
@@ -660,12 +854,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type agendamentoControllerRemoverResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerRemoverResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerRemoverResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type agendamentoControllerRemoverResponseSuccess = (agendamentoControllerRemoverResponse200) & {
   headers: Headers;
 };
-;
+export type agendamentoControllerRemoverResponseError = (agendamentoControllerRemoverResponse400 | agendamentoControllerRemoverResponse401 | agendamentoControllerRemoverResponse403 | agendamentoControllerRemoverResponse404 | agendamentoControllerRemoverResponse409 | agendamentoControllerRemoverResponse429) & {
+  headers: Headers;
+};
 
-export type agendamentoControllerRemoverResponse = (agendamentoControllerRemoverResponseSuccess)
+export type agendamentoControllerRemoverResponse = (agendamentoControllerRemoverResponseSuccess | agendamentoControllerRemoverResponseError)
 
 export const getAgendamentoControllerRemoverUrl = (id: number,) => {
 
@@ -690,7 +916,7 @@ export const agendamentoControllerRemover = async (id: number, options?: Paramet
 
 
 
-export const getAgendamentoControllerRemoverMutationOptions = <TError = unknown,
+export const getAgendamentoControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext> => {
 
@@ -719,10 +945,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AgendamentoControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerRemover>>>
 
-    export type AgendamentoControllerRemoverMutationError = unknown
+    export type AgendamentoControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AgendamentoControllerRemoverMutationVariables = {id: number}
 
-    export const useAgendamentoControllerRemover = <TError = unknown,
+    export const useAgendamentoControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agendamentoControllerRemover>>, TError,AgendamentoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof agendamentoControllerRemover>>,

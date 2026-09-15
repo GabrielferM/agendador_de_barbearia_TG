@@ -6,8 +6,10 @@ import {
   ConsultarAgendaDashboardDto,
 } from '../dto/agendamento-dashboard.dto';
 import { AgendamentoDashboardService } from '../services/agendamento-dashboard.service';
+import { ApiErrosAutenticados } from '../../../../common/swagger/decorators';
 
 @ApiTags('Dashboard administrativo - agendamentos')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_AGENDAMENTOS')
 @Controller('dashboard/administrador/agendamentos')
 export class AgendamentoDashboardController {

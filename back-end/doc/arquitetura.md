@@ -1,184 +1,71 @@
-# Arquitetura e organização do backend
+# Arquitetura do backend
 
-Este é o documento arquitetural canônico do backend. Ele consolida o domínio mapeado, a estrutura implementada e as regras para a evolução do projeto.
+## Implementado: stack e fluxo
 
-## Objetivo
+NestJS e TypeScript expõem a API REST; Prisma acessa PostgreSQL. O [schema](../prisma/schema.prisma) define persistência; [AppModule](../src/app.module.ts) registra os módulos ativos.
 
-O backend usa **NestJS**, **TypeScript**, **Prisma** e **PostgreSQL**. A organização é modular e orientada aos domínios reais, priorizando código explícito, coeso e simples de manter.
+```text
+HTTP → guards → Controller → service de fachada → service de caso de uso
+     → PrismaService → Prisma Client → PostgreSQL
+```
 
-O arquivo prisma/schema.prisma é a fonte oficial de persistência. Antes de criar ou modificar um módulo, analise o schema, as migrations e os módulos existentes. Não invente entidades, relações ou regras não sustentadas pelo domínio.
+Os pipes validam argumentos antes da execução do método do controller. Controllers lidam com HTTP, DTOs, cookies e delegação; não consultam Prisma. A fachada expõe operações do domínio e pode aplicar autorização contextual. O caso de uso executa regras, consultas e gravações. Serviços em `validations/` encapsulam validações e cálculos reutilizados. Health é um caso simples com controller e service, sem fachada adicional.
 
-## Estrutura do repositório
+A fachada [AgendamentoService](../src/modules/agendamento/agendamento.service.ts) delega a validação de propriedade ao [ValidarAcessoAgendamentoService](../src/modules/agendamento/validations/validar-acesso-agendamento.service.ts) e mantém a sanitização da resposta. Os submódulos do dashboard administrativo separam arquivos em pastas como `controller/`; preserve essa organização ao trabalhar nesses módulos.
 
-    agendador_de_barbearia_TG/
-    ├── AGENT.md                       # referência resumida para esta arquitetura
-    ├── back-end/
-    │   ├── doc/arquitetura.md          # este documento
-    │   ├── prisma/
-    │   │   ├── schema.prisma
-    │   │   └── migrations/
-    │   ├── src/
-    │   │   ├── config/                 # ambiente e configuração transversal
-    │   │   ├── prisma/                 # instância única do Prisma
-    │   │   ├── modules/                # domínios do backend
-    │   │   ├── app.module.ts
-    │   │   └── main.ts
-    │   └── test/                       # testes de integração/e2e
-    ├── front-end/
-    └── pasta/                          # DER, BPMN e demais artefatos
+O [PrismaService](../src/prisma/prisma.service.ts) centraliza cliente, adapter PostgreSQL, pool e ciclo de conexão. Os módulos importam PrismaModule conforme necessário; não criam clientes independentes. ConfigModule é global. `common/` contém autenticação, segurança, DTOs e utilitários transversais; `config/` concentra ambiente e Swagger.
 
-## Domínio mapeado
+## Implementado: domínio
 
-| Domínio | Modelo Prisma | Relações e restrições relevantes |
-| --- | --- | --- |
-| usuário | Usuario | e-mail único; perfil CLIENTE, BARBEIRO ou ADMIN; relação 1:1 opcional com cliente e barbeiro. |
-| cliente | Cliente | compartilha o id de Usuario; CPF único; possui agendamentos. |
-| barbeiro | Barbeiro | compartilha o id de Usuario; pertence a uma filial; possui status e agendamentos. |
-| filial | Filial | CNPJ único; possui exatamente um endereço, pois idEndereco é único; agrega barbeiros e agendamentos. |
-| endereço | Endereco | relaciona-se opcionalmente com uma filial, em 1:1. |
-| serviço | Servico | nome único; preço decimal e duração em minutos; participa de agendamentos. |
-| agendamento | Agendamento | referencia cliente, barbeiro e filial; possui início, fim, status e valor total. |
-| itens do agendamento | AgendamentoServico | une agendamento e serviço; preserva preço e duração; combinação de agendamento e serviço é única. |
+| Modelos | Responsabilidade e restrições |
+| --- | --- |
+| Usuario | E-mail único, `senhaHash`, status e vínculo obrigatório com Papel. |
+| Sessao | Token armazenado como hash único; expiração, último uso e revogação. |
+| Papel, Permissao, PapelPermissao | Códigos únicos, ativação e vínculo único entre papel e permissão. |
+| Cliente, Barbeiro, Administrador | Compartilham o ID com Usuario. Cliente tem CPF único; barbeiro pertence a uma filial. |
+| Filial, Endereco | CNPJ único; cada filial exige um endereço exclusivo; endereço pode não ter filial. |
+| Servico | Nome único, preço decimal, duração em minutos e ativação. |
+| Agendamento | Cliente, barbeiro, filial, horários previstos/reais, origem e status. |
+| AgendamentoServico | Preço/duração aplicados, quantidade, desconto, subtotal e ordem. Serviço e ordem são únicos dentro do agendamento. |
+| Comissao | Uma comissão por item de agendamento, vinculada ao barbeiro, com valores e status. |
+| HistoricoStatusAgendamento | Transição, responsável, data e motivo vinculados ao agendamento. |
 
-Os índices de agendamento por cliente, barbeiro, filial, início, status e pela combinação de barbeiro e início devem orientar consultas de agenda e conflito de horário. As chaves compartilhadas de Cliente e Barbeiro exigem operações coordenadas com Usuario; use transação quando mais de uma tabela for alterada.
+O papel do usuário é uma relação, não um enum de perfil. `Agendamento` não persiste um campo de valor total: os valores dos itens sustentam os cálculos. Índices de agenda ajudam consultas, mas não são uma restrição de exclusão de horários sobrepostos.
 
-## Estado atual e módulos futuros
+Módulos ativos: autenticação, catálogo público, health, serviço, administrador, cliente, barbeiro, filial, agendamento, papel, permissão, comissão e dashboards de administrador/barbeiro. O dashboard administrativo agrega submódulos de dashboard, agendamento, cliente, barbeiro, serviços e financeiro. Usuario e Endereco são modelos utilizados por casos de uso; não há módulos independentes ativos com esses nomes. Tipos antigos no frontend gerado não comprovam a existência de endpoints atuais.
 
-| Módulo | Estado | Escopo atual ou inicial |
-| --- | --- | --- |
-| health | implementado | verificação simples de disponibilidade. |
-| servico | implementado | criação e listagem; nome único tratado como conflito. |
-| usuario | planejado | cadastro, consulta e suporte aos perfis. |
-| cliente | planejado | cadastro ligado a usuário e busca por CPF. |
-| barbeiro | planejado | associação a usuário e filial; status. |
-| filial | planejado | gestão de filial e seu endereço. |
-| endereco | planejado | suporte ao ciclo de vida da filial, sem duplicar sua regra. |
-| agendamento | implementado | disponibilidade, serviços, valor total, estados e remoção. |
+## Regra para novas alterações: organização
 
-Não crie pastas ou módulos vazios para antecipar esse plano. Cada módulo deve surgir junto de um caso de uso concreto.
+```text
+src/modules/<dominio>/
+  <dominio>.module.ts
+  <dominio>.controller.ts
+  <dominio>.service.ts
+  dto/
+  service/       # casos de uso
+  constants/     # somente quando necessário
+  validations/   # somente quando houver regras reutilizadas
+```
 
-## Organização implementada
+Use como referência [criar serviço](../src/modules/servico/service/criar-servico.service.ts) e [criar agendamento](../src/modules/agendamento/service/criar-agendamento.service.ts). Não crie diretórios vazios, repository genérico, TypeORM ou camadas de Clean Architecture/CQRS sem necessidade demonstrada. Registre providers e imports no módulo responsável. Consulte [nomenclatura](nomenclatura.md).
 
-    src/
-    ├── config/
-    │   └── environment.ts
-    ├── prisma/
-    │   ├── prisma.module.ts
-    │   └── prisma.service.ts
-    ├── modules/
-    │   ├── health/
-    │   │   ├── health.controller.ts
-    │   │   ├── health.service.ts
-    │   │   └── health.module.ts
-    │   ├── servico/
-    │       ├── dto/
-    │       │   ├── criar-servico.dto.ts
-    │       │   ├── atualizar-servico.dto.ts
-    │       │   └── listar-servicos.dto.ts
-    │       ├── service/
-    │       │   ├── criar-servico.service.ts
-    │       │   ├── listar-servicos.service.ts
-    │       │   ├── buscar-servico.service.ts
-    │       │   ├── editar-servico.service.ts
-    │       │   └── remover-servico.service.ts
-    │       ├── servico.controller.ts
-    │       ├── servico.service.ts
-    │       └── servico.module.ts
-    │   └── agendamento/
-    │       ├── constants/             # regras e configurações imutáveis do domínio
-    │       │   ├── include-agendamento.ts
-    │       │   └── transicoes-status-agendamento.ts
-    │       ├── dto/                   # contratos de entrada do módulo
-    │       │   └── agendamento.dto.ts
-    │       ├── service/               # um arquivo por caso de uso
-    │       │   ├── criar-agendamento.service.ts
-    │       │   ├── listar-agendamentos.service.ts
-    │       │   ├── buscar-agendamento.service.ts
-    │       │   ├── editar-agendamento.service.ts
-    │       │   └── remover-agendamento.service.ts
-    │       ├── validations/           # validações e cálculos de negócio reutilizados
-    │       │   ├── buscar-servicos-agendamento.service.ts
-    │       │   ├── calcular-fim-agendamento.service.ts
-    │       │   ├── calcular-valor-total-agendamento.service.ts
-    │       │   ├── validar-data-hora-agendamento.service.ts
-    │       │   ├── validar-vinculos-agendamento.service.ts
-    │       │   └── verificar-conflito-agendamento.service.ts
-    │       ├── agendamento.controller.ts
-    │       ├── agendamento.service.ts  # fachada/orquestração do módulo
-    │       └── agendamento.module.ts
-    ├── app.module.ts
-    └── main.ts
+## Persistência e contratos
 
-Os módulos `usuario`, `cliente`, `barbeiro`, `filial` e `endereco` seguem a mesma base: `dto/`, `service/`, controller, service orquestradora e module. `barbeiro` e `filial` também possuem `validations/` para regras reutilizadas do próprio domínio. `health` mantém somente os arquivos necessários ao seu único caso de uso.
+**Implementado:** criação e edição de agendamento executam consultas de apoio, validação de vínculos, verificação de conflito e gravação na mesma transação interativa com isolamento `Serializable`. O helper [executarTransacaoSerializavel](../src/prisma/transacao.ts) repete até três vezes quando o Prisma retorna `P2034`; depois disso, o caso de uso responde 409 com mensagem segura. A criação grava os itens por nested write. O login usa transação para atualizar usuário e criar sessão.
 
-AppModule registra apenas módulos e dependências transversais. ConfigModule é global; PrismaModule fornece a instância compartilhada de PrismaService; cada módulo de domínio importa explicitamente o que utiliza.
+**Regra para novas alterações:** use nested writes ou `$transaction` quando gravações precisam ser atômicas. Dentro de uma transação interativa, use o cliente `tx` recebido. Não altere schema ou histórico de migrations sem necessidade explícita. Reutilize tipos e enums do Prisma internamente, mas controle os DTOs de resposta HTTP.
 
-## Modelo para novos módulos
+[serializarResposta](../src/common/utils/resposta.ts) converte recursivamente Decimal em string com duas casas e Date em ISO. Seu tipo genérico mantém `T`, embora a representação em execução mude: não use esse tipo como prova do contrato JSON. `semSenha` remove `senhaHash` do objeto recebido, não sanitiza automaticamente qualquer objeto aninhado. Selecione os campos necessários e controle relações incluídas. Dashboards têm contratos próprios; confirme números e strings por endpoint.
 
-Use `agendamento` como padrão de organização. Crie somente as pastas justificadas pelo domínio:
+## Segurança e validação
 
-    modules/<dominio>/
-    ├── constants/                   # constantes, includes e transições do domínio
-    ├── dto/                         # DTOs agrupados por recurso quando fizer sentido
-    ├── service/                     # casos de uso; um arquivo por operação
-    ├── validations/                 # validações, consultas de apoio e cálculos reutilizados
-    ├── <dominio>.controller.ts
-    ├── <dominio>.service.ts         # fachada que delega aos casos de uso
-    └── <dominio>.module.ts
+Guards globais executam throttling, autenticação, CSRF e permissões. Rotas públicas são explícitas; permissões e propriedade dos recursos devem ser verificadas no servidor. O [guia de segurança](../../front-end/docs/seguranca-autenticacao.md) detalha implementação e pendências.
 
-O nome do arquivo em `service/` descreve a operação, por exemplo `criar-<dominio>.service.ts`, `listar-<dominios>.service.ts`, `buscar-<dominio>.service.ts`, `editar-<dominio>.service.ts` e `remover-<dominio>.service.ts`. Não crie uma subpasta para cada caso de uso.
+O [configurador compartilhado do ValidationPipe](../src/config/validacao.ts), usado por `main.ts` e pelos testes e2e, transforma entradas, rejeita campos não permitidos e oculta valor/objeto nos erros de validação. Swagger descreve contratos fora de produção. Veja [erros](tratamento-de-erros.md) e [testes](testes.md).
 
-`constants/` e `validations/` são opcionais. Crie `mapper/`, `types/` ou `utils/` apenas quando houver uma necessidade concreta que não pertença a `common/`; `repository/` e services agregadoras de operações não fazem parte do padrão. Testes unitários ficam junto do serviço testado, em arquivos `.service.spec.ts`; testes e2e permanecem em `back-end/test/`.
+## Melhorias pendentes
 
-## Fluxo e responsabilidades
+- Revisar a representação TypeScript das respostas serializadas.
+- Ampliar testes com PostgreSQL isolado para comprovar transações, concorrência e restrições no banco real.
 
-    HTTP → Controller → Service orquestradora → Service de caso de uso
-         → PrismaService → Prisma Client → PostgreSQL
-
-- **Controller:** recebe HTTP, aplica DTOs e delega. Não contém regra de negócio nem acessa Prisma diretamente.
-- **Service orquestradora:** expõe as operações públicas do módulo e delega aos casos de uso especializados.
-- **Service de caso de uso:** concentra uma responsabilidade de negócio, valida pré-condições, executa as consultas necessárias via PrismaService e converte erros em exceções Nest adequadas.
-- **PrismaService:** é a única instância de PrismaClient, gerencia a conexão e é fornecida por PrismaModule.
-- **DTO:** representa a entrada HTTP e usa class-validator/class-transformer; não consulta banco nem decide regra de negócio.
-
-## Regras de implementação
-
-1. Não use TypeORM, entidades, decorators de entidade ou @InjectRepository.
-2. Não instancie PrismaClient fora de PrismaService e não acesse Prisma em controllers.
-3. Acesse a persistência a partir dos services de caso de uso por meio de PrismaService. Só introduza uma abstração adicional quando houver repetição real e benefício demonstrável; não crie repository genérico.
-4. Use os tipos gerados pelo Prisma, incluindo Prisma.*Input e enums, em vez de duplicá-los sem motivo.
-5. Use include e select apenas para os dados necessários. Não exponha automaticamente campos sensíveis, como Usuario.senha; crie mapper quando a resposta exigir controle.
-6. Use exceptions nativas do Nest e converta erros conhecidos do Prisma quando necessário, como P2002 para conflito.
-7. Use this.prisma.$transaction(...) em operações atômicas: usuário com cliente/barbeiro, filial com endereço e agendamento com itens.
-8. Não altere schema ou migrations sem necessidade explícita. Migrações são históricas e não devem ser reescritas.
-9. Prefira código simples; não introduza Clean Architecture, Hexagonal, CQRS, DDD ou abstrações genéricas sem repetição real e benefício demonstrável.
-
-## Convenções de API e validação
-
-- Pastas e arquivos usam kebab-case; classes usam PascalCase e métodos usam camelCase.
-- Cada controller usa o plural do recurso na rota, como @Controller('servicos').
-- DTOs ficam em dto/, recebem o sufixo Dto e são validados pelo ValidationPipe global, com whitelist e transform ativados.
-- Serviços especializados expõem execute(...); a service orquestradora usa nomes de negócio, como criar, listar, buscar ou cancelar.
-- Um novo endpoint deve manter compatibilidade com os existentes, salvo mudança aprovada explicitamente.
-
-## Evolução recomendada
-
-1. Completar o CRUD e as respostas seguras de servico conforme os casos de uso necessários.
-2. Implementar usuario e cliente, preservando a relação 1:1 por chave compartilhada e a unicidade de e-mail/CPF.
-3. Implementar filial, endereco e barbeiro, respeitando a relação 1:1 filial-endereço e a associação obrigatória do barbeiro a uma filial.
-4. Implementar agendamento com validação de cliente, barbeiro e serviços, verificação de conflito de horário, cálculo de valor/duração e criação transacional de AgendamentoServico.
-5. Cobrir cada caso de uso com testes de sucesso, ausência de registros, validações, conflitos e transações críticas.
-
-## Checklist de alteração
-
-1. Confirme modelos, relações, índices e restrições em prisma/schema.prisma.
-2. Mantenha o fluxo Controller → Service orquestradora → Service de caso de uso → PrismaService.
-3. Registre o novo módulo em AppModule e importe PrismaModule onde necessário.
-4. Execute npm run prisma:generate, npm run build e npm test a partir de back-end/.
-5. Revise imports circulares, chamadas diretas ao Prisma em controllers e exposição de dados sensíveis.
-
-## Autenticação e autorização
-
-O módulo `autenticacao` segue o fluxo padrão: controller → `AutenticacaoService` (fachada) → `LoginService`/`SessaoService` → `PrismaService`. A sessão é opaca; somente o SHA-256 do token fica no banco. Senhas novas usam Argon2id e bcrypt é aceito apenas para migração gradual no login.
-
-Os guards globais executam limitação de requisições, autenticação, CSRF e permissões. `@Publico()` é uma exceção explícita para saúde, raiz, login e catálogo sanitizado. `@ExigirPermissoes()` protege os recursos administrativos, enquanto a fachada de agendamentos impõe propriedade do cliente ou barbeiro. Cookies e CSRF são tratados em `common/security`, pois são controles transversais.
+Esses itens não autorizam refatorações ou migrations durante uma tarefa documental.

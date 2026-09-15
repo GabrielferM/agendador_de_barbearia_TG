@@ -6,24 +6,30 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   autenticacaoControllerLogout,
   autenticacaoControllerMe,
 } from "../api/autenticação/autenticação";
 import type { CodigoPapel, UsuarioAutenticado } from "../pages/login/types";
+import { EVENTO_SESSAO_EXPIRADA } from "../api/http-client";
 
 interface EstadoAutenticacao {
   usuario: UsuarioAutenticado | null;
   carregando: boolean;
-  definirUsuario: (usuario: UsuarioAutenticado) => void;
-  sair: () => Promise<void>;
+  logoutNaoConfirmado: boolean;
+  definirUsuario: (usuario: UsuarioAutenticado) => Promise<void>;
+  encerrarSessaoLocal: () => Promise<void>;
+  sair: () => Promise<boolean>;
 }
 
 const Contexto = createContext<EstadoAutenticacao>({
   usuario: null,
   carregando: false,
-  definirUsuario: () => undefined,
-  sair: async () => undefined,
+  logoutNaoConfirmado: false,
+  definirUsuario: async () => undefined,
+  encerrarSessaoLocal: async () => undefined,
+  sair: async () => false,
 });
 
 function usuarioValido(valor: unknown): valor is UsuarioAutenticado {
@@ -41,8 +47,27 @@ function usuarioValido(valor: unknown): valor is UsuarioAutenticado {
 }
 
 export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [logoutNaoConfirmado, setLogoutNaoConfirmado] = useState(false);
+
+  const limparDadosLocais = useCallback(async () => {
+    setUsuario(null);
+    await queryClient.cancelQueries();
+    queryClient.clear();
+  }, [queryClient]);
+
+  const encerrarSessaoLocal = useCallback(async () => {
+    setLogoutNaoConfirmado(false);
+    await limparDadosLocais();
+  }, [limparDadosLocais]);
+
+  useEffect(() => {
+    const encerrar = () => void encerrarSessaoLocal();
+    window.addEventListener(EVENTO_SESSAO_EXPIRADA, encerrar);
+    return () => window.removeEventListener(EVENTO_SESSAO_EXPIRADA, encerrar);
+  }, [encerrarSessaoLocal]);
 
   useEffect(() => {
     let ativo = true;
@@ -64,17 +89,40 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const sair = useCallback(async () => {
+  const definirUsuario = useCallback(
+    async (novoUsuario: UsuarioAutenticado) => {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      setLogoutNaoConfirmado(false);
+      setUsuario(novoUsuario);
+    },
+    [queryClient],
+  );
+
+  const sair = useCallback(async (): Promise<boolean> => {
+    let confirmado = false;
     try {
-      await autenticacaoControllerLogout();
+      const resposta = await autenticacaoControllerLogout();
+      confirmado = resposta.status >= 200 && resposta.status < 300;
+    } catch {
+      confirmado = false;
     } finally {
-      setUsuario(null);
+      setLogoutNaoConfirmado(!confirmado);
+      await limparDadosLocais();
     }
-  }, []);
+    return confirmado;
+  }, [limparDadosLocais]);
 
   return (
     <Contexto.Provider
-      value={{ usuario, carregando, definirUsuario: setUsuario, sair }}
+      value={{
+        usuario,
+        carregando,
+        logoutNaoConfirmado,
+        definirUsuario,
+        encerrarSessaoLocal,
+        sair,
+      }}
     >
       {children}
     </Contexto.Provider>

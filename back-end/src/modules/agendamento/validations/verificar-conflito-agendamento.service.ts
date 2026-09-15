@@ -1,5 +1,5 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { StatusAgendamento } from '@prisma/client';
+import { Prisma, StatusAgendamento } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 
 const estadosQueOcupamHorario = [
@@ -12,8 +12,14 @@ const estadosQueOcupamHorario = [
 export class VerificarConflitoAgendamentoService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(idBarbeiro: number, inicio: Date, fim: Date, excluirId?: number) {
-    const conflito = await this.prisma.agendamento.findFirst({
+  async execute(
+    idBarbeiro: number,
+    inicio: Date,
+    fim: Date,
+    excluirId?: number,
+    prisma: Prisma.TransactionClient | PrismaService = this.prisma,
+  ) {
+    const conflito = await prisma.agendamento.findFirst({
       where: {
         idBarbeiro,
         status: { in: estadosQueOcupamHorario },

@@ -31,10 +31,12 @@ import {
 import type {
   AtualizarFilialDto,
   CriarFilialDto,
+  ErroRespostaDto,
   FilialControllerAtualizar200,
   FilialControllerBuscar200,
   FilialControllerCriar201,
-  FilialControllerListarParams
+  FilialControllerListarParams,
+  LimiteRequisicoesRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -64,12 +66,44 @@ export type filialControllerCriarResponse201 = {
   status: 201
 }
 
+export type filialControllerCriarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type filialControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type filialControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type filialControllerCriarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type filialControllerCriarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type filialControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type filialControllerCriarResponseSuccess = (filialControllerCriarResponse201) & {
   headers: Headers;
 };
-;
+export type filialControllerCriarResponseError = (filialControllerCriarResponse400 | filialControllerCriarResponse401 | filialControllerCriarResponse403 | filialControllerCriarResponse404 | filialControllerCriarResponse409 | filialControllerCriarResponse429) & {
+  headers: Headers;
+};
 
-export type filialControllerCriarResponse = (filialControllerCriarResponseSuccess)
+export type filialControllerCriarResponse = (filialControllerCriarResponseSuccess | filialControllerCriarResponseError)
 
 export const getFilialControllerCriarUrl = () => {
 
@@ -100,7 +134,7 @@ return httpClient<filialControllerCriarResponse>(getFilialControllerCriarUrl(),
 
 
 
-export const getFilialControllerCriarMutationOptions = <TError = unknown,
+export const getFilialControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext> => {
 
@@ -129,10 +163,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type FilialControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof filialControllerCriar>>>
     export type FilialControllerCriarMutationBody = CriarFilialDto
-    export type FilialControllerCriarMutationError = unknown
+    export type FilialControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type FilialControllerCriarMutationVariables = {data: CriarFilialDto}
 
-    export const useFilialControllerCriar = <TError = unknown,
+    export const useFilialControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerCriar>>, TError,FilialControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof filialControllerCriar>>,
@@ -147,12 +181,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type filialControllerListarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type filialControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type filialControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type filialControllerListarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type filialControllerListarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type filialControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type filialControllerListarResponseSuccess = (filialControllerListarResponse200) & {
   headers: Headers;
 };
-;
+export type filialControllerListarResponseError = (filialControllerListarResponse400 | filialControllerListarResponse401 | filialControllerListarResponse403 | filialControllerListarResponse404 | filialControllerListarResponse409 | filialControllerListarResponse429) & {
+  headers: Headers;
+};
 
-export type filialControllerListarResponse = (filialControllerListarResponseSuccess)
+export type filialControllerListarResponse = (filialControllerListarResponseSuccess | filialControllerListarResponseError)
 
 export const getFilialControllerListarUrl = (params?: FilialControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -191,7 +257,7 @@ export const getFilialControllerListarQueryKey = (params?: FilialControllerLista
     }
 
 
-export const getFilialControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getFilialControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -210,10 +276,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type FilialControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof filialControllerListar>>>
-export type FilialControllerListarQueryError = unknown
+export type FilialControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
+export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  FilialControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof filialControllerListar>>,
@@ -223,7 +289,7 @@ export function useFilialControllerListar<TData = Awaited<ReturnType<typeof fili
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
+export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof filialControllerListar>>,
@@ -233,12 +299,12 @@ export function useFilialControllerListar<TData = Awaited<ReturnType<typeof fili
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
+export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = unknown>(
+export function useFilialControllerListar<TData = Awaited<ReturnType<typeof filialControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: FilialControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -260,12 +326,44 @@ export type filialControllerBuscarResponse200 = {
   status: 200
 }
 
+export type filialControllerBuscarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type filialControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type filialControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type filialControllerBuscarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type filialControllerBuscarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type filialControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type filialControllerBuscarResponseSuccess = (filialControllerBuscarResponse200) & {
   headers: Headers;
 };
-;
+export type filialControllerBuscarResponseError = (filialControllerBuscarResponse400 | filialControllerBuscarResponse401 | filialControllerBuscarResponse403 | filialControllerBuscarResponse404 | filialControllerBuscarResponse409 | filialControllerBuscarResponse429) & {
+  headers: Headers;
+};
 
-export type filialControllerBuscarResponse = (filialControllerBuscarResponseSuccess)
+export type filialControllerBuscarResponse = (filialControllerBuscarResponseSuccess | filialControllerBuscarResponseError)
 
 export const getFilialControllerBuscarUrl = (id: number,) => {
 
@@ -297,7 +395,7 @@ export const getFilialControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getFilialControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getFilialControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -316,10 +414,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type FilialControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof filialControllerBuscar>>>
-export type FilialControllerBuscarQueryError = unknown
+export type FilialControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(
+export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof filialControllerBuscar>>,
@@ -329,7 +427,7 @@ export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof fili
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(
+export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof filialControllerBuscar>>,
@@ -339,12 +437,12 @@ export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof fili
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(
+export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = unknown>(
+export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof filialControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof filialControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -366,12 +464,44 @@ export type filialControllerAtualizarResponse200 = {
   status: 200
 }
 
+export type filialControllerAtualizarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type filialControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type filialControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type filialControllerAtualizarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type filialControllerAtualizarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type filialControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type filialControllerAtualizarResponseSuccess = (filialControllerAtualizarResponse200) & {
   headers: Headers;
 };
-;
+export type filialControllerAtualizarResponseError = (filialControllerAtualizarResponse400 | filialControllerAtualizarResponse401 | filialControllerAtualizarResponse403 | filialControllerAtualizarResponse404 | filialControllerAtualizarResponse409 | filialControllerAtualizarResponse429) & {
+  headers: Headers;
+};
 
-export type filialControllerAtualizarResponse = (filialControllerAtualizarResponseSuccess)
+export type filialControllerAtualizarResponse = (filialControllerAtualizarResponseSuccess | filialControllerAtualizarResponseError)
 
 export const getFilialControllerAtualizarUrl = (id: number,) => {
 
@@ -403,7 +533,7 @@ return httpClient<filialControllerAtualizarResponse>(getFilialControllerAtualiza
 
 
 
-export const getFilialControllerAtualizarMutationOptions = <TError = unknown,
+export const getFilialControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext> => {
 
@@ -432,10 +562,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type FilialControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof filialControllerAtualizar>>>
     export type FilialControllerAtualizarMutationBody = AtualizarFilialDto
-    export type FilialControllerAtualizarMutationError = unknown
+    export type FilialControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type FilialControllerAtualizarMutationVariables = {id: number;data: AtualizarFilialDto}
 
-    export const useFilialControllerAtualizar = <TError = unknown,
+    export const useFilialControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerAtualizar>>, TError,FilialControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof filialControllerAtualizar>>,
@@ -450,12 +580,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type filialControllerRemoverResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type filialControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type filialControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type filialControllerRemoverResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type filialControllerRemoverResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type filialControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type filialControllerRemoverResponseSuccess = (filialControllerRemoverResponse200) & {
   headers: Headers;
 };
-;
+export type filialControllerRemoverResponseError = (filialControllerRemoverResponse400 | filialControllerRemoverResponse401 | filialControllerRemoverResponse403 | filialControllerRemoverResponse404 | filialControllerRemoverResponse409 | filialControllerRemoverResponse429) & {
+  headers: Headers;
+};
 
-export type filialControllerRemoverResponse = (filialControllerRemoverResponseSuccess)
+export type filialControllerRemoverResponse = (filialControllerRemoverResponseSuccess | filialControllerRemoverResponseError)
 
 export const getFilialControllerRemoverUrl = (id: number,) => {
 
@@ -480,7 +642,7 @@ export const filialControllerRemover = async (id: number, options?: Parameters<t
 
 
 
-export const getFilialControllerRemoverMutationOptions = <TError = unknown,
+export const getFilialControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext> => {
 
@@ -509,10 +671,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type FilialControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof filialControllerRemover>>>
 
-    export type FilialControllerRemoverMutationError = unknown
+    export type FilialControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type FilialControllerRemoverMutationVariables = {id: number}
 
-    export const useFilialControllerRemover = <TError = unknown,
+    export const useFilialControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof filialControllerRemover>>, TError,FilialControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof filialControllerRemover>>,

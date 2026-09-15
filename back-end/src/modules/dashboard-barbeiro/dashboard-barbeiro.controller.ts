@@ -5,8 +5,10 @@ import { UsuarioAtual } from '../../common/auth/usuario-atual.decorator';
 import type { UsuarioAutenticado } from '../../common/auth/auth.types';
 import { DashboardBarbeiroService } from './dashboard-barbeiro.service';
 import { DashboardBarbeiroRespostaDto } from './dto/dashboard-barbeiro-resposta.dto';
+import { ApiErrosAutenticados } from '../../common/swagger/decorators';
 
 @ApiTags('Dashboard do barbeiro')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_PROPRIA_AGENDA')
 @Controller('dashboard/barbeiro')
 export class DashboardBarbeiroController {

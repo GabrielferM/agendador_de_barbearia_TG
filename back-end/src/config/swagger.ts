@@ -4,6 +4,12 @@ import { EnvironmentVariables } from './environment';
 
 export function configurarSwagger(app: INestApplication, environment: EnvironmentVariables) {
   if (environment.NODE_ENV === 'production') return;
+  SwaggerModule.setup('api', app, criarDocumentoSwagger(app), {
+    raw: ['json', 'yaml'],
+  });
+}
+
+export function criarDocumentoSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
     .setTitle('API Agendador de Barbearia')
     .setDescription('Contrato OpenAPI da API REST do Agendador de Barbearia.')
@@ -26,7 +32,5 @@ export function configurarSwagger(app: INestApplication, environment: Environmen
     .addTag('Dashboard administrativo')
     .addTag('Dashboard do barbeiro')
     .build();
-  SwaggerModule.setup('api', app, SwaggerModule.createDocument(app, config), {
-    raw: ['json', 'yaml'],
-  });
+  return SwaggerModule.createDocument(app, config);
 }

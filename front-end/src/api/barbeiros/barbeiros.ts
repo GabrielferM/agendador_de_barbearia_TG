@@ -34,6 +34,7 @@ import type {
   BarbeiroRespostaDto,
   CriarBarbeiroDto,
   ErroRespostaDto,
+  LimiteRequisicoesRespostaDto,
   ListaBarbeirosRespostaDto
 } from '../models';
 
@@ -69,6 +70,16 @@ export type barbeiroControllerCriarResponse400 = {
   status: 400
 }
 
+export type barbeiroControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type barbeiroControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type barbeiroControllerCriarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -79,10 +90,15 @@ export type barbeiroControllerCriarResponse409 = {
   status: 409
 }
 
+export type barbeiroControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type barbeiroControllerCriarResponseSuccess = (barbeiroControllerCriarResponse201) & {
   headers: Headers;
 };
-export type barbeiroControllerCriarResponseError = (barbeiroControllerCriarResponse400 | barbeiroControllerCriarResponse404 | barbeiroControllerCriarResponse409) & {
+export type barbeiroControllerCriarResponseError = (barbeiroControllerCriarResponse400 | barbeiroControllerCriarResponse401 | barbeiroControllerCriarResponse403 | barbeiroControllerCriarResponse404 | barbeiroControllerCriarResponse409 | barbeiroControllerCriarResponse429) & {
   headers: Headers;
 };
 
@@ -120,7 +136,7 @@ return httpClient<barbeiroControllerCriarResponse>(getBarbeiroControllerCriarUrl
 
 
 
-export const getBarbeiroControllerCriarMutationOptions = <TError = ErroRespostaDto,
+export const getBarbeiroControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext> => {
 
@@ -149,13 +165,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type BarbeiroControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerCriar>>>
     export type BarbeiroControllerCriarMutationBody = CriarBarbeiroDto
-    export type BarbeiroControllerCriarMutationError = ErroRespostaDto
+    export type BarbeiroControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type BarbeiroControllerCriarMutationVariables = {data: CriarBarbeiroDto}
 
     /**
  * @summary Cria um barbeiro
  */
-export const useBarbeiroControllerCriar = <TError = ErroRespostaDto,
+export const useBarbeiroControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerCriar>>, TError,BarbeiroControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof barbeiroControllerCriar>>,
@@ -175,6 +191,16 @@ export type barbeiroControllerListarResponse400 = {
   status: 400
 }
 
+export type barbeiroControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type barbeiroControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type barbeiroControllerListarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -185,10 +211,15 @@ export type barbeiroControllerListarResponse409 = {
   status: 409
 }
 
+export type barbeiroControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type barbeiroControllerListarResponseSuccess = (barbeiroControllerListarResponse200) & {
   headers: Headers;
 };
-export type barbeiroControllerListarResponseError = (barbeiroControllerListarResponse400 | barbeiroControllerListarResponse404 | barbeiroControllerListarResponse409) & {
+export type barbeiroControllerListarResponseError = (barbeiroControllerListarResponse400 | barbeiroControllerListarResponse401 | barbeiroControllerListarResponse403 | barbeiroControllerListarResponse404 | barbeiroControllerListarResponse409 | barbeiroControllerListarResponse429) & {
   headers: Headers;
 };
 
@@ -234,7 +265,7 @@ export const getBarbeiroControllerListarQueryKey = (params?: BarbeiroControllerL
     }
 
 
-export const getBarbeiroControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getBarbeiroControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -253,10 +284,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type BarbeiroControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerListar>>>
-export type BarbeiroControllerListarQueryError = ErroRespostaDto
+export type BarbeiroControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  BarbeiroControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerListar>>,
@@ -266,7 +297,7 @@ export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof ba
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerListar>>,
@@ -276,7 +307,7 @@ export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof ba
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -284,7 +315,7 @@ export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof ba
  * @summary Lista os barbeiros de forma paginada
  */
 
-export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerListar<TData = Awaited<ReturnType<typeof barbeiroControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: BarbeiroControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -311,6 +342,16 @@ export type barbeiroControllerBuscarResponse400 = {
   status: 400
 }
 
+export type barbeiroControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type barbeiroControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type barbeiroControllerBuscarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -321,10 +362,15 @@ export type barbeiroControllerBuscarResponse409 = {
   status: 409
 }
 
+export type barbeiroControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type barbeiroControllerBuscarResponseSuccess = (barbeiroControllerBuscarResponse200) & {
   headers: Headers;
 };
-export type barbeiroControllerBuscarResponseError = (barbeiroControllerBuscarResponse400 | barbeiroControllerBuscarResponse404 | barbeiroControllerBuscarResponse409) & {
+export type barbeiroControllerBuscarResponseError = (barbeiroControllerBuscarResponse400 | barbeiroControllerBuscarResponse401 | barbeiroControllerBuscarResponse403 | barbeiroControllerBuscarResponse404 | barbeiroControllerBuscarResponse409 | barbeiroControllerBuscarResponse429) & {
   headers: Headers;
 };
 
@@ -363,7 +409,7 @@ export const getBarbeiroControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getBarbeiroControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getBarbeiroControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -382,10 +428,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type BarbeiroControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerBuscar>>>
-export type BarbeiroControllerBuscarQueryError = ErroRespostaDto
+export type BarbeiroControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerBuscar>>,
@@ -395,7 +441,7 @@ export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof ba
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof barbeiroControllerBuscar>>,
@@ -405,7 +451,7 @@ export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof ba
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -413,7 +459,7 @@ export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof ba
  * @summary Busca um barbeiro pelo identificador
  */
 
-export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto>(
+export function useBarbeiroControllerBuscar<TData = Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof barbeiroControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -440,6 +486,16 @@ export type barbeiroControllerAtualizarResponse400 = {
   status: 400
 }
 
+export type barbeiroControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type barbeiroControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type barbeiroControllerAtualizarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -450,10 +506,15 @@ export type barbeiroControllerAtualizarResponse409 = {
   status: 409
 }
 
+export type barbeiroControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type barbeiroControllerAtualizarResponseSuccess = (barbeiroControllerAtualizarResponse200) & {
   headers: Headers;
 };
-export type barbeiroControllerAtualizarResponseError = (barbeiroControllerAtualizarResponse400 | barbeiroControllerAtualizarResponse404 | barbeiroControllerAtualizarResponse409) & {
+export type barbeiroControllerAtualizarResponseError = (barbeiroControllerAtualizarResponse400 | barbeiroControllerAtualizarResponse401 | barbeiroControllerAtualizarResponse403 | barbeiroControllerAtualizarResponse404 | barbeiroControllerAtualizarResponse409 | barbeiroControllerAtualizarResponse429) & {
   headers: Headers;
 };
 
@@ -492,7 +553,7 @@ return httpClient<barbeiroControllerAtualizarResponse>(getBarbeiroControllerAtua
 
 
 
-export const getBarbeiroControllerAtualizarMutationOptions = <TError = ErroRespostaDto,
+export const getBarbeiroControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext> => {
 
@@ -521,13 +582,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type BarbeiroControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>>
     export type BarbeiroControllerAtualizarMutationBody = AtualizarBarbeiroDto
-    export type BarbeiroControllerAtualizarMutationError = ErroRespostaDto
+    export type BarbeiroControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type BarbeiroControllerAtualizarMutationVariables = {id: number;data: AtualizarBarbeiroDto}
 
     /**
  * @summary Atualiza um barbeiro pelo identificador
  */
-export const useBarbeiroControllerAtualizar = <TError = ErroRespostaDto,
+export const useBarbeiroControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerAtualizar>>, TError,BarbeiroControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof barbeiroControllerAtualizar>>,
@@ -547,6 +608,16 @@ export type barbeiroControllerRemoverResponse400 = {
   status: 400
 }
 
+export type barbeiroControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type barbeiroControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type barbeiroControllerRemoverResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -557,10 +628,15 @@ export type barbeiroControllerRemoverResponse409 = {
   status: 409
 }
 
+export type barbeiroControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type barbeiroControllerRemoverResponseSuccess = (barbeiroControllerRemoverResponse200) & {
   headers: Headers;
 };
-export type barbeiroControllerRemoverResponseError = (barbeiroControllerRemoverResponse400 | barbeiroControllerRemoverResponse404 | barbeiroControllerRemoverResponse409) & {
+export type barbeiroControllerRemoverResponseError = (barbeiroControllerRemoverResponse400 | barbeiroControllerRemoverResponse401 | barbeiroControllerRemoverResponse403 | barbeiroControllerRemoverResponse404 | barbeiroControllerRemoverResponse409 | barbeiroControllerRemoverResponse429) & {
   headers: Headers;
 };
 
@@ -592,7 +668,7 @@ export const barbeiroControllerRemover = async (id: number, options?: Parameters
 
 
 
-export const getBarbeiroControllerRemoverMutationOptions = <TError = ErroRespostaDto,
+export const getBarbeiroControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext> => {
 
@@ -621,13 +697,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type BarbeiroControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof barbeiroControllerRemover>>>
 
-    export type BarbeiroControllerRemoverMutationError = ErroRespostaDto
+    export type BarbeiroControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type BarbeiroControllerRemoverMutationVariables = {id: number}
 
     /**
  * @summary Remove um barbeiro pelo identificador
  */
-export const useBarbeiroControllerRemover = <TError = ErroRespostaDto,
+export const useBarbeiroControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof barbeiroControllerRemover>>, TError,BarbeiroControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof barbeiroControllerRemover>>,

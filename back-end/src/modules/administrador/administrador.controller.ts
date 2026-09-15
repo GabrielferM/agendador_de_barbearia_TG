@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiCrudErrors, ApiIdParam } from '../../common/swagger/decorators';
+import { ApiCrudErrors, ApiErrosAutenticados, ApiIdParam } from '../../common/swagger/decorators';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
 import {
   AtualizarAdministradorDto,
@@ -20,6 +20,7 @@ import {
 import { AdministradorService } from './administrador.service';
 
 @ApiTags('Administradores')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_USUARIOS')
 @Controller('administradores')
 export class AdministradorController {

@@ -1,5 +1,5 @@
 import { Type } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class MetaPaginacaoDto {
   @ApiProperty({ example: 1 }) pagina!: number;
@@ -21,6 +21,17 @@ export function criarRespostaPaginadaDto<T>(modelo: Type<T>) {
 
 export class ErroRespostaDto {
   @ApiProperty({ example: 409 }) statusCode!: number;
-  @ApiProperty({ example: 'Conflito de regra de negócio.' }) message!: string | string[];
-  @ApiProperty({ example: 'Conflict' }) error!: string;
+  @ApiProperty({
+    oneOf: [
+      { type: 'string', example: 'Conflito de regra de negócio.' },
+      { type: 'array', items: { type: 'string' }, example: ['campo must be a string'] },
+    ],
+  })
+  message!: string | string[];
+  @ApiPropertyOptional({ example: 'Conflict' }) error?: string;
+}
+
+export class LimiteRequisicoesRespostaDto extends ErroRespostaDto {
+  @ApiProperty({ example: 60, description: 'Segundos até uma nova tentativa.' })
+  retryAfter!: number;
 }

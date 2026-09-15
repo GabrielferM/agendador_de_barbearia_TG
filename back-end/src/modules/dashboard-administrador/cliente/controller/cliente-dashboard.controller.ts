@@ -6,8 +6,10 @@ import {
   ConsultarClientesDashboardDto,
 } from '../dto/cliente-dashboard.dto';
 import { ClienteDashboardService } from '../services/cliente-dashboard.service';
+import { ApiErrosAutenticados } from '../../../../common/swagger/decorators';
 
 @ApiTags('Dashboard administrativo - clientes')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_USUARIOS')
 @Controller('dashboard/administrador/clientes')
 export class ClienteDashboardController {

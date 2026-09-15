@@ -6,8 +6,10 @@ import {
   FinanceiroDashboardRespostaDto,
 } from '../dto/financeiro-dashboard.dto';
 import { FinanceiroDashboardService } from '../services/financeiro-dashboard.service';
+import { ApiErrosAutenticados } from '../../../../common/swagger/decorators';
 
 @ApiTags('Dashboard administrativo - financeiro')
+@ApiErrosAutenticados()
 @ExigirPermissoes('GERENCIAR_COMISSOES')
 @Controller('dashboard/administrador/financeiro')
 export class FinanceiroDashboardController {

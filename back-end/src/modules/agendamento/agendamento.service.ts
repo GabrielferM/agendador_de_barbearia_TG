@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OrigemAgendamento, StatusAgendamento } from '@prisma/client';
 import { UsuarioAutenticado } from '../../common/auth/auth.types';
-import { PrismaService } from '../../prisma/prisma.service';
 import { CriarAgendamentoService } from './service/criar-agendamento.service';
 import { ListarAgendamentosService } from './service/listar-agendamentos.service';
 import { BuscarAgendamentoService } from './service/buscar-agendamento.service';
@@ -15,6 +14,7 @@ import {
   ListarHistoricoStatusDto,
   CriarHistoricoStatusDto,
 } from './dto/agendamento.dto';
+import { ValidarAcessoAgendamentoService } from './validations/validar-acesso-agendamento.service';
 
 @Injectable()
 export class AgendamentoService {
@@ -25,7 +25,7 @@ export class AgendamentoService {
     private readonly editarService: EditarAgendamentoService,
     private readonly removerService: RemoverAgendamentoService,
     private readonly historicoService: HistoricoStatusAgendamentoService,
-    private readonly prisma: PrismaService,
+    private readonly validarAcesso: ValidarAcessoAgendamentoService,
   ) {}
 
   async criar(dto: CriarAgendamentoDto, usuario?: UsuarioAutenticado) {
@@ -70,13 +70,13 @@ export class AgendamentoService {
   }
 
   async buscar(id: number, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     const resultado = await this.buscarService.execute(id);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
 
   async atualizar(id: number, dto: AtualizarAgendamentoDto, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     if (usuario?.clienteId) {
       const chaves = Object.keys(dto);
       if (
@@ -103,28 +103,17 @@ export class AgendamentoService {
     return this.removerService.execute(id);
   }
   async listarHistorico(id: number, query: ListarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     const resultado = await this.historicoService.listar(id, query);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     if (usuario?.clienteId) throw new ForbiddenException();
     return this.historicoService.criar(id, {
       ...dto,
       idUsuarioResponsavel: usuario?.id ?? dto.idUsuarioResponsavel,
     });
-  }
-
-  private async validarPropriedade(id: number, usuario?: UsuarioAutenticado) {
-    if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) return;
-    const item = await this.prisma.agendamento.findUnique({
-      where: { id },
-      select: { idCliente: true, idBarbeiro: true },
-    });
-    if (!item || (item.idCliente !== usuario.clienteId && item.idBarbeiro !== usuario.barbeiroId)) {
-      throw new ForbiddenException('Você não pode acessar este agendamento.');
-    }
   }
 
   private semCamposInternos(valor: unknown): unknown {
