@@ -1,3 +1,5 @@
+import { ValidarVinculosAgendamentoService } from '../validations/validar-vinculos-agendamento.service';
+import { duracaoItens, validarExpediente } from '../constants/expediente';
 import {
   BadRequestException,
   ConflictException,
@@ -7,6 +9,7 @@ import {
 import { Prisma, StatusAgendamento } from '@prisma/client';
 import { serializarResposta } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { executarTransacaoSerializavel } from '../../../prisma/transacao';
 import { includeAgendamento } from '../constants/include-agendamento';
 import { transicoesStatusAgendamento } from '../constants/transicoes-status-agendamento';
 import { AtualizarAgendamentoDto } from '../dto/agendamento.dto';
@@ -21,74 +24,104 @@ export class EditarAgendamentoService {
     private readonly validarDataHora: ValidarDataHoraAgendamentoService,
     private readonly prepararItens: PrepararItensAgendamentoService,
     private readonly verificarConflito: VerificarConflitoAgendamentoService,
+    private readonly validarVinculos: ValidarVinculosAgendamentoService,
   ) {}
   async execute(id: number, dto: AtualizarAgendamentoDto) {
-    const atual = await this.prisma.agendamento.findUnique({
-      where: { id },
-      include: includeAgendamento,
-    });
-    if (!atual) throw new NotFoundException('Agendamento não encontrado.');
-    const estadosFinais: StatusAgendamento[] = [
-      StatusAgendamento.CONCLUIDO,
-      StatusAgendamento.CANCELADO,
-      StatusAgendamento.NAO_COMPARECEU,
-    ];
-    if (estadosFinais.includes(atual.status))
-      throw new ConflictException('Agendamento em estado final não pode ser alterado.');
-    if (dto.status && !transicoesStatusAgendamento[atual.status].includes(dto.status))
-      throw new ConflictException('Transição de status inválida.');
-    if (dto.status === StatusAgendamento.CANCELADO && !dto.motivoCancelamento?.trim())
-      throw new BadRequestException('Motivo do cancelamento é obrigatório.');
-    let inicioPrevisto = atual.inicioPrevisto;
-    if (dto.inicio) {
-      inicioPrevisto = this.validarDataHora.execute(dto.inicio);
-      if (inicioPrevisto <= new Date())
-        throw new BadRequestException('O início deve estar no futuro.');
+    try {
+      const resultado = await executarTransacaoSerializavel(this.prisma, async (transaction) => {
+        const atual = await transaction.agendamento.findUnique({
+          where: { id },
+          include: includeAgendamento,
+        });
+        if (!atual) throw new NotFoundException('Agendamento não encontrado.');
+        const estadosFinais: StatusAgendamento[] = [
+          StatusAgendamento.CONCLUIDO,
+          StatusAgendamento.CANCELADO,
+          StatusAgendamento.NAO_COMPARECEU,
+        ];
+        if (estadosFinais.includes(atual.status))
+          throw new ConflictException('Agendamento em estado final não pode ser alterado.');
+        if (dto.status && !transicoesStatusAgendamento[atual.status].includes(dto.status))
+          throw new ConflictException('Transição de status inválida.');
+        if (dto.status === StatusAgendamento.CANCELADO && !dto.motivoCancelamento?.trim())
+          throw new BadRequestException('Motivo do cancelamento é obrigatório.');
+
+        let inicioPrevisto = atual.inicioPrevisto;
+        if (dto.inicio) {
+          inicioPrevisto = this.validarDataHora.execute(dto.inicio);
+          if (inicioPrevisto <= new Date())
+            throw new BadRequestException('O início deve estar no futuro.');
+        }
+        const alterarItens = dto.servicos !== undefined || dto.servicoIds !== undefined;
+        if (
+          alterarItens &&
+          (await transaction.agendamentoServico.count({
+            where: { idAgendamento: id, comissao: { isNot: null } },
+          }))
+        )
+          throw new ConflictException(
+            'Agendamento possui comissões vinculadas e seus itens não podem ser alterados.',
+          );
+        const itens = alterarItens
+          ? await this.prepararItens.execute(dto.servicos, dto.servicoIds, transaction)
+          : atual.servicos.map((item) => ({
+              idServico: item.idServico,
+              precoAplicado: item.precoAplicado,
+              duracaoAplicadaMinutos: item.duracaoAplicadaMinutos,
+              quantidade: item.quantidade,
+              desconto: item.desconto,
+              subtotal: item.subtotal,
+              ordemExecucao: item.ordemExecucao,
+            }));
+        const fimPrevisto = new Date(inicioPrevisto.getTime() + duracaoItens(itens) * 60000);
+        if (dto.inicio || alterarItens) {
+          validarExpediente(inicioPrevisto, fimPrevisto);
+          await this.validarVinculos.execute(
+            atual.idCliente,
+            atual.idBarbeiro,
+            atual.idFilial,
+            transaction,
+          );
+          await this.prepararItens.execute(
+            undefined,
+            itens.map((item) => item.idServico),
+            transaction,
+          );
+        }
+        if (dto.inicio || alterarItens)
+          await this.verificarConflito.execute(
+            atual.idBarbeiro,
+            inicioPrevisto,
+            fimPrevisto,
+            id,
+            transaction,
+          );
+        const data: Prisma.AgendamentoUpdateInput = {
+          ...(dto.inicio || alterarItens ? { inicioPrevisto, fimPrevisto } : {}),
+          ...(alterarItens ? { servicos: { deleteMany: {}, create: itens } } : {}),
+          ...(dto.observacaoCliente !== undefined
+            ? { observacaoCliente: dto.observacaoCliente.trim() }
+            : {}),
+          ...(dto.observacaoInterna !== undefined
+            ? { observacaoInterna: dto.observacaoInterna.trim() }
+            : {}),
+          ...(dto.status ? { status: dto.status } : {}),
+          ...(dto.status === StatusAgendamento.CANCELADO
+            ? { dataCancelamento: new Date(), motivoCancelamento: dto.motivoCancelamento?.trim() }
+            : {}),
+        };
+        return transaction.agendamento.update({
+          where: { id },
+          data,
+          include: includeAgendamento,
+        });
+      });
+      return serializarResposta(resultado);
+    } catch (erro) {
+      if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2034') {
+        throw new ConflictException('A agenda foi alterada simultaneamente. Tente novamente.');
+      }
+      throw erro;
     }
-    const alterarItens = dto.servicos !== undefined || dto.servicoIds !== undefined;
-    if (
-      alterarItens &&
-      (await this.prisma.agendamentoServico.count({
-        where: { idAgendamento: id, comissao: { isNot: null } },
-      }))
-    )
-      throw new ConflictException(
-        'Agendamento possui comissões vinculadas e seus itens não podem ser alterados.',
-      );
-    const itens = alterarItens
-      ? await this.prepararItens.execute(dto.servicos, dto.servicoIds)
-      : atual.servicos.map((item) => ({
-          idServico: item.idServico,
-          precoAplicado: item.precoAplicado,
-          duracaoAplicadaMinutos: item.duracaoAplicadaMinutos,
-          quantidade: item.quantidade,
-          desconto: item.desconto,
-          subtotal: item.subtotal,
-          ordemExecucao: item.ordemExecucao,
-        }));
-    const fimPrevisto = new Date(
-      inicioPrevisto.getTime() +
-        itens.reduce((total, item) => total + item.duracaoAplicadaMinutos * item.quantidade, 0) *
-          60000,
-    );
-    if (dto.inicio || alterarItens)
-      await this.verificarConflito.execute(atual.idBarbeiro, inicioPrevisto, fimPrevisto, id);
-    const data: Prisma.AgendamentoUpdateInput = {
-      ...(dto.inicio || alterarItens ? { inicioPrevisto, fimPrevisto } : {}),
-      ...(alterarItens ? { servicos: { deleteMany: {}, create: itens } } : {}),
-      ...(dto.observacaoCliente !== undefined
-        ? { observacaoCliente: dto.observacaoCliente.trim() }
-        : {}),
-      ...(dto.observacaoInterna !== undefined
-        ? { observacaoInterna: dto.observacaoInterna.trim() }
-        : {}),
-      ...(dto.status ? { status: dto.status } : {}),
-      ...(dto.status === StatusAgendamento.CANCELADO
-        ? { dataCancelamento: new Date(), motivoCancelamento: dto.motivoCancelamento?.trim() }
-        : {}),
-    };
-    return serializarResposta(
-      await this.prisma.agendamento.update({ where: { id }, data, include: includeAgendamento }),
-    );
   }
 }

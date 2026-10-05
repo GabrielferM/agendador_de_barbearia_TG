@@ -30,6 +30,8 @@ import {
 
 import type {
   AutenticacaoRespostaDto,
+  ErroRespostaDto,
+  LimiteRequisicoesRespostaDto,
   LoginDto
 } from '../models';
 
@@ -60,15 +62,35 @@ export type autenticacaoControllerLoginResponse200 = {
   status: 200
 }
 
+export type autenticacaoControllerLoginResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
 export type autenticacaoControllerLoginResponse401 = {
-  data: void
+  data: ErroRespostaDto
   status: 401
+}
+
+export type autenticacaoControllerLoginResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type autenticacaoControllerLoginResponse415 = {
+  data: ErroRespostaDto
+  status: 415
+}
+
+export type autenticacaoControllerLoginResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
 }
 
 export type autenticacaoControllerLoginResponseSuccess = (autenticacaoControllerLoginResponse200) & {
   headers: Headers;
 };
-export type autenticacaoControllerLoginResponseError = (autenticacaoControllerLoginResponse401) & {
+export type autenticacaoControllerLoginResponseError = (autenticacaoControllerLoginResponse400 | autenticacaoControllerLoginResponse401 | autenticacaoControllerLoginResponse403 | autenticacaoControllerLoginResponse415 | autenticacaoControllerLoginResponse429) & {
   headers: Headers;
 };
 
@@ -103,7 +125,7 @@ return httpClient<autenticacaoControllerLoginResponse>(getAutenticacaoController
 
 
 
-export const getAutenticacaoControllerLoginMutationOptions = <TError = void,
+export const getAutenticacaoControllerLoginMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerLogin>>, TError,AutenticacaoControllerLoginMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerLogin>>, TError,AutenticacaoControllerLoginMutationVariables, TContext> => {
 
@@ -132,10 +154,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AutenticacaoControllerLoginMutationResult = NonNullable<Awaited<ReturnType<typeof autenticacaoControllerLogin>>>
     export type AutenticacaoControllerLoginMutationBody = LoginDto
-    export type AutenticacaoControllerLoginMutationError = void
+    export type AutenticacaoControllerLoginMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AutenticacaoControllerLoginMutationVariables = {data: LoginDto}
 
-    export const useAutenticacaoControllerLogin = <TError = void,
+    export const useAutenticacaoControllerLogin = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerLogin>>, TError,AutenticacaoControllerLoginMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof autenticacaoControllerLogin>>,
@@ -150,12 +172,29 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type autenticacaoControllerMeResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type autenticacaoControllerMeResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type autenticacaoControllerMeResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type autenticacaoControllerMeResponseSuccess = (autenticacaoControllerMeResponse200) & {
   headers: Headers;
 };
-;
+export type autenticacaoControllerMeResponseError = (autenticacaoControllerMeResponse401 | autenticacaoControllerMeResponse403 | autenticacaoControllerMeResponse429) & {
+  headers: Headers;
+};
 
-export type autenticacaoControllerMeResponse = (autenticacaoControllerMeResponseSuccess)
+export type autenticacaoControllerMeResponse = (autenticacaoControllerMeResponseSuccess | autenticacaoControllerMeResponseError)
 
 export const getAutenticacaoControllerMeUrl = () => {
 
@@ -187,7 +226,7 @@ export const getAutenticacaoControllerMeQueryKey = () => {
     }
 
 
-export const getAutenticacaoControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getAutenticacaoControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -206,10 +245,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AutenticacaoControllerMeQueryResult = NonNullable<Awaited<ReturnType<typeof autenticacaoControllerMe>>>
-export type AutenticacaoControllerMeQueryError = unknown
+export type AutenticacaoControllerMeQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = unknown>(
+export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof autenticacaoControllerMe>>,
@@ -219,7 +258,7 @@ export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof au
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = unknown>(
+export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof autenticacaoControllerMe>>,
@@ -229,12 +268,12 @@ export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof au
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = unknown>(
+export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = unknown>(
+export function useAutenticacaoControllerMe<TData = Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerMe>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -256,12 +295,29 @@ export type autenticacaoControllerCsrfTokenResponse200 = {
   status: 200
 }
 
+export type autenticacaoControllerCsrfTokenResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type autenticacaoControllerCsrfTokenResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type autenticacaoControllerCsrfTokenResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type autenticacaoControllerCsrfTokenResponseSuccess = (autenticacaoControllerCsrfTokenResponse200) & {
   headers: Headers;
 };
-;
+export type autenticacaoControllerCsrfTokenResponseError = (autenticacaoControllerCsrfTokenResponse401 | autenticacaoControllerCsrfTokenResponse403 | autenticacaoControllerCsrfTokenResponse429) & {
+  headers: Headers;
+};
 
-export type autenticacaoControllerCsrfTokenResponse = (autenticacaoControllerCsrfTokenResponseSuccess)
+export type autenticacaoControllerCsrfTokenResponse = (autenticacaoControllerCsrfTokenResponseSuccess | autenticacaoControllerCsrfTokenResponseError)
 
 export const getAutenticacaoControllerCsrfTokenUrl = () => {
 
@@ -296,7 +352,7 @@ export const getAutenticacaoControllerCsrfTokenQueryKey = () => {
     }
 
 
-export const getAutenticacaoControllerCsrfTokenQueryOptions = <TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getAutenticacaoControllerCsrfTokenQueryOptions = <TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -315,10 +371,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AutenticacaoControllerCsrfTokenQueryResult = NonNullable<Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>>
-export type AutenticacaoControllerCsrfTokenQueryError = unknown
+export type AutenticacaoControllerCsrfTokenQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = unknown>(
+export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>,
@@ -328,7 +384,7 @@ export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<ty
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = unknown>(
+export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>,
@@ -338,7 +394,7 @@ export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<ty
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = unknown>(
+export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -346,7 +402,7 @@ export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<ty
  * @summary Renova o token CSRF da sessão atual
  */
 
-export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = unknown>(
+export function useAutenticacaoControllerCsrfToken<TData = Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof autenticacaoControllerCsrfToken>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -368,12 +424,29 @@ export type autenticacaoControllerLogoutResponse200 = {
   status: 200
 }
 
+export type autenticacaoControllerLogoutResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type autenticacaoControllerLogoutResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type autenticacaoControllerLogoutResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type autenticacaoControllerLogoutResponseSuccess = (autenticacaoControllerLogoutResponse200) & {
   headers: Headers;
 };
-;
+export type autenticacaoControllerLogoutResponseError = (autenticacaoControllerLogoutResponse401 | autenticacaoControllerLogoutResponse403 | autenticacaoControllerLogoutResponse429) & {
+  headers: Headers;
+};
 
-export type autenticacaoControllerLogoutResponse = (autenticacaoControllerLogoutResponseSuccess)
+export type autenticacaoControllerLogoutResponse = (autenticacaoControllerLogoutResponseSuccess | autenticacaoControllerLogoutResponseError)
 
 export const getAutenticacaoControllerLogoutUrl = () => {
 
@@ -398,7 +471,7 @@ export const autenticacaoControllerLogout = async ( options?: Parameters<typeof 
 
 
 
-export const getAutenticacaoControllerLogoutMutationOptions = <TError = unknown,
+export const getAutenticacaoControllerLogoutMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerLogout>>, TError,void, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerLogout>>, TError,void, TContext> => {
 
@@ -427,10 +500,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AutenticacaoControllerLogoutMutationResult = NonNullable<Awaited<ReturnType<typeof autenticacaoControllerLogout>>>
 
-    export type AutenticacaoControllerLogoutMutationError = unknown
+    export type AutenticacaoControllerLogoutMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-    export const useAutenticacaoControllerLogout = <TError = unknown,
+    export const useAutenticacaoControllerLogout = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerLogout>>, TError,void, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof autenticacaoControllerLogout>>,

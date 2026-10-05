@@ -13,7 +13,10 @@ import { AtualizarClienteDto, CriarClienteDto, ListarClientesDto } from './dto/c
 import { ClienteService } from './cliente.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
+import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 @ApiTags('Clientes')
+@ApiErrosAutenticados()
+@ApiCrudErrors()
 @ExigirPermissoes('GERENCIAR_USUARIOS')
 @Controller('clientes')
 export class ClienteController {

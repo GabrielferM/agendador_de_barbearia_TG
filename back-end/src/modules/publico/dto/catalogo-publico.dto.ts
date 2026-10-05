@@ -1,3 +1,6 @@
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, Min } from 'class-validator';
+import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MetaPaginacaoDto } from '../../../common/swagger/respostas.dto';
 
@@ -48,4 +51,8 @@ export class FilialPublicaDto {
 export class ListaFiliaisPublicasDto {
   @ApiProperty({ type: () => FilialPublicaDto, isArray: true }) data!: FilialPublicaDto[];
   @ApiProperty({ type: () => MetaPaginacaoDto }) meta!: MetaPaginacaoDto;
+}
+
+export class ListarBarbeirosPublicosDto extends PaginacaoDto {
+  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(1) idFilial?: number;
 }

@@ -32,6 +32,8 @@ import type {
   AtualizarPapelDto,
   AtualizarPapelPermissaoDto,
   CriarPapelDto,
+  ErroRespostaDto,
+  LimiteRequisicoesRespostaDto,
   PapelControllerListarParams,
   PapelControllerListarPermissoes200Item,
   VincularPermissaoDto
@@ -64,12 +66,44 @@ export type papelControllerCriarResponse201 = {
   status: 201
 }
 
+export type papelControllerCriarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerCriarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerCriarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerCriarResponseSuccess = (papelControllerCriarResponse201) & {
   headers: Headers;
 };
-;
+export type papelControllerCriarResponseError = (papelControllerCriarResponse400 | papelControllerCriarResponse401 | papelControllerCriarResponse403 | papelControllerCriarResponse404 | papelControllerCriarResponse409 | papelControllerCriarResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerCriarResponse = (papelControllerCriarResponseSuccess)
+export type papelControllerCriarResponse = (papelControllerCriarResponseSuccess | papelControllerCriarResponseError)
 
 export const getPapelControllerCriarUrl = () => {
 
@@ -100,7 +134,7 @@ return httpClient<papelControllerCriarResponse>(getPapelControllerCriarUrl(),
 
 
 
-export const getPapelControllerCriarMutationOptions = <TError = unknown,
+export const getPapelControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerCriar>>, TError,PapelControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof papelControllerCriar>>, TError,PapelControllerCriarMutationVariables, TContext> => {
 
@@ -129,10 +163,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PapelControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof papelControllerCriar>>>
     export type PapelControllerCriarMutationBody = CriarPapelDto
-    export type PapelControllerCriarMutationError = unknown
+    export type PapelControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PapelControllerCriarMutationVariables = {data: CriarPapelDto}
 
-    export const usePapelControllerCriar = <TError = unknown,
+    export const usePapelControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerCriar>>, TError,PapelControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof papelControllerCriar>>,
@@ -147,12 +181,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type papelControllerListarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerListarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerListarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerListarResponseSuccess = (papelControllerListarResponse200) & {
   headers: Headers;
 };
-;
+export type papelControllerListarResponseError = (papelControllerListarResponse400 | papelControllerListarResponse401 | papelControllerListarResponse403 | papelControllerListarResponse404 | papelControllerListarResponse409 | papelControllerListarResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerListarResponse = (papelControllerListarResponseSuccess)
+export type papelControllerListarResponse = (papelControllerListarResponseSuccess | papelControllerListarResponseError)
 
 export const getPapelControllerListarUrl = (params?: PapelControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -191,7 +257,7 @@ export const getPapelControllerListarQueryKey = (params?: PapelControllerListarP
     }
 
 
-export const getPapelControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = unknown>(params?: PapelControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getPapelControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: PapelControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -210,10 +276,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type PapelControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof papelControllerListar>>>
-export type PapelControllerListarQueryError = unknown
+export type PapelControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = unknown>(
+export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  PapelControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof papelControllerListar>>,
@@ -223,7 +289,7 @@ export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papel
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = unknown>(
+export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: PapelControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof papelControllerListar>>,
@@ -233,12 +299,12 @@ export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papel
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = unknown>(
+export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: PapelControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = unknown>(
+export function usePapelControllerListar<TData = Awaited<ReturnType<typeof papelControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: PapelControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -260,12 +326,44 @@ export type papelControllerBuscarResponse200 = {
   status: 200
 }
 
+export type papelControllerBuscarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerBuscarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerBuscarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerBuscarResponseSuccess = (papelControllerBuscarResponse200) & {
   headers: Headers;
 };
-;
+export type papelControllerBuscarResponseError = (papelControllerBuscarResponse400 | papelControllerBuscarResponse401 | papelControllerBuscarResponse403 | papelControllerBuscarResponse404 | papelControllerBuscarResponse409 | papelControllerBuscarResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerBuscarResponse = (papelControllerBuscarResponseSuccess)
+export type papelControllerBuscarResponse = (papelControllerBuscarResponseSuccess | papelControllerBuscarResponseError)
 
 export const getPapelControllerBuscarUrl = (id: number,) => {
 
@@ -297,7 +395,7 @@ export const getPapelControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getPapelControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getPapelControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -316,10 +414,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type PapelControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof papelControllerBuscar>>>
-export type PapelControllerBuscarQueryError = unknown
+export type PapelControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = unknown>(
+export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof papelControllerBuscar>>,
@@ -329,7 +427,7 @@ export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papel
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = unknown>(
+export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof papelControllerBuscar>>,
@@ -339,12 +437,12 @@ export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papel
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = unknown>(
+export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = unknown>(
+export function usePapelControllerBuscar<TData = Awaited<ReturnType<typeof papelControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -366,12 +464,44 @@ export type papelControllerAtualizarResponse200 = {
   status: 200
 }
 
+export type papelControllerAtualizarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerAtualizarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerAtualizarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerAtualizarResponseSuccess = (papelControllerAtualizarResponse200) & {
   headers: Headers;
 };
-;
+export type papelControllerAtualizarResponseError = (papelControllerAtualizarResponse400 | papelControllerAtualizarResponse401 | papelControllerAtualizarResponse403 | papelControllerAtualizarResponse404 | papelControllerAtualizarResponse409 | papelControllerAtualizarResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerAtualizarResponse = (papelControllerAtualizarResponseSuccess)
+export type papelControllerAtualizarResponse = (papelControllerAtualizarResponseSuccess | papelControllerAtualizarResponseError)
 
 export const getPapelControllerAtualizarUrl = (id: number,) => {
 
@@ -403,7 +533,7 @@ return httpClient<papelControllerAtualizarResponse>(getPapelControllerAtualizarU
 
 
 
-export const getPapelControllerAtualizarMutationOptions = <TError = unknown,
+export const getPapelControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerAtualizar>>, TError,PapelControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof papelControllerAtualizar>>, TError,PapelControllerAtualizarMutationVariables, TContext> => {
 
@@ -432,10 +562,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PapelControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof papelControllerAtualizar>>>
     export type PapelControllerAtualizarMutationBody = AtualizarPapelDto
-    export type PapelControllerAtualizarMutationError = unknown
+    export type PapelControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PapelControllerAtualizarMutationVariables = {id: number;data: AtualizarPapelDto}
 
-    export const usePapelControllerAtualizar = <TError = unknown,
+    export const usePapelControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerAtualizar>>, TError,PapelControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof papelControllerAtualizar>>,
@@ -450,12 +580,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type papelControllerRemoverResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerRemoverResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerRemoverResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerRemoverResponseSuccess = (papelControllerRemoverResponse200) & {
   headers: Headers;
 };
-;
+export type papelControllerRemoverResponseError = (papelControllerRemoverResponse400 | papelControllerRemoverResponse401 | papelControllerRemoverResponse403 | papelControllerRemoverResponse404 | papelControllerRemoverResponse409 | papelControllerRemoverResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerRemoverResponse = (papelControllerRemoverResponseSuccess)
+export type papelControllerRemoverResponse = (papelControllerRemoverResponseSuccess | papelControllerRemoverResponseError)
 
 export const getPapelControllerRemoverUrl = (id: number,) => {
 
@@ -480,7 +642,7 @@ export const papelControllerRemover = async (id: number, options?: Parameters<ty
 
 
 
-export const getPapelControllerRemoverMutationOptions = <TError = unknown,
+export const getPapelControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerRemover>>, TError,PapelControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof papelControllerRemover>>, TError,PapelControllerRemoverMutationVariables, TContext> => {
 
@@ -509,10 +671,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PapelControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof papelControllerRemover>>>
 
-    export type PapelControllerRemoverMutationError = unknown
+    export type PapelControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PapelControllerRemoverMutationVariables = {id: number}
 
-    export const usePapelControllerRemover = <TError = unknown,
+    export const usePapelControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerRemover>>, TError,PapelControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof papelControllerRemover>>,
@@ -527,12 +689,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type papelControllerListarPermissoesResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerListarPermissoesResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerListarPermissoesResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerListarPermissoesResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerListarPermissoesResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerListarPermissoesResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerListarPermissoesResponseSuccess = (papelControllerListarPermissoesResponse200) & {
   headers: Headers;
 };
-;
+export type papelControllerListarPermissoesResponseError = (papelControllerListarPermissoesResponse400 | papelControllerListarPermissoesResponse401 | papelControllerListarPermissoesResponse403 | papelControllerListarPermissoesResponse404 | papelControllerListarPermissoesResponse409 | papelControllerListarPermissoesResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerListarPermissoesResponse = (papelControllerListarPermissoesResponseSuccess)
+export type papelControllerListarPermissoesResponse = (papelControllerListarPermissoesResponseSuccess | papelControllerListarPermissoesResponseError)
 
 export const getPapelControllerListarPermissoesUrl = (id: number,) => {
 
@@ -564,7 +758,7 @@ export const getPapelControllerListarPermissoesQueryKey = (id: number,) => {
     }
 
 
-export const getPapelControllerListarPermissoesQueryOptions = <TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getPapelControllerListarPermissoesQueryOptions = <TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -583,10 +777,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type PapelControllerListarPermissoesQueryResult = NonNullable<Awaited<ReturnType<typeof papelControllerListarPermissoes>>>
-export type PapelControllerListarPermissoesQueryError = unknown
+export type PapelControllerListarPermissoesQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = unknown>(
+export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof papelControllerListarPermissoes>>,
@@ -596,7 +790,7 @@ export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<ty
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = unknown>(
+export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof papelControllerListarPermissoes>>,
@@ -606,12 +800,12 @@ export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<ty
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = unknown>(
+export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = unknown>(
+export function usePapelControllerListarPermissoes<TData = Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof papelControllerListarPermissoes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -633,12 +827,44 @@ export type papelControllerVincularResponse201 = {
   status: 201
 }
 
+export type papelControllerVincularResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerVincularResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerVincularResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerVincularResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerVincularResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerVincularResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerVincularResponseSuccess = (papelControllerVincularResponse201) & {
   headers: Headers;
 };
-;
+export type papelControllerVincularResponseError = (papelControllerVincularResponse400 | papelControllerVincularResponse401 | papelControllerVincularResponse403 | papelControllerVincularResponse404 | papelControllerVincularResponse409 | papelControllerVincularResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerVincularResponse = (papelControllerVincularResponseSuccess)
+export type papelControllerVincularResponse = (papelControllerVincularResponseSuccess | papelControllerVincularResponseError)
 
 export const getPapelControllerVincularUrl = (id: number,) => {
 
@@ -670,7 +896,7 @@ return httpClient<papelControllerVincularResponse>(getPapelControllerVincularUrl
 
 
 
-export const getPapelControllerVincularMutationOptions = <TError = unknown,
+export const getPapelControllerVincularMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerVincular>>, TError,PapelControllerVincularMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof papelControllerVincular>>, TError,PapelControllerVincularMutationVariables, TContext> => {
 
@@ -699,10 +925,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PapelControllerVincularMutationResult = NonNullable<Awaited<ReturnType<typeof papelControllerVincular>>>
     export type PapelControllerVincularMutationBody = VincularPermissaoDto
-    export type PapelControllerVincularMutationError = unknown
+    export type PapelControllerVincularMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PapelControllerVincularMutationVariables = {id: number;data: VincularPermissaoDto}
 
-    export const usePapelControllerVincular = <TError = unknown,
+    export const usePapelControllerVincular = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerVincular>>, TError,PapelControllerVincularMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof papelControllerVincular>>,
@@ -717,12 +943,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type papelControllerAtualizarVinculoResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerAtualizarVinculoResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerAtualizarVinculoResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerAtualizarVinculoResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerAtualizarVinculoResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerAtualizarVinculoResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerAtualizarVinculoResponseSuccess = (papelControllerAtualizarVinculoResponse200) & {
   headers: Headers;
 };
-;
+export type papelControllerAtualizarVinculoResponseError = (papelControllerAtualizarVinculoResponse400 | papelControllerAtualizarVinculoResponse401 | papelControllerAtualizarVinculoResponse403 | papelControllerAtualizarVinculoResponse404 | papelControllerAtualizarVinculoResponse409 | papelControllerAtualizarVinculoResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerAtualizarVinculoResponse = (papelControllerAtualizarVinculoResponseSuccess)
+export type papelControllerAtualizarVinculoResponse = (papelControllerAtualizarVinculoResponseSuccess | papelControllerAtualizarVinculoResponseError)
 
 export const getPapelControllerAtualizarVinculoUrl = (id: number,
     idPermissao: number,) => {
@@ -756,7 +1014,7 @@ return httpClient<papelControllerAtualizarVinculoResponse>(getPapelControllerAtu
 
 
 
-export const getPapelControllerAtualizarVinculoMutationOptions = <TError = unknown,
+export const getPapelControllerAtualizarVinculoMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerAtualizarVinculo>>, TError,PapelControllerAtualizarVinculoMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof papelControllerAtualizarVinculo>>, TError,PapelControllerAtualizarVinculoMutationVariables, TContext> => {
 
@@ -785,10 +1043,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PapelControllerAtualizarVinculoMutationResult = NonNullable<Awaited<ReturnType<typeof papelControllerAtualizarVinculo>>>
     export type PapelControllerAtualizarVinculoMutationBody = AtualizarPapelPermissaoDto
-    export type PapelControllerAtualizarVinculoMutationError = unknown
+    export type PapelControllerAtualizarVinculoMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PapelControllerAtualizarVinculoMutationVariables = {id: number;idPermissao: number;data: AtualizarPapelPermissaoDto}
 
-    export const usePapelControllerAtualizarVinculo = <TError = unknown,
+    export const usePapelControllerAtualizarVinculo = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerAtualizarVinculo>>, TError,PapelControllerAtualizarVinculoMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof papelControllerAtualizarVinculo>>,
@@ -803,12 +1061,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type papelControllerDesvincularResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type papelControllerDesvincularResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type papelControllerDesvincularResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type papelControllerDesvincularResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type papelControllerDesvincularResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type papelControllerDesvincularResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type papelControllerDesvincularResponseSuccess = (papelControllerDesvincularResponse200) & {
   headers: Headers;
 };
-;
+export type papelControllerDesvincularResponseError = (papelControllerDesvincularResponse400 | papelControllerDesvincularResponse401 | papelControllerDesvincularResponse403 | papelControllerDesvincularResponse404 | papelControllerDesvincularResponse409 | papelControllerDesvincularResponse429) & {
+  headers: Headers;
+};
 
-export type papelControllerDesvincularResponse = (papelControllerDesvincularResponseSuccess)
+export type papelControllerDesvincularResponse = (papelControllerDesvincularResponseSuccess | papelControllerDesvincularResponseError)
 
 export const getPapelControllerDesvincularUrl = (id: number,
     idPermissao: number,) => {
@@ -835,7 +1125,7 @@ export const papelControllerDesvincular = async (id: number,
 
 
 
-export const getPapelControllerDesvincularMutationOptions = <TError = unknown,
+export const getPapelControllerDesvincularMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerDesvincular>>, TError,PapelControllerDesvincularMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof papelControllerDesvincular>>, TError,PapelControllerDesvincularMutationVariables, TContext> => {
 
@@ -864,10 +1154,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PapelControllerDesvincularMutationResult = NonNullable<Awaited<ReturnType<typeof papelControllerDesvincular>>>
 
-    export type PapelControllerDesvincularMutationError = unknown
+    export type PapelControllerDesvincularMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PapelControllerDesvincularMutationVariables = {id: number;idPermissao: number}
 
-    export const usePapelControllerDesvincular = <TError = unknown,
+    export const usePapelControllerDesvincular = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof papelControllerDesvincular>>, TError,PapelControllerDesvincularMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof papelControllerDesvincular>>,

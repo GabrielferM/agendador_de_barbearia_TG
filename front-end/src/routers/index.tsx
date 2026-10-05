@@ -1,3 +1,5 @@
+import { AgendamentoCliente } from "../pages/agendamento";
+import { MeusAgendamentos } from "../pages/meus-agendamentos";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PaginaEmConstrucao } from "../pages/dashboard";
 import { DashboardAdministrador } from "../pages/dashboard/dashboard-administrador";
@@ -20,14 +22,21 @@ function RotaProtegida({
   papel: CodigoPapel;
   children: ReactNode;
 }) {
-  const { usuario, carregando } = useAutenticacao();
+  const { usuario, carregando, logoutNaoConfirmado } = useAutenticacao();
   if (carregando)
     return (
       <main className="grid min-h-screen place-items-center">
         Carregando sessão…
       </main>
     );
-  if (!usuario) return <Navigate replace to="/login" />;
+  if (!usuario)
+    return (
+      <Navigate
+        replace
+        state={logoutNaoConfirmado ? { logoutNaoConfirmado: true } : undefined}
+        to="/login"
+      />
+    );
   if (usuario.papel !== papel)
     return (
       <Navigate
@@ -49,14 +58,20 @@ export function AppRouter() {
     <BrowserRouter>
       <Routes>
         <Route element={<Inicio />} path="/" />
+        <Route element={<AgendamentoCliente />} path="/agendar" />
+        <Route
+          element={
+            <RotaProtegida papel="CLIENTE">
+              <MeusAgendamentos />
+            </RotaProtegida>
+          }
+          path="/cliente/agendamentos"
+        />
         <Route element={<Login />} path="/login" />
         <Route
           element={
             <RotaProtegida papel="CLIENTE">
-              <PaginaEmConstrucao
-                descricao="Seus agendamentos e preferências ficarão disponíveis aqui."
-                titulo="Área do cliente"
-              />
+              <Navigate to="/cliente/agendamentos" replace />
             </RotaProtegida>
           }
           path="/cliente"

@@ -37,8 +37,11 @@ export function PaginaEmConstrucao({
             className="mt-6 rounded-lg border border-border px-5 py-2 text-sm font-bold"
             type="button"
             onClick={async () => {
-              await sair();
-              navigate("/login", { replace: true });
+              const confirmado = await sair();
+              navigate("/login", {
+                replace: true,
+                state: confirmado ? undefined : { logoutNaoConfirmado: true },
+              });
             }}
           >
             Sair

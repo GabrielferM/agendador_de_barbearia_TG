@@ -1,4 +1,4 @@
-import type { ServicoAdministrativo } from './types'
+import type { ServicoAdministrativo } from '../types'
 
 export const servicosMock: ServicoAdministrativo[] = [
   { id: 1, nome: 'Corte de cabelo', categoria: 'Cabelo', duracaoMinutos: 45, preco: 45, comissao: 40, ativo: true },

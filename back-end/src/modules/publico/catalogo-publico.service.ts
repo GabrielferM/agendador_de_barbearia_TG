@@ -1,3 +1,4 @@
+import { ListarBarbeirosPublicosDto } from './dto/catalogo-publico.dto';
 import { Injectable } from '@nestjs/common';
 import { PaginacaoDto, respostaPaginada } from '../../common/dto/paginacao.dto';
 import { serializarResposta } from '../../common/utils/resposta';
@@ -22,8 +23,9 @@ export class CatalogoPublicoService {
     return respostaPaginada(serializarResposta(dados), total, query.pagina, query.limite);
   }
 
-  async barbeiros(query: PaginacaoDto) {
+  async barbeiros(query: ListarBarbeirosPublicosDto) {
     const where = {
+      ...(query.idFilial ? { idFilial: query.idFilial } : {}),
       statusProfissional: 'ATIVO' as const,
       usuario: { status: 'ATIVO' as const },
       filial: { status: 'ATIVA' as const },

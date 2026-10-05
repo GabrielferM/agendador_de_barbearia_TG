@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
+import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 import {
   AtualizarPapelDto,
   AtualizarPapelPermissaoDto,
@@ -21,6 +22,8 @@ import {
 import { PapelService } from './papel.service';
 
 @ApiTags('Papéis')
+@ApiErrosAutenticados()
+@ApiCrudErrors()
 @ExigirPermissoes('GERENCIAR_ACESSOS')
 @Controller('papeis')
 export class PapelController {

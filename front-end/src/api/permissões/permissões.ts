@@ -31,6 +31,8 @@ import {
 import type {
   AtualizarPermissaoDto,
   CriarPermissaoDto,
+  ErroRespostaDto,
+  LimiteRequisicoesRespostaDto,
   PermissaoControllerListarParams
 } from '../models';
 
@@ -61,12 +63,44 @@ export type permissaoControllerCriarResponse201 = {
   status: 201
 }
 
+export type permissaoControllerCriarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type permissaoControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type permissaoControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type permissaoControllerCriarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type permissaoControllerCriarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type permissaoControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type permissaoControllerCriarResponseSuccess = (permissaoControllerCriarResponse201) & {
   headers: Headers;
 };
-;
+export type permissaoControllerCriarResponseError = (permissaoControllerCriarResponse400 | permissaoControllerCriarResponse401 | permissaoControllerCriarResponse403 | permissaoControllerCriarResponse404 | permissaoControllerCriarResponse409 | permissaoControllerCriarResponse429) & {
+  headers: Headers;
+};
 
-export type permissaoControllerCriarResponse = (permissaoControllerCriarResponseSuccess)
+export type permissaoControllerCriarResponse = (permissaoControllerCriarResponseSuccess | permissaoControllerCriarResponseError)
 
 export const getPermissaoControllerCriarUrl = () => {
 
@@ -97,7 +131,7 @@ return httpClient<permissaoControllerCriarResponse>(getPermissaoControllerCriarU
 
 
 
-export const getPermissaoControllerCriarMutationOptions = <TError = unknown,
+export const getPermissaoControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerCriar>>, TError,PermissaoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerCriar>>, TError,PermissaoControllerCriarMutationVariables, TContext> => {
 
@@ -126,10 +160,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PermissaoControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof permissaoControllerCriar>>>
     export type PermissaoControllerCriarMutationBody = CriarPermissaoDto
-    export type PermissaoControllerCriarMutationError = unknown
+    export type PermissaoControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PermissaoControllerCriarMutationVariables = {data: CriarPermissaoDto}
 
-    export const usePermissaoControllerCriar = <TError = unknown,
+    export const usePermissaoControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerCriar>>, TError,PermissaoControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof permissaoControllerCriar>>,
@@ -144,12 +178,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type permissaoControllerListarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type permissaoControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type permissaoControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type permissaoControllerListarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type permissaoControllerListarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type permissaoControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type permissaoControllerListarResponseSuccess = (permissaoControllerListarResponse200) & {
   headers: Headers;
 };
-;
+export type permissaoControllerListarResponseError = (permissaoControllerListarResponse400 | permissaoControllerListarResponse401 | permissaoControllerListarResponse403 | permissaoControllerListarResponse404 | permissaoControllerListarResponse409 | permissaoControllerListarResponse429) & {
+  headers: Headers;
+};
 
-export type permissaoControllerListarResponse = (permissaoControllerListarResponseSuccess)
+export type permissaoControllerListarResponse = (permissaoControllerListarResponseSuccess | permissaoControllerListarResponseError)
 
 export const getPermissaoControllerListarUrl = (params?: PermissaoControllerListarParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -188,7 +254,7 @@ export const getPermissaoControllerListarQueryKey = (params?: PermissaoControlle
     }
 
 
-export const getPermissaoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = unknown>(params?: PermissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getPermissaoControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: PermissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -207,10 +273,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type PermissaoControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof permissaoControllerListar>>>
-export type PermissaoControllerListarQueryError = unknown
+export type PermissaoControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = unknown>(
+export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  PermissaoControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof permissaoControllerListar>>,
@@ -220,7 +286,7 @@ export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof p
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = unknown>(
+export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: PermissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof permissaoControllerListar>>,
@@ -230,12 +296,12 @@ export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof p
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = unknown>(
+export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: PermissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = unknown>(
+export function usePermissaoControllerListar<TData = Awaited<ReturnType<typeof permissaoControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: PermissaoControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -257,12 +323,44 @@ export type permissaoControllerBuscarResponse200 = {
   status: 200
 }
 
+export type permissaoControllerBuscarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type permissaoControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type permissaoControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type permissaoControllerBuscarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type permissaoControllerBuscarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type permissaoControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type permissaoControllerBuscarResponseSuccess = (permissaoControllerBuscarResponse200) & {
   headers: Headers;
 };
-;
+export type permissaoControllerBuscarResponseError = (permissaoControllerBuscarResponse400 | permissaoControllerBuscarResponse401 | permissaoControllerBuscarResponse403 | permissaoControllerBuscarResponse404 | permissaoControllerBuscarResponse409 | permissaoControllerBuscarResponse429) & {
+  headers: Headers;
+};
 
-export type permissaoControllerBuscarResponse = (permissaoControllerBuscarResponseSuccess)
+export type permissaoControllerBuscarResponse = (permissaoControllerBuscarResponseSuccess | permissaoControllerBuscarResponseError)
 
 export const getPermissaoControllerBuscarUrl = (id: number,) => {
 
@@ -294,7 +392,7 @@ export const getPermissaoControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getPermissaoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = unknown>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getPermissaoControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -313,10 +411,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type PermissaoControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof permissaoControllerBuscar>>>
-export type PermissaoControllerBuscarQueryError = unknown
+export type PermissaoControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = unknown>(
+export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof permissaoControllerBuscar>>,
@@ -326,7 +424,7 @@ export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof p
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = unknown>(
+export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof permissaoControllerBuscar>>,
@@ -336,12 +434,12 @@ export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof p
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = unknown>(
+export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = unknown>(
+export function usePermissaoControllerBuscar<TData = Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof permissaoControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -363,12 +461,44 @@ export type permissaoControllerAtualizarResponse200 = {
   status: 200
 }
 
+export type permissaoControllerAtualizarResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type permissaoControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type permissaoControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type permissaoControllerAtualizarResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type permissaoControllerAtualizarResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type permissaoControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type permissaoControllerAtualizarResponseSuccess = (permissaoControllerAtualizarResponse200) & {
   headers: Headers;
 };
-;
+export type permissaoControllerAtualizarResponseError = (permissaoControllerAtualizarResponse400 | permissaoControllerAtualizarResponse401 | permissaoControllerAtualizarResponse403 | permissaoControllerAtualizarResponse404 | permissaoControllerAtualizarResponse409 | permissaoControllerAtualizarResponse429) & {
+  headers: Headers;
+};
 
-export type permissaoControllerAtualizarResponse = (permissaoControllerAtualizarResponseSuccess)
+export type permissaoControllerAtualizarResponse = (permissaoControllerAtualizarResponseSuccess | permissaoControllerAtualizarResponseError)
 
 export const getPermissaoControllerAtualizarUrl = (id: number,) => {
 
@@ -400,7 +530,7 @@ return httpClient<permissaoControllerAtualizarResponse>(getPermissaoControllerAt
 
 
 
-export const getPermissaoControllerAtualizarMutationOptions = <TError = unknown,
+export const getPermissaoControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerAtualizar>>, TError,PermissaoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerAtualizar>>, TError,PermissaoControllerAtualizarMutationVariables, TContext> => {
 
@@ -429,10 +559,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PermissaoControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof permissaoControllerAtualizar>>>
     export type PermissaoControllerAtualizarMutationBody = AtualizarPermissaoDto
-    export type PermissaoControllerAtualizarMutationError = unknown
+    export type PermissaoControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PermissaoControllerAtualizarMutationVariables = {id: number;data: AtualizarPermissaoDto}
 
-    export const usePermissaoControllerAtualizar = <TError = unknown,
+    export const usePermissaoControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerAtualizar>>, TError,PermissaoControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof permissaoControllerAtualizar>>,
@@ -447,12 +577,44 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   status: 200
 }
 
+export type permissaoControllerRemoverResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type permissaoControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type permissaoControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type permissaoControllerRemoverResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type permissaoControllerRemoverResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type permissaoControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type permissaoControllerRemoverResponseSuccess = (permissaoControllerRemoverResponse200) & {
   headers: Headers;
 };
-;
+export type permissaoControllerRemoverResponseError = (permissaoControllerRemoverResponse400 | permissaoControllerRemoverResponse401 | permissaoControllerRemoverResponse403 | permissaoControllerRemoverResponse404 | permissaoControllerRemoverResponse409 | permissaoControllerRemoverResponse429) & {
+  headers: Headers;
+};
 
-export type permissaoControllerRemoverResponse = (permissaoControllerRemoverResponseSuccess)
+export type permissaoControllerRemoverResponse = (permissaoControllerRemoverResponseSuccess | permissaoControllerRemoverResponseError)
 
 export const getPermissaoControllerRemoverUrl = (id: number,) => {
 
@@ -477,7 +639,7 @@ export const permissaoControllerRemover = async (id: number, options?: Parameter
 
 
 
-export const getPermissaoControllerRemoverMutationOptions = <TError = unknown,
+export const getPermissaoControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerRemover>>, TError,PermissaoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerRemover>>, TError,PermissaoControllerRemoverMutationVariables, TContext> => {
 
@@ -506,10 +668,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type PermissaoControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof permissaoControllerRemover>>>
 
-    export type PermissaoControllerRemoverMutationError = unknown
+    export type PermissaoControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type PermissaoControllerRemoverMutationVariables = {id: number}
 
-    export const usePermissaoControllerRemover = <TError = unknown,
+    export const usePermissaoControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof permissaoControllerRemover>>, TError,PermissaoControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof permissaoControllerRemover>>,

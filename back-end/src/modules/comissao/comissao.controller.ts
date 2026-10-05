@@ -1,9 +1,12 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
+import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 import { ComissaoService } from './comissao.service';
 import { AtualizarComissaoDto, CriarComissaoDto, ListarComissoesDto } from './dto/comissao.dto';
 @ApiTags('Comissões')
+@ApiErrosAutenticados()
+@ApiCrudErrors()
 @ExigirPermissoes('GERENCIAR_COMISSOES')
 @Controller('comissoes')
 export class ComissaoController {

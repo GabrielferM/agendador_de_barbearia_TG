@@ -1,7 +1,8 @@
+import { HorariosDisponiveisDto } from './dto/horarios-disponiveis.dto';
+import { ListarHorariosDisponiveisAgendamentoService } from './service/listar-horarios-disponiveis-agendamento.service';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OrigemAgendamento, StatusAgendamento } from '@prisma/client';
 import { UsuarioAutenticado } from '../../common/auth/auth.types';
-import { PrismaService } from '../../prisma/prisma.service';
 import { CriarAgendamentoService } from './service/criar-agendamento.service';
 import { ListarAgendamentosService } from './service/listar-agendamentos.service';
 import { BuscarAgendamentoService } from './service/buscar-agendamento.service';
@@ -15,18 +16,24 @@ import {
   ListarHistoricoStatusDto,
   CriarHistoricoStatusDto,
 } from './dto/agendamento.dto';
+import { ValidarAcessoAgendamentoService } from './validations/validar-acesso-agendamento.service';
 
 @Injectable()
 export class AgendamentoService {
   constructor(
+    private readonly horariosService: ListarHorariosDisponiveisAgendamentoService,
     private readonly criarService: CriarAgendamentoService,
     private readonly listarService: ListarAgendamentosService,
     private readonly buscarService: BuscarAgendamentoService,
     private readonly editarService: EditarAgendamentoService,
     private readonly removerService: RemoverAgendamentoService,
     private readonly historicoService: HistoricoStatusAgendamentoService,
-    private readonly prisma: PrismaService,
+    private readonly validarAcesso: ValidarAcessoAgendamentoService,
   ) {}
+
+  horarios(query: HorariosDisponiveisDto) {
+    return this.horariosService.execute(query);
+  }
 
   async criar(dto: CriarAgendamentoDto, usuario?: UsuarioAutenticado) {
     if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
@@ -70,15 +77,17 @@ export class AgendamentoService {
   }
 
   async buscar(id: number, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     const resultado = await this.buscarService.execute(id);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
 
   async atualizar(id: number, dto: AtualizarAgendamentoDto, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     if (usuario?.clienteId) {
-      const chaves = Object.keys(dto);
+      const chaves = Object.entries(dto)
+        .filter(([, valor]) => valor !== undefined)
+        .map(([chave]) => chave);
       if (
         dto.status !== StatusAgendamento.CANCELADO ||
         chaves.some((chave) => !['status', 'motivoCancelamento'].includes(chave))
@@ -103,12 +112,12 @@ export class AgendamentoService {
     return this.removerService.execute(id);
   }
   async listarHistorico(id: number, query: ListarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     const resultado = await this.historicoService.listar(id, query);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
-    await this.validarPropriedade(id, usuario);
+    await this.validarAcesso.execute(id, usuario);
     if (usuario?.clienteId) throw new ForbiddenException();
     return this.historicoService.criar(id, {
       ...dto,
@@ -116,23 +125,60 @@ export class AgendamentoService {
     });
   }
 
-  private async validarPropriedade(id: number, usuario?: UsuarioAutenticado) {
-    if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) return;
-    const item = await this.prisma.agendamento.findUnique({
-      where: { id },
-      select: { idCliente: true, idBarbeiro: true },
-    });
-    if (!item || (item.idCliente !== usuario.clienteId && item.idBarbeiro !== usuario.barbeiroId)) {
-      throw new ForbiddenException('Você não pode acessar este agendamento.');
-    }
-  }
-
   private semCamposInternos(valor: unknown): unknown {
     if (Array.isArray(valor)) return valor.map((item: unknown) => this.semCamposInternos(item));
     if (valor && typeof valor === 'object') {
+      const registro = valor as Record<string, unknown>;
+      if ('inicioPrevisto' in registro && 'servicos' in registro) {
+        const item =
+          registro as unknown as import('./dto/agendamento-resposta.dto').AgendamentoRespostaDto;
+        return {
+          id: item.id,
+          inicioPrevisto: item.inicioPrevisto,
+          fimPrevisto: item.fimPrevisto,
+          status: item.status,
+          observacaoCliente: item.observacaoCliente,
+          motivoCancelamento: item.motivoCancelamento,
+          filial: {
+            id: item.filial.id,
+            nome: item.filial.nome,
+            telefone: item.filial.telefone,
+            endereco: {
+              cep: item.filial.endereco.cep,
+              logradouro: item.filial.endereco.logradouro,
+              numero: item.filial.endereco.numero,
+              complemento: item.filial.endereco.complemento,
+              bairro: item.filial.endereco.bairro,
+              cidade: item.filial.endereco.cidade,
+              estado: item.filial.endereco.estado,
+            },
+          },
+          barbeiro: { id: item.barbeiro.id, nomeProfissional: item.barbeiro.nomeProfissional },
+          servicos: item.servicos.map((servico) => ({
+            idServico: servico.idServico,
+            precoAplicado: servico.precoAplicado,
+            duracaoAplicadaMinutos: servico.duracaoAplicadaMinutos,
+            quantidade: servico.quantidade,
+            subtotal: servico.subtotal,
+            servico: { id: servico.servico.id, nome: servico.servico.nome },
+          })),
+        };
+      }
+
       return Object.fromEntries(
         Object.entries(valor as Record<string, unknown>)
-          .filter(([chave]) => !['observacaoInterna', 'comissao'].includes(chave))
+          .filter(
+            ([chave]) =>
+              ![
+                'observacaoInterna',
+                'comissao',
+                'usuario',
+                'cliente',
+                'senhaHash',
+                'percentualComissao',
+                'cnpj',
+              ].includes(chave),
+          )
           .map(([chave, item]) => [chave, this.semCamposInternos(item)]),
       );
     }

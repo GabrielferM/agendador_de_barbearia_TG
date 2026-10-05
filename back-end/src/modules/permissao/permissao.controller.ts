@@ -11,9 +11,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
+import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 import { AtualizarPermissaoDto, CriarPermissaoDto, ListarPermissoesDto } from './dto/permissao.dto';
 import { PermissaoService } from './permissao.service';
 @ApiTags('Permissões')
+@ApiErrosAutenticados()
+@ApiCrudErrors()
 @ExigirPermissoes('GERENCIAR_ACESSOS')
 @Controller('permissoes')
 export class PermissaoController {

@@ -1,4 +1,3 @@
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
@@ -6,6 +5,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { corsOriginFor, EnvironmentVariables } from './config/environment';
 import { configurarSwagger } from './config/swagger';
+import { configurarValidacao } from './config/validacao';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,15 +15,7 @@ async function bootstrap() {
       contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
     }),
   );
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      stopAtFirstError: true,
-      validationError: { target: false, value: false },
-    }),
-  );
+  configurarValidacao(app);
 
   const configService = app.get(ConfigService<EnvironmentVariables, true>);
   const environment: EnvironmentVariables = {

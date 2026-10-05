@@ -1,3 +1,15 @@
+export const EVENTO_SESSAO_EXPIRADA = 'agendador:sessao-expirada'
+
+export class ErroRespostaHttpInvalida extends Error {
+  readonly status: number
+
+  constructor(status: number) {
+    super('A API retornou uma resposta inválida.')
+    this.name = 'ErroRespostaHttpInvalida'
+    this.status = status
+  }
+}
+
 function lerCookie(nome: string): string | undefined {
   return document.cookie
     .split('; ')
@@ -13,10 +25,17 @@ export async function httpClient<T>(url: string, options: RequestInit): Promise<
     if (csrf) headers.set('X-CSRF-Token', csrf)
   }
   const response = await fetch(url, { ...options, headers, credentials: 'include' })
+  if (response.status === 401 && !url.endsWith('/auth/login')) {
+    window.dispatchEvent(new Event(EVENTO_SESSAO_EXPIRADA))
+  }
   const texto = [204, 205, 304].includes(response.status) ? '' : await response.text()
   let data: unknown = {}
   if (texto) {
-    try { data = JSON.parse(texto) } catch { data = {} }
+    try {
+      data = JSON.parse(texto)
+    } catch {
+      if (response.ok) throw new ErroRespostaHttpInvalida(response.status)
+    }
   }
   return { data, status: response.status, headers: response.headers } as T
 }

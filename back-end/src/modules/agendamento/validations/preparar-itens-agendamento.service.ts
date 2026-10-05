@@ -6,7 +6,11 @@ import { ItemAgendamentoDto } from '../dto/agendamento.dto';
 @Injectable()
 export class PrepararItensAgendamentoService {
   constructor(private readonly prisma: PrismaService) {}
-  async execute(itens?: ItemAgendamentoDto[], servicoIds?: number[]) {
+  async execute(
+    itens?: ItemAgendamentoDto[],
+    servicoIds?: number[],
+    cliente: Prisma.TransactionClient | PrismaService = this.prisma,
+  ) {
     if (itens && servicoIds)
       throw new BadRequestException('Informe itens detalhados ou servicoIds, não ambos.');
     const origem =
@@ -14,11 +18,13 @@ export class PrepararItensAgendamentoService {
     if (!origem?.length) throw new BadRequestException('Informe ao menos um serviço.');
     if (new Set(origem.map((item) => item.idServico)).size !== origem.length)
       throw new BadRequestException('Serviços não podem se repetir.');
-    const servicos = await this.prisma.servico.findMany({
-      where: { id: { in: origem.map((item) => item.idServico) }, ativo: true },
+    const servicos = await cliente.servico.findMany({
+      where: { id: { in: origem.map((item) => item.idServico) } },
     });
     if (servicos.length !== origem.length)
-      throw new NotFoundException('Um ou mais serviços ativos não foram encontrados.');
+      throw new NotFoundException('Um ou mais serviços não foram encontrados.');
+    if (servicos.some((servico) => servico.ativo === false))
+      throw new BadRequestException('Um ou mais serviços estão inativos.');
     const porId = new Map(servicos.map((servico) => [servico.id, servico]));
     return origem.map((item, index) => {
       const servico = porId.get(item.idServico)!;

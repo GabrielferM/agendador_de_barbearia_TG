@@ -32,7 +32,8 @@ import type {
   AdministradorControllerListarParams,
   AtualizarAdministradorDto,
   CriarAdministradorDto,
-  ErroRespostaDto
+  ErroRespostaDto,
+  LimiteRequisicoesRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -67,6 +68,16 @@ export type administradorControllerCriarResponse400 = {
   status: 400
 }
 
+export type administradorControllerCriarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type administradorControllerCriarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type administradorControllerCriarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -77,10 +88,15 @@ export type administradorControllerCriarResponse409 = {
   status: 409
 }
 
+export type administradorControllerCriarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type administradorControllerCriarResponseSuccess = (administradorControllerCriarResponse201) & {
   headers: Headers;
 };
-export type administradorControllerCriarResponseError = (administradorControllerCriarResponse400 | administradorControllerCriarResponse404 | administradorControllerCriarResponse409) & {
+export type administradorControllerCriarResponseError = (administradorControllerCriarResponse400 | administradorControllerCriarResponse401 | administradorControllerCriarResponse403 | administradorControllerCriarResponse404 | administradorControllerCriarResponse409 | administradorControllerCriarResponse429) & {
   headers: Headers;
 };
 
@@ -118,7 +134,7 @@ return httpClient<administradorControllerCriarResponse>(getAdministradorControll
 
 
 
-export const getAdministradorControllerCriarMutationOptions = <TError = ErroRespostaDto,
+export const getAdministradorControllerCriarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof administradorControllerCriar>>, TError,AdministradorControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof administradorControllerCriar>>, TError,AdministradorControllerCriarMutationVariables, TContext> => {
 
@@ -147,13 +163,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AdministradorControllerCriarMutationResult = NonNullable<Awaited<ReturnType<typeof administradorControllerCriar>>>
     export type AdministradorControllerCriarMutationBody = CriarAdministradorDto
-    export type AdministradorControllerCriarMutationError = ErroRespostaDto
+    export type AdministradorControllerCriarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AdministradorControllerCriarMutationVariables = {data: CriarAdministradorDto}
 
     /**
  * @summary Cria um administrador
  */
-export const useAdministradorControllerCriar = <TError = ErroRespostaDto,
+export const useAdministradorControllerCriar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof administradorControllerCriar>>, TError,AdministradorControllerCriarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof administradorControllerCriar>>,
@@ -173,6 +189,16 @@ export type administradorControllerListarResponse400 = {
   status: 400
 }
 
+export type administradorControllerListarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type administradorControllerListarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type administradorControllerListarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -183,10 +209,15 @@ export type administradorControllerListarResponse409 = {
   status: 409
 }
 
+export type administradorControllerListarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type administradorControllerListarResponseSuccess = (administradorControllerListarResponse200) & {
   headers: Headers;
 };
-export type administradorControllerListarResponseError = (administradorControllerListarResponse400 | administradorControllerListarResponse404 | administradorControllerListarResponse409) & {
+export type administradorControllerListarResponseError = (administradorControllerListarResponse400 | administradorControllerListarResponse401 | administradorControllerListarResponse403 | administradorControllerListarResponse404 | administradorControllerListarResponse409 | administradorControllerListarResponse429) & {
   headers: Headers;
 };
 
@@ -232,7 +263,7 @@ export const getAdministradorControllerListarQueryKey = (params?: AdministradorC
     }
 
 
-export const getAdministradorControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto>(params?: AdministradorControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getAdministradorControllerListarQueryOptions = <TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: AdministradorControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -251,10 +282,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AdministradorControllerListarQueryResult = NonNullable<Awaited<ReturnType<typeof administradorControllerListar>>>
-export type AdministradorControllerListarQueryError = ErroRespostaDto
+export type AdministradorControllerListarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params: undefined |  AdministradorControllerListarParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerListar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof administradorControllerListar>>,
@@ -264,7 +295,7 @@ export function useAdministradorControllerListar<TData = Awaited<ReturnType<type
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: AdministradorControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerListar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof administradorControllerListar>>,
@@ -274,7 +305,7 @@ export function useAdministradorControllerListar<TData = Awaited<ReturnType<type
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: AdministradorControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -282,7 +313,7 @@ export function useAdministradorControllerListar<TData = Awaited<ReturnType<type
  * @summary Lista os administradores de forma paginada
  */
 
-export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerListar<TData = Awaited<ReturnType<typeof administradorControllerListar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  params?: AdministradorControllerListarParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerListar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -309,6 +340,16 @@ export type administradorControllerBuscarResponse400 = {
   status: 400
 }
 
+export type administradorControllerBuscarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type administradorControllerBuscarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type administradorControllerBuscarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -319,10 +360,15 @@ export type administradorControllerBuscarResponse409 = {
   status: 409
 }
 
+export type administradorControllerBuscarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type administradorControllerBuscarResponseSuccess = (administradorControllerBuscarResponse200) & {
   headers: Headers;
 };
-export type administradorControllerBuscarResponseError = (administradorControllerBuscarResponse400 | administradorControllerBuscarResponse404 | administradorControllerBuscarResponse409) & {
+export type administradorControllerBuscarResponseError = (administradorControllerBuscarResponse400 | administradorControllerBuscarResponse401 | administradorControllerBuscarResponse403 | administradorControllerBuscarResponse404 | administradorControllerBuscarResponse409 | administradorControllerBuscarResponse429) & {
   headers: Headers;
 };
 
@@ -361,7 +407,7 @@ export const getAdministradorControllerBuscarQueryKey = (id: number,) => {
     }
 
 
-export const getAdministradorControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+export const getAdministradorControllerBuscarQueryOptions = <TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -380,10 +426,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AdministradorControllerBuscarQueryResult = NonNullable<Awaited<ReturnType<typeof administradorControllerBuscar>>>
-export type AdministradorControllerBuscarQueryError = ErroRespostaDto
+export type AdministradorControllerBuscarQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
 
 
-export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerBuscar>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof administradorControllerBuscar>>,
@@ -393,7 +439,7 @@ export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<type
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerBuscar>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof administradorControllerBuscar>>,
@@ -403,7 +449,7 @@ export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<type
       >, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
@@ -411,7 +457,7 @@ export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<type
  * @summary Busca um administrador pelo identificador
  */
 
-export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto>(
+export function useAdministradorControllerBuscar<TData = Awaited<ReturnType<typeof administradorControllerBuscar>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
  id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof administradorControllerBuscar>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -438,6 +484,16 @@ export type administradorControllerAtualizarResponse400 = {
   status: 400
 }
 
+export type administradorControllerAtualizarResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type administradorControllerAtualizarResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type administradorControllerAtualizarResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -448,10 +504,15 @@ export type administradorControllerAtualizarResponse409 = {
   status: 409
 }
 
+export type administradorControllerAtualizarResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type administradorControllerAtualizarResponseSuccess = (administradorControllerAtualizarResponse200) & {
   headers: Headers;
 };
-export type administradorControllerAtualizarResponseError = (administradorControllerAtualizarResponse400 | administradorControllerAtualizarResponse404 | administradorControllerAtualizarResponse409) & {
+export type administradorControllerAtualizarResponseError = (administradorControllerAtualizarResponse400 | administradorControllerAtualizarResponse401 | administradorControllerAtualizarResponse403 | administradorControllerAtualizarResponse404 | administradorControllerAtualizarResponse409 | administradorControllerAtualizarResponse429) & {
   headers: Headers;
 };
 
@@ -490,7 +551,7 @@ return httpClient<administradorControllerAtualizarResponse>(getAdministradorCont
 
 
 
-export const getAdministradorControllerAtualizarMutationOptions = <TError = ErroRespostaDto,
+export const getAdministradorControllerAtualizarMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof administradorControllerAtualizar>>, TError,AdministradorControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof administradorControllerAtualizar>>, TError,AdministradorControllerAtualizarMutationVariables, TContext> => {
 
@@ -519,13 +580,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AdministradorControllerAtualizarMutationResult = NonNullable<Awaited<ReturnType<typeof administradorControllerAtualizar>>>
     export type AdministradorControllerAtualizarMutationBody = AtualizarAdministradorDto
-    export type AdministradorControllerAtualizarMutationError = ErroRespostaDto
+    export type AdministradorControllerAtualizarMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AdministradorControllerAtualizarMutationVariables = {id: number;data: AtualizarAdministradorDto}
 
     /**
  * @summary Atualiza um administrador pelo identificador
  */
-export const useAdministradorControllerAtualizar = <TError = ErroRespostaDto,
+export const useAdministradorControllerAtualizar = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof administradorControllerAtualizar>>, TError,AdministradorControllerAtualizarMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof administradorControllerAtualizar>>,
@@ -545,6 +606,16 @@ export type administradorControllerRemoverResponse400 = {
   status: 400
 }
 
+export type administradorControllerRemoverResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type administradorControllerRemoverResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
 export type administradorControllerRemoverResponse404 = {
   data: ErroRespostaDto
   status: 404
@@ -555,10 +626,15 @@ export type administradorControllerRemoverResponse409 = {
   status: 409
 }
 
+export type administradorControllerRemoverResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
 export type administradorControllerRemoverResponseSuccess = (administradorControllerRemoverResponse200) & {
   headers: Headers;
 };
-export type administradorControllerRemoverResponseError = (administradorControllerRemoverResponse400 | administradorControllerRemoverResponse404 | administradorControllerRemoverResponse409) & {
+export type administradorControllerRemoverResponseError = (administradorControllerRemoverResponse400 | administradorControllerRemoverResponse401 | administradorControllerRemoverResponse403 | administradorControllerRemoverResponse404 | administradorControllerRemoverResponse409 | administradorControllerRemoverResponse429) & {
   headers: Headers;
 };
 
@@ -590,7 +666,7 @@ export const administradorControllerRemover = async (id: number, options?: Param
 
 
 
-export const getAdministradorControllerRemoverMutationOptions = <TError = ErroRespostaDto,
+export const getAdministradorControllerRemoverMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof administradorControllerRemover>>, TError,AdministradorControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
 ): UseMutationOptions<Awaited<ReturnType<typeof administradorControllerRemover>>, TError,AdministradorControllerRemoverMutationVariables, TContext> => {
 
@@ -619,13 +695,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AdministradorControllerRemoverMutationResult = NonNullable<Awaited<ReturnType<typeof administradorControllerRemover>>>
 
-    export type AdministradorControllerRemoverMutationError = ErroRespostaDto
+    export type AdministradorControllerRemoverMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
     export type AdministradorControllerRemoverMutationVariables = {id: number}
 
     /**
  * @summary Remove um administrador pelo identificador
  */
-export const useAdministradorControllerRemover = <TError = ErroRespostaDto,
+export const useAdministradorControllerRemover = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof administradorControllerRemover>>, TError,AdministradorControllerRemoverMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof administradorControllerRemover>>,

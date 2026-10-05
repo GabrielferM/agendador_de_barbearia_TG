@@ -1,3 +1,4 @@
+import { ListarHorariosDisponiveisAgendamentoService } from './service/listar-horarios-disponiveis-agendamento.service';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AgendamentoController } from './agendamento.controller';
@@ -15,11 +16,13 @@ import { EditarAgendamentoService } from './service/editar-agendamento.service';
 import { RemoverAgendamentoService } from './service/remover-agendamento.service';
 import { PrepararItensAgendamentoService } from './validations/preparar-itens-agendamento.service';
 import { HistoricoStatusAgendamentoService } from './service/historico-status-agendamento.service';
+import { ValidarAcessoAgendamentoService } from './validations/validar-acesso-agendamento.service';
 @Module({
   imports: [PrismaModule],
   controllers: [AgendamentoController],
   providers: [
     AgendamentoService,
+    ListarHorariosDisponiveisAgendamentoService,
     BuscarServicosAgendamentoService,
     CalcularFimAgendamentoService,
     CalcularValorTotalAgendamentoService,
@@ -33,6 +36,7 @@ import { HistoricoStatusAgendamentoService } from './service/historico-status-ag
     EditarAgendamentoService,
     RemoverAgendamentoService,
     HistoricoStatusAgendamentoService,
+    ValidarAcessoAgendamentoService,
   ],
 })
 export class AgendamentoModule {}

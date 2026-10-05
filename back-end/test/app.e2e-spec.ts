@@ -1,5 +1,6 @@
+import { Prisma } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -7,10 +8,14 @@ import { AppModule } from './../src/app.module';
 import { PrismaService } from './../src/prisma/prisma.service';
 import { configurarSwagger } from './../src/config/swagger';
 import { SenhaService } from './../src/common/security/senha.service';
+import { configurarValidacao } from './../src/config/validacao';
 
 interface OpenApiDocument {
-  paths: Record<string, unknown>;
+  paths: Record<string, Record<string, { responses?: Record<string, unknown> } | undefined>>;
   tags: Array<{ name: string }>;
+  components?: {
+    schemas?: Record<string, Record<string, unknown>>;
+  };
 }
 
 describe('AppController (e2e)', () => {
@@ -22,6 +27,18 @@ describe('AppController (e2e)', () => {
     CSRF_SECRET: process.env.CSRF_SECRET,
   };
   const prisma = {
+    filial: { findUnique: jest.fn() },
+    barbeiro: { findUnique: jest.fn() },
+    cliente: { findUnique: jest.fn() },
+    servico: { findMany: jest.fn() },
+    agendamento: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
     usuario: { findUnique: jest.fn(), update: jest.fn() },
@@ -41,6 +58,25 @@ describe('AppController (e2e)', () => {
     process.env.CSRF_SECRET = 'segredo-de-testes-e2e-com-mais-de-32-caracteres';
     prisma.$queryRaw.mockReset().mockResolvedValue([{ result: 1 }]);
     sessaoAtual = null;
+    prisma.filial.findUnique.mockReset().mockResolvedValue({ id: 1, status: 'ATIVA' });
+    prisma.barbeiro.findUnique.mockReset().mockResolvedValue({
+      id: 2,
+      idFilial: 1,
+      statusProfissional: 'ATIVO',
+      usuario: { status: 'ATIVO' },
+    });
+    prisma.cliente.findUnique.mockReset().mockResolvedValue({ id: 1 });
+    prisma.servico.findMany
+      .mockReset()
+      .mockResolvedValue([
+        { id: 3, ativo: true, precoBase: new Prisma.Decimal('50'), duracaoMinutos: 30 },
+      ]);
+    prisma.agendamento.findMany.mockReset().mockResolvedValue([]);
+    prisma.agendamento.findFirst.mockReset().mockResolvedValue(null);
+    prisma.agendamento.findUnique.mockReset().mockResolvedValue({ idCliente: 9, idBarbeiro: 2 });
+    prisma.agendamento.create.mockReset();
+    prisma.agendamento.update.mockReset();
+    prisma.agendamento.count.mockReset().mockResolvedValue(0);
     const senhaHash = await new SenhaService().gerarHash('senha correta de teste');
     const usuario = {
       id: 1,
@@ -92,7 +128,7 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     app.use(cookieParser());
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    configurarValidacao(app);
     configurarSwagger(app, {
       DATABASE_URL: process.env.DATABASE_URL,
       PORT: 3000,
@@ -145,6 +181,21 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer()).get('/servicos').expect(401);
   });
 
+  it('uses the production validation policy without exposing rejected values', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('Content-Type', 'application/json')
+      .send({
+        email: 'cliente@teste.local',
+        senha: 'senha correta de teste',
+        campoDesconhecido: 'valor-que-nao-deve-aparecer',
+      })
+      .expect(400);
+
+    expect(response.body).toMatchObject({ statusCode: 400 });
+    expect(JSON.stringify(response.body)).not.toContain('valor-que-nao-deve-aparecer');
+  });
+
   it('completes login, me, CSRF logout and rejects the revoked session', async () => {
     const agente = request.agent(app.getHttpServer());
     const login = await agente
@@ -174,6 +225,113 @@ describe('AppController (e2e)', () => {
     await agente.get('/auth/me').expect(401);
   });
 
+  it('consulta horários publicamente e valida parâmetros repetidos', async () => {
+    const resposta = await request(app.getHttpServer())
+      .get(
+        '/agendamentos/horarios-disponiveis?idFilial=1&idBarbeiro=2&data=2030-01-07&servicoIds=3',
+      )
+      .expect(200);
+    expect(resposta.body as unknown).toMatchObject({
+      valorTotal: '50.00',
+      duracaoTotalMinutos: 30,
+    });
+    expect(JSON.stringify(resposta.body)).not.toContain('idCliente');
+    await request(app.getHttpServer())
+      .get(
+        '/agendamentos/horarios-disponiveis?idFilial=1&idBarbeiro=2&data=2030-02-30&servicoIds=3',
+      )
+      .expect(400);
+    await request(app.getHttpServer())
+      .get(
+        '/agendamentos/horarios-disponiveis?idFilial=1&idBarbeiro=2&data=2030-01-07&servicoIds=3&servicoIds=3',
+      )
+      .expect(400);
+    await request(app.getHttpServer()).post('/agendamentos').send({}).expect(401);
+  });
+
+  it('exige CSRF, impede acesso alheio e cria uma resposta sanitizada', async () => {
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const cookies = login.headers['set-cookie'] as unknown as string[];
+    const csrf = cookies
+      .find((cookie) => cookie.startsWith('csrf='))!
+      .split(';')[0]
+      .slice(5);
+    const dto = {
+      idCliente: 1,
+      idFilial: 1,
+      idBarbeiro: 2,
+      inicio: '2030-01-07T12:00:00Z',
+      servicoIds: [3],
+    };
+    await agente.post('/agendamentos').send(dto).expect(403);
+    await agente.get('/agendamentos/99').expect(403);
+    await agente
+      .patch('/agendamentos/99')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' })
+      .expect(403);
+    await agente
+      .post('/agendamentos')
+      .set('X-CSRF-Token', csrf)
+      .send({ ...dto, idCliente: 9 })
+      .expect(403);
+    prisma.agendamento.create.mockResolvedValue({
+      id: 10,
+      inicioPrevisto: new Date(dto.inicio),
+      fimPrevisto: new Date('2030-01-07T12:30:00Z'),
+      status: 'PENDENTE',
+      cliente: { cpf: 'dado-privado' },
+      observacaoInterna: 'interno',
+      filial: {
+        id: 1,
+        nome: 'Centro',
+        telefone: null,
+        cnpj: 'privado',
+        endereco: {
+          cep: '00000000',
+          logradouro: 'Rua A',
+          numero: '1',
+          bairro: 'Centro',
+          cidade: 'São Paulo',
+          estado: 'SP',
+        },
+      },
+      barbeiro: { id: 2, nomeProfissional: 'João', usuario: { email: 'privado' } },
+      servicos: [
+        {
+          idServico: 3,
+          precoAplicado: new Prisma.Decimal('50'),
+          subtotal: new Prisma.Decimal('50'),
+          duracaoAplicadaMinutos: 30,
+          quantidade: 1,
+          servico: { id: 3, nome: 'Corte' },
+          comissao: { valor: 'privado' },
+        },
+      ],
+    });
+    const resultado = await agente
+      .post('/agendamentos')
+      .set('X-CSRF-Token', csrf)
+      .send(dto)
+      .expect(201);
+    expect(resultado.body as unknown).toMatchObject({ id: 10, servicos: [{ subtotal: '50.00' }] });
+    for (const campo of ['senhaHash', 'cpf', 'cnpj', 'observacaoInterna', 'comissao', 'email'])
+      expect(JSON.stringify(resultado.body)).not.toContain(campo);
+    const gravado = await prisma.agendamento.create.mock.results[0].value as Record<string, unknown>;
+    prisma.agendamento.findUnique.mockResolvedValue({ ...gravado, idCliente: 1, idBarbeiro: 2, idFilial: 1 });
+    prisma.agendamento.update.mockResolvedValue({ ...gravado, status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' });
+    await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO' }).expect(400);
+    await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso', inicio: dto.inicio }).expect(403);
+    const cancelado = await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' }).expect(200);
+    expect(cancelado.body as unknown).toMatchObject({ status: 'CANCELADO' });
+    prisma.agendamento.findFirst.mockResolvedValue({ id: 10 });
+    await agente.post('/agendamentos').set('X-CSRF-Token', csrf).send(dto).expect(409);
+  });
+
   it('/api-json (GET) exposes the OpenAPI contract', async () => {
     const response = await request(app.getHttpServer()).get('/api-json').expect(200);
     const document = response.body as OpenApiDocument;
@@ -194,5 +352,15 @@ describe('AppController (e2e)', () => {
       ]),
     );
     expect(document.tags.map((tag) => tag.name)).toEqual(expect.arrayContaining(['Serviços']));
+    expect(Object.keys(document.paths['/auth/login'].post?.responses ?? {})).toEqual(
+      expect.arrayContaining(['200', '400', '401', '403', '415', '429']),
+    );
+    expect(Object.keys(document.paths['/servicos'].get?.responses ?? {})).toEqual(
+      expect.arrayContaining(['200', '400', '401', '403', '404', '409', '429']),
+    );
+    const schemaErro = document.components?.schemas?.ErroRespostaDto as
+      { required?: string[] } | undefined;
+    expect(schemaErro?.required ?? []).not.toContain('error');
+    expect(document.components?.schemas?.LimiteRequisicoesRespostaDto).toBeDefined();
   });
 });
