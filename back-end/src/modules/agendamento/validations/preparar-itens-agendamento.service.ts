@@ -19,10 +19,12 @@ export class PrepararItensAgendamentoService {
     if (new Set(origem.map((item) => item.idServico)).size !== origem.length)
       throw new BadRequestException('Serviços não podem se repetir.');
     const servicos = await cliente.servico.findMany({
-      where: { id: { in: origem.map((item) => item.idServico) }, ativo: true },
+      where: { id: { in: origem.map((item) => item.idServico) } },
     });
     if (servicos.length !== origem.length)
-      throw new NotFoundException('Um ou mais serviços ativos não foram encontrados.');
+      throw new NotFoundException('Um ou mais serviços não foram encontrados.');
+    if (servicos.some((servico) => servico.ativo === false))
+      throw new BadRequestException('Um ou mais serviços estão inativos.');
     const porId = new Map(servicos.map((servico) => [servico.id, servico]));
     return origem.map((item, index) => {
       const servico = porId.get(item.idServico)!;

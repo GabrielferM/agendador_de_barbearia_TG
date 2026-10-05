@@ -1,4 +1,13 @@
 import {
+  AgendamentoRespostaDto,
+  ListaAgendamentosRespostaDto,
+} from './dto/agendamento-resposta.dto';
+import { Publico } from '../../common/auth/publico.decorator';
+import {
+  HorariosDisponiveisDto,
+  HorariosDisponiveisRespostaDto,
+} from './dto/horarios-disponiveis.dto';
+import {
   Body,
   Controller,
   Delete,
@@ -17,7 +26,7 @@ import {
   ListarAgendamentosDto,
   ListarHistoricoStatusDto,
 } from './dto/agendamento.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
 import { UsuarioAtual } from '../../common/auth/usuario-atual.decorator';
 import type { UsuarioAutenticado } from '../../common/auth/auth.types';
 import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
@@ -27,15 +36,24 @@ import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decora
 @Controller('agendamentos')
 export class AgendamentoController {
   constructor(private readonly service: AgendamentoService) {}
-  @Post() criar(@Body() dto: CriarAgendamentoDto, @UsuarioAtual() usuario: UsuarioAutenticado) {
+  @Post()
+  @ApiCreatedResponse({ type: AgendamentoRespostaDto })
+  criar(@Body() dto: CriarAgendamentoDto, @UsuarioAtual() usuario: UsuarioAutenticado) {
     return this.service.criar(dto, usuario);
   }
-  @Get() listar(
-    @Query() query: ListarAgendamentosDto,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-  ) {
+  @Get()
+  @ApiOkResponse({ type: ListaAgendamentosRespostaDto })
+  listar(@Query() query: ListarAgendamentosDto, @UsuarioAtual() usuario: UsuarioAutenticado) {
     return this.service.listar(query, usuario);
   }
+  @Publico()
+  @Get('horarios-disponiveis')
+  @ApiOperation({ summary: 'Consulta pública de horários livres', security: [] })
+  @ApiOkResponse({ type: HorariosDisponiveisRespostaDto })
+  horarios(@Query() query: HorariosDisponiveisDto) {
+    return this.service.horarios(query);
+  }
+
   @Get(':id/historico-status')
   listarHistorico(
     @Param('id', ParseIntPipe) id: number,
@@ -52,13 +70,14 @@ export class AgendamentoController {
   ) {
     return this.service.criarHistorico(id, dto, usuario);
   }
-  @Get(':id') buscar(
-    @Param('id', ParseIntPipe) id: number,
-    @UsuarioAtual() usuario: UsuarioAutenticado,
-  ) {
+  @Get(':id')
+  @ApiOkResponse({ type: AgendamentoRespostaDto })
+  buscar(@Param('id', ParseIntPipe) id: number, @UsuarioAtual() usuario: UsuarioAutenticado) {
     return this.service.buscar(id, usuario);
   }
-  @Patch(':id') atualizar(
+  @Patch(':id')
+  @ApiOkResponse({ type: AgendamentoRespostaDto })
+  atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AtualizarAgendamentoDto,
     @UsuarioAtual() usuario: UsuarioAutenticado,

@@ -140,6 +140,7 @@ describe('Transações de agendamento', () => {
       { execute: jest.fn((valor: string) => new Date(valor)) },
       { execute: jest.fn() } as never,
       verificarConflito as never,
+      { execute: jest.fn() } as never,
     );
 
     await service.execute(10, { inicio: '2030-01-01T13:00:00-03:00' });

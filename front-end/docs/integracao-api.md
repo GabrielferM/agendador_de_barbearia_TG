@@ -22,6 +22,8 @@ O [httpClient](../src/api/http-client.ts) envia cookies com `credentials: 'inclu
 
 Ao receber 401 fora do login, o transporte emite o evento interno `agendador:sessao-expirada`. O contexto de autenticação encerra a sessão local e limpa os caches de queries e mutações, sem enviar uma segunda requisição de logout.
 
+A jornada de agendamento utiliza os clientes gerados com um adapter que verifica status e campos essenciais. A consulta de horários é pública; criação e cancelamento usam sessão/CSRF. Contratos e comportamento estão no [guia de agendamento](../../back-end/doc/agendamento-cliente.md).
+
 ## Regra para novas alterações
 
 - Prefira clientes gerados para contratos já cobertos. Mantenha tradução de apresentação ou erros nos hooks/serviços, sem duplicar fetch em componentes.

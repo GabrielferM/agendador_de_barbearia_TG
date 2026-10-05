@@ -1,3 +1,5 @@
+import { ValidarVinculosAgendamentoService } from '../validations/validar-vinculos-agendamento.service';
+import { duracaoItens, validarExpediente } from '../constants/expediente';
 import {
   BadRequestException,
   ConflictException,
@@ -22,6 +24,7 @@ export class EditarAgendamentoService {
     private readonly validarDataHora: ValidarDataHoraAgendamentoService,
     private readonly prepararItens: PrepararItensAgendamentoService,
     private readonly verificarConflito: VerificarConflitoAgendamentoService,
+    private readonly validarVinculos: ValidarVinculosAgendamentoService,
   ) {}
   async execute(id: number, dto: AtualizarAgendamentoDto) {
     try {
@@ -70,14 +73,21 @@ export class EditarAgendamentoService {
               subtotal: item.subtotal,
               ordemExecucao: item.ordemExecucao,
             }));
-        const fimPrevisto = new Date(
-          inicioPrevisto.getTime() +
-            itens.reduce(
-              (total, item) => total + item.duracaoAplicadaMinutos * item.quantidade,
-              0,
-            ) *
-              60000,
-        );
+        const fimPrevisto = new Date(inicioPrevisto.getTime() + duracaoItens(itens) * 60000);
+        if (dto.inicio || alterarItens) {
+          validarExpediente(inicioPrevisto, fimPrevisto);
+          await this.validarVinculos.execute(
+            atual.idCliente,
+            atual.idBarbeiro,
+            atual.idFilial,
+            transaction,
+          );
+          await this.prepararItens.execute(
+            undefined,
+            itens.map((item) => item.idServico),
+            transaction,
+          );
+        }
         if (dto.inicio || alterarItens)
           await this.verificarConflito.execute(
             atual.idBarbeiro,

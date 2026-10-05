@@ -1,3 +1,5 @@
+import { HorariosDisponiveisDto } from './dto/horarios-disponiveis.dto';
+import { ListarHorariosDisponiveisAgendamentoService } from './service/listar-horarios-disponiveis-agendamento.service';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { OrigemAgendamento, StatusAgendamento } from '@prisma/client';
 import { UsuarioAutenticado } from '../../common/auth/auth.types';
@@ -19,6 +21,7 @@ import { ValidarAcessoAgendamentoService } from './validations/validar-acesso-ag
 @Injectable()
 export class AgendamentoService {
   constructor(
+    private readonly horariosService: ListarHorariosDisponiveisAgendamentoService,
     private readonly criarService: CriarAgendamentoService,
     private readonly listarService: ListarAgendamentosService,
     private readonly buscarService: BuscarAgendamentoService,
@@ -27,6 +30,10 @@ export class AgendamentoService {
     private readonly historicoService: HistoricoStatusAgendamentoService,
     private readonly validarAcesso: ValidarAcessoAgendamentoService,
   ) {}
+
+  horarios(query: HorariosDisponiveisDto) {
+    return this.horariosService.execute(query);
+  }
 
   async criar(dto: CriarAgendamentoDto, usuario?: UsuarioAutenticado) {
     if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
@@ -78,7 +85,9 @@ export class AgendamentoService {
   async atualizar(id: number, dto: AtualizarAgendamentoDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
     if (usuario?.clienteId) {
-      const chaves = Object.keys(dto);
+      const chaves = Object.entries(dto)
+        .filter(([, valor]) => valor !== undefined)
+        .map(([chave]) => chave);
       if (
         dto.status !== StatusAgendamento.CANCELADO ||
         chaves.some((chave) => !['status', 'motivoCancelamento'].includes(chave))
@@ -119,9 +128,57 @@ export class AgendamentoService {
   private semCamposInternos(valor: unknown): unknown {
     if (Array.isArray(valor)) return valor.map((item: unknown) => this.semCamposInternos(item));
     if (valor && typeof valor === 'object') {
+      const registro = valor as Record<string, unknown>;
+      if ('inicioPrevisto' in registro && 'servicos' in registro) {
+        const item =
+          registro as unknown as import('./dto/agendamento-resposta.dto').AgendamentoRespostaDto;
+        return {
+          id: item.id,
+          inicioPrevisto: item.inicioPrevisto,
+          fimPrevisto: item.fimPrevisto,
+          status: item.status,
+          observacaoCliente: item.observacaoCliente,
+          motivoCancelamento: item.motivoCancelamento,
+          filial: {
+            id: item.filial.id,
+            nome: item.filial.nome,
+            telefone: item.filial.telefone,
+            endereco: {
+              cep: item.filial.endereco.cep,
+              logradouro: item.filial.endereco.logradouro,
+              numero: item.filial.endereco.numero,
+              complemento: item.filial.endereco.complemento,
+              bairro: item.filial.endereco.bairro,
+              cidade: item.filial.endereco.cidade,
+              estado: item.filial.endereco.estado,
+            },
+          },
+          barbeiro: { id: item.barbeiro.id, nomeProfissional: item.barbeiro.nomeProfissional },
+          servicos: item.servicos.map((servico) => ({
+            idServico: servico.idServico,
+            precoAplicado: servico.precoAplicado,
+            duracaoAplicadaMinutos: servico.duracaoAplicadaMinutos,
+            quantidade: servico.quantidade,
+            subtotal: servico.subtotal,
+            servico: { id: servico.servico.id, nome: servico.servico.nome },
+          })),
+        };
+      }
+
       return Object.fromEntries(
         Object.entries(valor as Record<string, unknown>)
-          .filter(([chave]) => !['observacaoInterna', 'comissao'].includes(chave))
+          .filter(
+            ([chave]) =>
+              ![
+                'observacaoInterna',
+                'comissao',
+                'usuario',
+                'cliente',
+                'senhaHash',
+                'percentualComissao',
+                'cnpj',
+              ].includes(chave),
+          )
           .map(([chave, item]) => [chave, this.semCamposInternos(item)]),
       );
     }

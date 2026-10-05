@@ -5,6 +5,7 @@ import { PaginacaoDto } from '../../common/dto/paginacao.dto';
 import { CatalogoPublicoService } from './catalogo-publico.service';
 import {
   ListaBarbeirosPublicosDto,
+  ListarBarbeirosPublicosDto,
   ListaFiliaisPublicasDto,
   ListaServicosPublicosDto,
 } from './dto/catalogo-publico.dto';
@@ -23,7 +24,7 @@ export class CatalogoPublicoController {
   @Get('barbeiros')
   @ApiOperation({ summary: 'Lista barbeiros ativos sem dados pessoais' })
   @ApiOkResponse({ type: ListaBarbeirosPublicosDto })
-  barbeiros(@Query() query: PaginacaoDto) {
+  barbeiros(@Query() query: ListarBarbeirosPublicosDto) {
     return this.service.barbeiros(query);
   }
   @Get('filiais')

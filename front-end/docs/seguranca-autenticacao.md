@@ -41,6 +41,8 @@ Guards globais verificam sessão e permissões; a fachada de agendamentos aplica
 
 [main.ts](../../back-end/src/main.ts) usa Helmet; a CSP é desabilitada fora de produção. Configuração de HTTPS, proxy e hospedagem do frontend não é comprovada pela presença desse middleware.
 
+A jornada `/agendar` pode ser explorada sem sessão; confirmar exige cliente autenticado. O login aceita retorno somente para a rota interna `/agendar`, mantendo as escolhas em memória. Expiração preserva o rascunho, enquanto logout explícito o apaga. A listagem e o cancelamento continuam autorizados pela propriedade no backend. Veja [agendamento do cliente](../../back-end/doc/agendamento-cliente.md).
+
 ## Regra para novas alterações
 
 - Nunca retornar ou registrar senha, hash, token de sessão, cookie ou segredo. Não persistir credenciais no navegador.

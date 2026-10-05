@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { autenticar, ErroLogin } from "../services/login-api";
 import type { CodigoPapel, CredenciaisLogin } from "../types";
 import { useAutenticacao } from "../../../auth/contexto-autenticacao";
@@ -12,12 +12,18 @@ const ROTA_POR_PAPEL: Record<CodigoPapel, string> = {
 
 export function useLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { definirUsuario } = useAutenticacao();
   const mutation = useMutation({
     mutationFn: (credenciais: CredenciaisLogin) => autenticar(credenciais),
     onSuccess: async ({ usuario }) => {
       await definirUsuario(usuario);
-      navigate(ROTA_POR_PAPEL[usuario.papel], { replace: true });
+      navigate(
+        usuario.papel === "CLIENTE" && location.state?.retorno === "/agendar"
+          ? "/agendar"
+          : ROTA_POR_PAPEL[usuario.papel],
+        { replace: true },
+      );
     },
   });
 

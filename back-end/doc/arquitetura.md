@@ -34,6 +34,8 @@ O papel do usuário é uma relação, não um enum de perfil. `Agendamento` não
 
 Módulos ativos: autenticação, catálogo público, health, serviço, administrador, cliente, barbeiro, filial, agendamento, papel, permissão, comissão e dashboards de administrador/barbeiro. O dashboard administrativo agrega submódulos de dashboard, agendamento, cliente, barbeiro, serviços e financeiro. Usuario e Endereco são modelos utilizados por casos de uso; não há módulos independentes ativos com esses nomes. Tipos antigos no frontend gerado não comprovam a existência de endpoints atuais.
 
+A disponibilidade pública e as validações de expediente, vínculos e serviços são descritas no [guia de agendamento do cliente](agendamento-cliente.md). A consulta de horários não reserva a agenda; a gravação revalida tudo dentro da transação.
+
 ## Regra para novas alterações: organização
 
 ```text

@@ -100,6 +100,7 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
   );
 
   const sair = useCallback(async (): Promise<boolean> => {
+    window.dispatchEvent(new Event("agendador:logout"));
     let confirmado = false;
     try {
       const resposta = await autenticacaoControllerLogout();

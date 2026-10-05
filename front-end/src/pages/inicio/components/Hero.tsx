@@ -21,7 +21,7 @@ export function Hero() {
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
             className="cursor-pointer rounded-lg border border-secondary bg-secondary px-6 py-3 text-sm font-bold text-foreground transition-colors hover:bg-surface"
-            to="/login"
+            to="/agendar"
           >
             ◷ Agendar agora
           </Link>

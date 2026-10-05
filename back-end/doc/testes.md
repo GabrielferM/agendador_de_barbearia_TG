@@ -23,6 +23,8 @@ Geração e build não substituem testes. Não execute `prisma:migrate` como val
 - O e2e e `main.ts` usam o mesmo [configurador do ValidationPipe](../src/config/validacao.ts).
 - Os testes unitários de agendamento verificam uso do mesmo cliente transacional, repetição de `P2034`, conflito após três tentativas, sobreposição e validação de acesso. A concorrência real ainda exige PostgreSQL isolado.
 
+A suíte de disponibilidade cobre fuso, expediente, domingo, fechamento, soma dos serviços, horários adjacentes/sobrepostos e vínculos inativos. Os testes HTTP cobrem disponibilidade anônima, parâmetros, CSRF, criação, conflito e sanitização da resposta do cliente.
+
 ## Regra para novas alterações
 
 Teste comportamento relevante: sucesso, entrada inválida, inexistência, conflito, permissão negada e falha inesperada. Para autenticação, cubra expiração/revogação, CSRF e ausência de segredos na resposta. Para datas, dinheiro e status, cubra limites e transições inválidas. Evite testes que apenas repitam a implementação.

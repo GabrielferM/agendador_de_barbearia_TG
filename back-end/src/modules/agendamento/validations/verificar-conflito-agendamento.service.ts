@@ -2,11 +2,20 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma, StatusAgendamento } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 
-const estadosQueOcupamHorario = [
+export const estadosQueOcupamHorario = [
   StatusAgendamento.PENDENTE,
   StatusAgendamento.CONFIRMADO,
   StatusAgendamento.EM_ATENDIMENTO,
 ];
+
+export function intervalosSobrepostos(
+  inicio: Date,
+  fim: Date,
+  outroInicio: Date,
+  outroFim: Date,
+): boolean {
+  return inicio < outroFim && fim > outroInicio;
+}
 
 @Injectable()
 export class VerificarConflitoAgendamentoService {

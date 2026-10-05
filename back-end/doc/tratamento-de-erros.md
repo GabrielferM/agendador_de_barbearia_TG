@@ -31,6 +31,8 @@ Capture erros somente quando for possível traduzi-los ou acrescentar contexto �
 
 Novos logs devem conter apenas contexto operacional necessário e sanitizado. Não há garantia atual de auditoria centralizada de todas as falhas. O frontend deve usar mensagens próprias para falhas internas e de autenticação; detalhes estão no [guia de erros do frontend](../../front-end/docs/tratamento-de-erros.md).
 
+No agendamento, filial inativa, profissional/usuário inativo, vínculo com outra filial, serviço inativo e horário fora do expediente retornam 400. Recursos inexistentes retornam 404; sobreposição e concorrência na gravação retornam 409. Isso substitui o antigo 409 para barbeiro inativo/vínculo inválido e o antigo 404 para serviço inativo. A política 403 de acesso a agendamento alheio é preservada.
+
 ## Validação e melhoria pendente
 
 Um eventual formato único de erro continua exigindo decisão de contrato e atualização coordenada do consumidor. Ao alterar uma falha, teste status, corpo seguro, documento OpenAPI e comportamento do cliente, incluindo erro desconhecido. Veja [testes](testes.md).

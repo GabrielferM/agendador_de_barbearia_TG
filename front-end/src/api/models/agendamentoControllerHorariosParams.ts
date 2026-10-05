@@ -6,20 +6,22 @@
  * OpenAPI spec version: 1.0
  */
 
-export type CatalogoPublicoControllerBarbeirosParams = {
-/**
- * Número da página a ser retornada.
- * @minimum 1
- */
-pagina?: number;
-/**
- * Quantidade de registros por página.
- * @minimum 1
- * @maximum 100
- */
-limite?: number;
+export type AgendamentoControllerHorariosParams = {
 /**
  * @minimum 1
  */
-idFilial?: number;
+idFilial: number;
+/**
+ * @minimum 1
+ */
+idBarbeiro: number;
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+data: string;
+/**
+ * @minItems 1
+ * @items.minimum 1
+ */
+servicoIds: number[];
 };

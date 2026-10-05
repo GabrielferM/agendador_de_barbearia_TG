@@ -1,3 +1,4 @@
+import { ListarHorariosDisponiveisAgendamentoService } from './service/listar-horarios-disponiveis-agendamento.service';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AgendamentoController } from './agendamento.controller';
@@ -21,6 +22,7 @@ import { ValidarAcessoAgendamentoService } from './validations/validar-acesso-ag
   controllers: [AgendamentoController],
   providers: [
     AgendamentoService,
+    ListarHorariosDisponiveisAgendamentoService,
     BuscarServicosAgendamentoService,
     CalcularFimAgendamentoService,
     CalcularValorTotalAgendamentoService,

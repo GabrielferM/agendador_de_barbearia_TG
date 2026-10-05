@@ -2,6 +2,7 @@
 
 | Tarefa | Leitura |
 | --- | --- |
+| Jornada do cliente e disponibilidade | [Agendamento do cliente](../../back-end/doc/agendamento-cliente.md) |
 | Entender páginas, componentes e estado | [Arquitetura](arquitetura.md) |
 | Nomear arquivos e símbolos | [Nomenclatura](nomenclatura.md) |
 | Consumir ou atualizar contratos HTTP | [Integração com a API](integracao-api.md) |

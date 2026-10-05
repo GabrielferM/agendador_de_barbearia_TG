@@ -13,7 +13,7 @@ React e TypeScript compõem a SPA, executada pelo Vite. React Router organiza a 
 | `src/index.css` | Tokens, estilos globais e integração HeroUI/Tailwind. |
 | `src/test/` | Configuração compartilhada dos testes. |
 
-A página inicial consome catálogo público; login usa um serviço que valida e traduz respostas. Os dashboards principais de administrador e barbeiro possuem adapters HTTP manuais. As subpáginas administrativas de agendamentos, clientes, barbeiros, serviços e financeiro exibem mocks quando habilitados e estado de integração indisponível fora desse modo. A existência da tela ou de um botão não comprova integração de leitura ou gravação. A área do cliente, cadastro público e recuperação de senha são páginas em construção nas [rotas](../src/routers/index.tsx).
+A página inicial consome catálogo público; login usa um serviço que valida e traduz respostas. Os dashboards principais de administrador e barbeiro possuem adapters HTTP manuais. As subpáginas administrativas de agendamentos, clientes, barbeiros, serviços e financeiro exibem mocks quando habilitados e estado de integração indisponível fora desse modo. A existência da tela ou de um botão não comprova integração de leitura ou gravação. A jornada pública de agendamento e a listagem/cancelamento do cliente estão integradas à API. O rascunho transitório fica em um provider acima das rotas para permitir retomada após login. Cadastro público e recuperação de senha continuam em construção nas [rotas](../src/routers/index.tsx). Veja [agendamento do cliente](../../back-end/doc/agendamento-cliente.md).
 
 ## Regra para novas alterações
 

@@ -4,6 +4,7 @@
 
 | Tarefa | Documento |
 | --- | --- |
+| Jornada do cliente e disponibilidade | [Agendamento do cliente](agendamento-cliente.md) |
 | Entender domínio, camadas e persistência | [Arquitetura](arquitetura.md) |
 | Nomear arquivos, classes e contratos | [Nomenclatura](nomenclatura.md) |
 | Validar entradas e tratar falhas | [Tratamento de erros](tratamento-de-erros.md) |

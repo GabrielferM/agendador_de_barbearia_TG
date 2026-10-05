@@ -1,3 +1,5 @@
+import { AgendamentoCliente } from "../pages/agendamento";
+import { MeusAgendamentos } from "../pages/meus-agendamentos";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PaginaEmConstrucao } from "../pages/dashboard";
 import { DashboardAdministrador } from "../pages/dashboard/dashboard-administrador";
@@ -56,14 +58,20 @@ export function AppRouter() {
     <BrowserRouter>
       <Routes>
         <Route element={<Inicio />} path="/" />
+        <Route element={<AgendamentoCliente />} path="/agendar" />
+        <Route
+          element={
+            <RotaProtegida papel="CLIENTE">
+              <MeusAgendamentos />
+            </RotaProtegida>
+          }
+          path="/cliente/agendamentos"
+        />
         <Route element={<Login />} path="/login" />
         <Route
           element={
             <RotaProtegida papel="CLIENTE">
-              <PaginaEmConstrucao
-                descricao="Seus agendamentos e preferências ficarão disponíveis aqui."
-                titulo="Área do cliente"
-              />
+              <Navigate to="/cliente/agendamentos" replace />
             </RotaProtegida>
           }
           path="/cliente"

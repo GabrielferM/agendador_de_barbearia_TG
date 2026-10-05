@@ -1,21 +1,19 @@
+import { Link } from "react-router-dom";
 export function Disponibilidade() {
   return (
     <section className="flex flex-col items-center justify-between gap-5 bg-primary px-5 py-6 text-center text-white sm:flex-row sm:px-8 sm:text-left lg:px-12">
-      <div className="flex flex-col items-center gap-3 sm:flex-row">
-        <p className="text-xs font-bold uppercase tracking-wide text-secondary">
-          Próximo horário disponível hoje
+      <div>
+        <p className="font-semibold">Encontre um horário para você</p>
+        <p className="mt-1 text-sm">
+          Escolha seus serviços e consulte a disponibilidade da equipe.
         </p>
-        <span className="rounded-md border border-secondary px-3 py-2 text-sm font-bold">
-          ◷ 09:30
-        </span>
-        <p className="text-xs text-secondary">com Lucas Ferreira</p>
       </div>
-      <button
-        className="cursor-pointer rounded-lg border border-secondary bg-transparent px-5 py-3 text-xs font-bold text-white transition-colors hover:bg-surface hover:text-foreground"
-        type="button"
+      <Link
+        className="rounded-lg border border-secondary px-5 py-3 text-sm font-bold focus-visible:outline-2 focus-visible:outline-white"
+        to="/agendar"
       >
         Ver disponibilidade
-      </button>
+      </Link>
     </section>
   );
 }

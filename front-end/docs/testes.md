@@ -16,6 +16,8 @@ O build executa TypeScript e Vite. Vitest usa jsdom e [setup compartilhado](../s
 
 Há testes de login, contexto de autenticação, transporte HTTP e dashboards, próximos das implementações. Eles cobrem corpo JSON inválido, preservação de 4xx/5xx, evento de 401, limpeza de cache e aviso de logout remoto não confirmado. Usam respostas simuladas; não comprovam integração com um banco ou servidor real. Não há comando de testes de navegador e2e no package.json atual.
 
+A suíte da jornada cobre filial única/múltiplas/ausentes, paginação do catálogo, escolhas dependentes, login com retomada e confirmação explícita, expiração de sessão, conflito na criação e cancelamento com motivo. Usa respostas HTTP simuladas e calendário HeroUI real em jsdom.
+
 ## Regra para novas alterações
 
 - Teste o comportamento observável e interações pelo papel/nome acessível do elemento.

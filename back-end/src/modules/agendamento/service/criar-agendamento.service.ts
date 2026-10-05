@@ -1,3 +1,4 @@
+import { duracaoItens, validarExpediente } from '../constants/expediente';
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { serializarResposta } from '../../../common/utils/resposta';
@@ -31,14 +32,8 @@ export class CriarAgendamentoService {
           dto.servicoIds,
           transaction,
         );
-        const fimPrevisto = new Date(
-          inicioPrevisto.getTime() +
-            servicos.reduce(
-              (total, item) => total + item.duracaoAplicadaMinutos * item.quantidade,
-              0,
-            ) *
-              60000,
-        );
+        const fimPrevisto = new Date(inicioPrevisto.getTime() + duracaoItens(servicos) * 60000);
+        validarExpediente(inicioPrevisto, fimPrevisto);
         await this.validarVinculos.execute(
           dto.idCliente,
           dto.idBarbeiro,
