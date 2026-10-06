@@ -4,5 +4,5 @@ export const MENU_BARBEIRO: ItemMenu[] = [
   { rotulo: 'Minha agenda', icone: 'agenda', destino: '/barbeiro/agenda' },
   { rotulo: 'Meus serviços', icone: 'servicos' },
   { rotulo: 'Clientes', icone: 'usuarios' },
-  { rotulo: 'Histórico', icone: 'agenda' },
+  { rotulo: 'Histórico', icone: 'agenda', destino: '/barbeiro/historico' },
 ];

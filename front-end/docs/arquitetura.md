@@ -38,3 +38,5 @@ Concluir as páginas em construção e integrações administrativas requer tare
 ## Agenda integrada do barbeiro
 
 `pages/dashboard/dashboard-barbeiro/agenda/` consulta a API existente por adapter que valida status e campos essenciais. As rotas `/barbeiro/agenda` e `/barbeiro/agenda/:id` exigem sessão BARBEIRO e permissão de própria agenda na interface e no servidor. Lista mantém filtros na URL e detalhe retorna à lista filtrada; queries incluem usuário, filtros ou ID. Carregamento, vazio e erro são distintos e não usam fallback demonstrativo.
+
+A rota `/barbeiro/historico` reutiliza a lista da agenda com recorte temporal estável ao abrir a página. Detalhes apresentam histórico de status paginado, sem reconstruir eventos ausentes. A classificação temporal não transforma uma pendência antiga em atendimento concluído.

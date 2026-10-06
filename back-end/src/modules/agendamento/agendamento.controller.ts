@@ -1,3 +1,4 @@
+import { HistoricoAgendamentoRespostaDto } from './dto/historico-resposta.dto';
 import {
   AgendamentoBarbeiroRespostaDto,
   ListaAgendamentosBarbeiroRespostaDto,
@@ -79,6 +80,7 @@ export class AgendamentoController {
   }
 
   @Get(':id/historico-status')
+  @ApiOkResponse({ type: HistoricoAgendamentoRespostaDto })
   listarHistorico(
     @Param('id', ParseIntPipe) id: number,
     @Query() query: ListarHistoricoStatusDto,
