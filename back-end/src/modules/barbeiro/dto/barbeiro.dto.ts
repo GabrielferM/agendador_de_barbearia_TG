@@ -34,4 +34,6 @@ export class AtualizarBarbeiroDto {
   @IsOptional() @IsDateString() dataAdmissao?: string;
   @IsOptional() @IsEnum(StatusBarbeiro) statusProfissional?: StatusBarbeiro;
 }
-export class ListarBarbeirosDto extends PaginacaoDto {}
+export class ListarBarbeirosDto extends PaginacaoDto {
+  @IsOptional() @Type(() => Number) @IsInt() idFilial?: number;
+}
