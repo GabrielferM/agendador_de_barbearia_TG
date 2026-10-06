@@ -1,6 +1,7 @@
+import { clienteControllerBuscar, clienteControllerCriar, clienteControllerAtualizar, clienteControllerRemover } from "../../../../api/clientes/clientes";
 import { filialControllerBuscar, filialControllerCriar, filialControllerAtualizar, filialControllerListar } from '../../../../api/filiais/filiais';
 import { barbeiroControllerListar, barbeiroControllerBuscar, barbeiroControllerCriar, barbeiroControllerAtualizar, barbeiroControllerRemover } from '../../../../api/barbeiros/barbeiros';
-import type { CriarBarbeiroDto, AtualizarBarbeiroDto, CriarFilialDto, AtualizarFilialDto, FilialControllerListarParams, BarbeiroControllerListarParams } from '../../../../api/models';
+import type { CriarClienteDto, AtualizarClienteDto, CriarBarbeiroDto, AtualizarBarbeiroDto, CriarFilialDto, AtualizarFilialDto, FilialControllerListarParams, BarbeiroControllerListarParams } from '../../../../api/models';
 import { consultarDashboard, dinheiroValido, executarHttp, objeto, paginaValida, type Registro } from './operacoes-api';
 function filialValida(valor: unknown): Registro {
   if (!objeto(valor) || !Number.isInteger(valor.id) || typeof valor.nome !== 'string' || typeof valor.status !== 'string' || !objeto(valor.endereco) || !['cep', 'logradouro', 'numero', 'bairro', 'cidade', 'estado'].every((campo) => typeof (valor.endereco as Registro)[campo] === 'string')) throw new Error('Filial inválida.');
@@ -42,3 +43,14 @@ export async function salvarBarbeiro(id: number | null, dados: Registro) {
   return pessoaValida(await executarHttp(() => id === null ? barbeiroControllerCriar(dados as unknown as CriarBarbeiroDto) : barbeiroControllerAtualizar(id, dados as AtualizarBarbeiroDto), id === null ? 201 : 200));
 }
 export const excluirBarbeiro = (id: number) => executarHttp(() => barbeiroControllerRemover(id), 200);
+
+export async function listarClientes(filtros: { pagina: number; busca?: string; status?: string }, signal?: AbortSignal) {
+  const pagina = paginaValida(await consultarDashboard('clientes', { ...filtros, limite: 10 }, signal), (item) => typeof item.nome === 'string' && typeof item.email === 'string' && typeof item.status === 'string');
+  if (!objeto(pagina.indicadores) || !['ativos', 'novosNoMes', 'retornoAgendado'].every((campo) => Number.isInteger(pagina.indicadores?.[campo]))) throw new Error('Indicadores inválidos.');
+  return pagina;
+}
+export const buscarCliente = async (id: number, signal?: AbortSignal) => pessoaValida(await executarHttp(() => clienteControllerBuscar(id, { signal })));
+export async function salvarCliente(id: number | null, dados: Registro) {
+  return pessoaValida(await executarHttp(() => id === null ? clienteControllerCriar(dados as unknown as CriarClienteDto) : clienteControllerAtualizar(id, dados as AtualizarClienteDto), id === null ? 201 : 200));
+}
+export const excluirCliente = (id: number) => executarHttp(() => clienteControllerRemover(id), 200);
