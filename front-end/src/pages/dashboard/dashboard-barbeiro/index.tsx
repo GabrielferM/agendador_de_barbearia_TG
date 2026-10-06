@@ -1,3 +1,6 @@
+import { useAutenticacao } from "../../../auth/contexto-autenticacao";
+import { Link } from "react-router-dom";
+import { MENU_BARBEIRO } from "./menu-barbeiro";
 import { useQuery } from "@tanstack/react-query";
 import {
   ErroDashboard,
@@ -24,23 +27,21 @@ import {
   usarDadosMockados,
 } from "../mocks/dados-dashboard";
 
-const MENU = [
-  { rotulo: "Dashboard", icone: "dashboard", ativo: true },
-  { rotulo: "Minha agenda", icone: "agenda" },
-  { rotulo: "Meus serviços", icone: "servicos" },
-  { rotulo: "Clientes", icone: "usuarios" },
-  { rotulo: "Histórico", icone: "agenda" },
-];
-
 function variacao(valor: number, periodo = "ontem") {
   const prefixo = valor > 0 ? "+" : "";
   return `${prefixo}${valor}% em relação a ${periodo}`;
 }
 
 export function DashboardBarbeiro() {
+  const { usuario } = useAutenticacao();
   const demonstracao = usarDadosMockados();
   const consulta = useQuery({
-    queryKey: ["dashboard", "barbeiro", demonstracao ? "mock" : "api"],
+    queryKey: [
+      "dashboard",
+      "barbeiro",
+      usuario?.id,
+      demonstracao ? "mock" : "api",
+    ],
     queryFn: obterDashboardBarbeiro,
     enabled: !demonstracao,
     initialData: demonstracao ? dashboardBarbeiroMock : undefined,
@@ -52,7 +53,7 @@ export function DashboardBarbeiro() {
     <DashboardLayout
       titulo="Olá! 👋"
       subtitulo="Tenha um ótimo dia e bons cortes"
-      itens={MENU}
+      itens={MENU_BARBEIRO}
       dadosDemonstrativos={demonstracao}
     >
       {consulta.isPending ? (
@@ -114,7 +115,12 @@ export function DashboardBarbeiro() {
                       className="grid grid-cols-[64px_1fr_auto] items-center gap-3 py-3 text-sm"
                       key={item.id}
                     >
-                      <strong>{hora(item.inicio)}</strong>
+                      <Link
+                        className="underline"
+                        to={`/barbeiro/agenda/${item.id}`}
+                      >
+                        <strong>{hora(item.inicio)}</strong>
+                      </Link>
                       <div className="min-w-0">
                         <p className="truncate font-medium">{item.cliente}</p>
                         <p className="truncate text-xs text-muted">
@@ -122,7 +128,9 @@ export function DashboardBarbeiro() {
                         </p>
                       </div>
                       <span className="rounded-full bg-background px-2 py-1 text-xs">
-                        {nomeStatus(item.status)}
+                        <Link to={`/barbeiro/agenda/${item.id}`}>
+                          {nomeStatus(item.status)} · Visualizar
+                        </Link>
                       </span>
                     </li>
                   ))}
@@ -148,7 +156,12 @@ export function DashboardBarbeiro() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <strong>{hora(item.inicio)}</strong>
+                        <Link
+                          className="underline"
+                          to={`/barbeiro/agenda/${item.id}`}
+                        >
+                          <strong>{hora(item.inicio)}</strong>
+                        </Link>
                         <p className="text-xs text-muted">
                           {dataCurta(item.inicio)}
                         </p>

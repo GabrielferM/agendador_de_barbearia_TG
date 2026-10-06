@@ -45,3 +45,9 @@ O calendário usa HeroUI e sua biblioteca de datas `@internationalized/date`, de
 Veja [testes do backend](testes.md) e [testes do frontend](../../front-end/docs/testes.md). Os testes HTTP usam Prisma simulado, portanto não comprovam concorrência real. Testes com PostgreSQL devem usar uma instância descartável, dados fictícios e as migrations existentes; nunca preparar ou limpar o banco de desenvolvimento automaticamente.
 
 Melhorias pendentes: expediente por filial, feriados/pausas, cadastro público, reagendamento pelo cliente e chave de idempotência para criação. Essas melhorias não são garantias do fluxo atual.
+
+## Agenda do barbeiro
+
+A lista e o detalhe privados exigem `GERENCIAR_PROPRIA_AGENDA` para o barbeiro e impõem seu ID da sessão. Filtros de outro profissional não ampliam acesso; detalhes de terceiros retornam 403. A resposta do profissional contém somente o resumo público do agendamento e `cliente{id,nome}`. CPF, nascimento, contatos pessoais, observação cadastral, observação interna e comissão ficam fora dessa projeção. Administradores com `GERENCIAR_AGENDAMENTOS` preservam a resposta administrativa.
+
+O frontend oferece `/barbeiro/agenda` e `/barbeiro/agenda/:id`, com período/status, paginação do servidor e retorno aos filtros da lista. O dashboard abre essas rotas pelos horários e pelo menu. Datas de filtro usam America/Sao_Paulo. Esta entrega permite consulta; as ações de atendimento e histórico pertencem às próximas entregas.
