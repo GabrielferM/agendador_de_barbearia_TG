@@ -18,4 +18,5 @@ pagina?: number;
  * @maximum 100
  */
 limite?: number;
+idFilial?: number;
 };
