@@ -1,3 +1,4 @@
+import { HorariosAdministradorDto } from './dto/horarios-administrador.dto';
 import { HorariosDisponiveisDto } from './dto/horarios-disponiveis.dto';
 import { ListarHorariosDisponiveisAgendamentoService } from './service/listar-horarios-disponiveis-agendamento.service';
 import { ForbiddenException, Injectable } from '@nestjs/common';
@@ -35,9 +36,19 @@ export class AgendamentoService {
     return this.horariosService.execute(query);
   }
 
+  horariosAdministrador(query: HorariosAdministradorDto, usuario: UsuarioAutenticado) {
+    if (!usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) throw new ForbiddenException();
+    return this.horariosService.execute(
+      { ...query, servicoIds: query.servicos.map((item) => item.idServico) },
+      query.servicos,
+      query.idCliente,
+    );
+  }
+
   async criar(dto: CriarAgendamentoDto, usuario?: UsuarioAutenticado) {
-    if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
-      return this.criarService.execute(dto);
+    if (!usuario) return this.criarService.execute(dto);
+    if (usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
+      return this.criarService.execute({ ...dto, origem: OrigemAgendamento.ADMINISTRADOR });
     if (!usuario.clienteId || !usuario.permissoes.includes('CRIAR_AGENDAMENTO'))
       throw new ForbiddenException();
     if (

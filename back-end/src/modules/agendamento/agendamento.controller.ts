@@ -1,4 +1,5 @@
 import { HistoricoAgendamentoRespostaDto } from './dto/historico-resposta.dto';
+import { HorariosAdministradorDto } from './dto/horarios-administrador.dto';
 import {
   AgendamentoBarbeiroRespostaDto,
   ListaAgendamentosBarbeiroRespostaDto,
@@ -77,6 +78,16 @@ export class AgendamentoController {
   @ApiOkResponse({ type: HorariosDisponiveisRespostaDto })
   horarios(@Query() query: HorariosDisponiveisDto) {
     return this.service.horarios(query);
+  }
+
+  @Get('horarios-disponiveis-administrador')
+  @ApiOperation({ summary: 'Disponibilidade administrativa com quantidade e desconto' })
+  @ApiOkResponse({ type: HorariosDisponiveisRespostaDto })
+  horariosAdministrador(
+    @Query() query: HorariosAdministradorDto,
+    @UsuarioAtual() usuario: UsuarioAutenticado,
+  ) {
+    return this.service.horariosAdministrador(query, usuario);
   }
 
   @Get(':id/historico-status')
