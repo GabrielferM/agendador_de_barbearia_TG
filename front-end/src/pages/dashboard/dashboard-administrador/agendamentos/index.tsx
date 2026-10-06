@@ -1,3 +1,4 @@
+import { AgendaIntegrada } from "./agenda-integrada";
 import {
   DashboardLayout,
   EstadoIntegracaoIndisponivel,
@@ -11,7 +12,7 @@ import {
 } from "./components/components";
 import { agendaSemanalMock } from "./mock/dados-mock";
 
-export function AgendamentosAdministrador() {
+function AgendaDemonstracao() {
   const demonstracao = usarDadosMockados();
   return (
     <DashboardLayout
@@ -33,4 +34,8 @@ export function AgendamentosAdministrador() {
       )}
     </DashboardLayout>
   );
+}
+
+export function AgendamentosAdministrador() {
+  return usarDadosMockados() ? <AgendaDemonstracao /> : <AgendaIntegrada />;
 }
