@@ -14,6 +14,7 @@ export class EditarServicoService {
   async execute(id: number, dto: AtualizarServicoDto) {
     await this.buscar.execute(id);
     const data: Prisma.ServicoUpdateInput = {};
+    if (dto.ativo !== undefined) data.ativo = dto.ativo;
     if (dto.nome !== undefined) data.nome = dto.nome.trim();
     if (dto.descricao !== undefined) data.descricao = dto.descricao.trim();
     if (dto.precoBase !== undefined) data.precoBase = new Prisma.Decimal(dto.precoBase.toString());
