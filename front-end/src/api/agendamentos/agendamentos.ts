@@ -895,7 +895,7 @@ export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof
 
 
 export type agendamentoControllerAtualizarResponse200 = {
-  data: AgendamentoRespostaDto
+  data: AgendamentoRespostaDto | AgendamentoBarbeiroRespostaDto
   status: 200
 }
 
