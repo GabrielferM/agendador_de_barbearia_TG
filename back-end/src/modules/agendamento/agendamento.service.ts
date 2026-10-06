@@ -125,7 +125,21 @@ export class AgendamentoService {
   async listarHistorico(id: number, query: ListarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
     const resultado = await this.historicoService.listar(id, query);
-    return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
+    if (usuario && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) {
+      return {
+        ...resultado,
+        data: resultado.data.map((item) => ({
+          id: item.id,
+          statusAnterior: item.statusAnterior,
+          statusNovo: item.statusNovo,
+          dataAlteracao: item.dataAlteracao,
+          ...(usuario.barbeiroId
+            ? { usuarioResponsavel: { nome: item.usuarioResponsavel.nome } }
+            : {}),
+        })),
+      };
+    }
+    return resultado;
   }
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);

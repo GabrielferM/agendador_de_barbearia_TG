@@ -34,3 +34,5 @@ O mutator rejeita corpo não JSON em respostas de sucesso. Em 4xx/5xx com corpo 
 No logout solicitado pelo usuário, o contexto verifica o status da resposta e sempre encerra o estado local. Quando não recebe sucesso 2xx, a tela de login informa que a sessão local foi encerrada, mas a revogação no servidor não pôde ser confirmada.
 
 Veja [segurança](seguranca-autenticacao.md) e [cenários de teste](testes.md). Mudanças no formato de erro exigem alinhamento com o [backend](../../back-end/doc/tratamento-de-erros.md).
+
+Novas áreas privadas compartilham `src/api/operacao-http.ts`: erros HTTP mantêm código para tratamento de conflito e mensagens seguras; respostas 429 estabelecem uma espera antes de novas solicitações feitas por esses adapters. Resultado incerto de escrita exige consultar os dados antes de repetir a operação. Os formulários preservam dados após falha e não habilitam gravação dupla durante o envio.
