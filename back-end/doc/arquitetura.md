@@ -71,3 +71,5 @@ O [configurador compartilhado do ValidationPipe](../src/config/validacao.ts), us
 - Ampliar testes com PostgreSQL isolado para comprovar transações, concorrência e restrições no banco real.
 
 Esses itens não autorizam refatorações ou migrations durante uma tarefa documental.
+
+Serviços aceitam alteração de `ativo` como boolean no PATCH, sem mudança de schema. Catálogo inativo continua preservado em itens históricos; validações existentes bloqueiam uso em novas reservas. A gestão administrativa oferece CRUD e situação, mantendo unicidade de nome e proteção da exclusão com vínculos.

@@ -7,6 +7,7 @@
  */
 
 export interface AtualizarServicoDto {
+  ativo?: boolean;
   /** @minLength 2 */
   nome?: string;
   descricao?: string;
