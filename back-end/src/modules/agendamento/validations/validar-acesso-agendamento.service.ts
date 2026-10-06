@@ -8,6 +8,9 @@ export class ValidarAcessoAgendamentoService {
 
   async execute(id: number, usuario?: UsuarioAutenticado): Promise<void> {
     if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) return;
+    if (usuario.barbeiroId && !usuario.permissoes.includes('GERENCIAR_PROPRIA_AGENDA')) {
+      throw new ForbiddenException('Você não possui permissão para consultar a própria agenda.');
+    }
 
     const item = await this.prisma.agendamento.findUnique({
       where: { id },
