@@ -42,3 +42,5 @@ Concluir as páginas em construção e integrações administrativas requer tare
 A rota `/barbeiro/historico` reutiliza a lista da agenda com recorte temporal estável ao abrir a página. Detalhes apresentam histórico de status paginado, sem reconstruir eventos ausentes. A classificação temporal não transforma uma pendência antiga em atendimento concluído.
 
 `/barbeiro/servicos` integra as ocorrências de serviços no mês atual do dashboard e a lista paginada de atendimentos concluídos do mesmo mês. Não existe filtro de período no dashboard do barbeiro; a tela não promete estatísticas por período arbitrário. Quantidades dos itens e ocorrências agregadas são conceitos separados. Esta consulta não cadastra habilitações, especialidades ou comissão fixa.
+
+A gestão de serviços usa dados reais em `/admin/servicos`: busca, situação, paginação, indicadores do mês e detalhe consultado por ID. Categoria e comissão fixa demonstrativas não pertencem ao contrato e não são exibidas. Adapters administrativos validam status/corpo, preservam sessão/CSRF e respeitam Retry-After sem repetir escritas. Dialogs compartilhados controlam foco, Escape e descarte de formulários alterados.
