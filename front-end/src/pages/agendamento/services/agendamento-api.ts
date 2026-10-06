@@ -8,6 +8,7 @@ import {
   agendamentoControllerCriar,
   agendamentoControllerListar,
   agendamentoControllerAtualizar,
+  agendamentoControllerBuscar,
 } from "../../../api/agendamentos/agendamentos";
 import type {
   AgendamentoRespostaDto,
@@ -18,6 +19,7 @@ import type {
   AgendamentoControllerHorariosParams,
   CriarAgendamentoDto,
   MetaPaginacaoDto,
+  AgendamentoControllerListarParams,
 } from "../../../api/models";
 
 export class ErroAgendamento extends Error {
@@ -180,11 +182,12 @@ export async function criarAgendamento(
 export async function listarAgendamentos(
   paginaAtual: number,
   signal?: AbortSignal,
+  filtros: Omit<AgendamentoControllerListarParams, "pagina" | "limite"> = {},
 ) {
   return pagina<AgendamentoRespostaDto>(
     conferir(
       await agendamentoControllerListar(
-        { pagina: paginaAtual, limite: 10 },
+        { ...filtros, pagina: paginaAtual, limite: 10 },
         { signal },
       ),
     ),
@@ -208,3 +211,9 @@ export const mensagemErro = (erro: unknown) =>
   erro instanceof ErroAgendamento
     ? erro.message
     : "Não foi possível carregar os dados. Tente novamente.";
+
+export async function buscarMeuAgendamento(id: number, signal?: AbortSignal) {
+  const valor = conferir(await agendamentoControllerBuscar(id, { signal }));
+  if (!agendamentoValido(valor)) return invalida();
+  return valor as AgendamentoRespostaDto;
+}
