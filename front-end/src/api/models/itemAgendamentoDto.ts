@@ -5,13 +5,11 @@
  * Contrato OpenAPI da API REST do Agendador de Barbearia.
  * OpenAPI spec version: 1.0
  */
-import type { ItemAgendamentoDtoDesconto } from './itemAgendamentoDtoDesconto';
-import type { ItemAgendamentoDtoQuantidade } from './itemAgendamentoDtoQuantidade';
 
 export interface ItemAgendamentoDto {
   idServico: number;
   /** @minimum 1 */
-  quantidade: ItemAgendamentoDtoQuantidade;
+  quantidade: number;
   /** @minimum 0 */
-  desconto: ItemAgendamentoDtoDesconto;
+  desconto: number;
 }

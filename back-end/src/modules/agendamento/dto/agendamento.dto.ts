@@ -16,8 +16,8 @@ import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 
 export class ItemAgendamentoDto {
   @Type(() => Number) @IsInt() idServico!: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) quantidade = 1;
-  @IsOptional() @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) desconto = 0;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) quantidade: number = 1;
+  @IsOptional() @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) desconto: number = 0;
 }
 export class CriarAgendamentoDto {
   @Type(() => Number) @IsInt() idCliente!: number;

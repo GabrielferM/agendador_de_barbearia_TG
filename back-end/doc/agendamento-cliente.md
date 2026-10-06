@@ -50,7 +50,7 @@ Melhorias pendentes: expediente por filial, feriados/pausas, cadastro público, 
 
 A lista e o detalhe privados exigem `GERENCIAR_PROPRIA_AGENDA` para o barbeiro e impõem seu ID da sessão. Filtros de outro profissional não ampliam acesso; detalhes de terceiros retornam 403. A resposta do profissional contém somente o resumo público do agendamento e `cliente{id,nome}`. CPF, nascimento, contatos pessoais, observação cadastral, observação interna e comissão ficam fora dessa projeção. Administradores com `GERENCIAR_AGENDAMENTOS` preservam a resposta administrativa.
 
-O frontend oferece `/barbeiro/agenda` e `/barbeiro/agenda/:id`, com período/status, paginação do servidor e retorno aos filtros da lista. O dashboard abre essas rotas pelos horários e pelo menu. Datas de filtro usam America/Sao_Paulo. Esta entrega permite consulta; as ações de atendimento e histórico pertencem às próximas entregas.
+O frontend oferece `/barbeiro/agenda` e `/barbeiro/agenda/:id`, com período/status, paginação do servidor e retorno aos filtros da lista. O dashboard abre essas rotas pelos horários e pelo menu. Datas de filtro usam America/Sao_Paulo. As ações e a linha do tempo do detalhe seguem as regras das seções seguintes.
 
 ## Atendimento e histórico atômico
 
@@ -67,3 +67,9 @@ POST histórico fica reservado à administração, recebe responsável da sessã
 ## Filtros do cliente
 
 Meus agendamentos mantém criação e cancelamento existentes e acrescenta abas Próximos/Histórico, período/status e consulta do detalhe por ID. A classificação é temporal: próximo significa início igual ou posterior ao instante de abertura; histórico significa início anterior. Agendamentos futuros em estado final continuam visíveis em Próximos com a situação explícita. Filtros são aplicados no servidor; não há reagendamento habilitado.
+
+## Criação administrativa
+
+A agenda administrativa oferece filial → profissional/cliente → serviços com quantidade/desconto → data/horário/resumo. GET privado `/agendamentos/horarios-disponiveis-administrador` exige GERENCIAR_AGENDAMENTOS, cliente/barbeiro/filial/data e `servicos` como array JSON de `{idServico,quantidade,desconto}`. DTO valida os itens; a disponibilidade reutiliza vínculos, preparação de itens, expediente e conflitos com duração multiplicada pela quantidade. Não exclui agendamento próprio: edição operacional permanece condicionada a D04.
+
+POST de gerenciador deriva origem ADMINISTRADOR da sessão, recalcula valores e revalida dentro da transação serializável. Desconto representa valor monetário total do item, limitado ao preço multiplicado pela quantidade. Consulta não reserva horário. Conflito limpa horário selecionado e reconsulta; resultado incerto de gravação não é repetido automaticamente.
