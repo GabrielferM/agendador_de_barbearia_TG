@@ -13,7 +13,7 @@ React e TypeScript compõem a SPA, executada pelo Vite. React Router organiza a 
 | `src/index.css` | Tokens, estilos globais e integração HeroUI/Tailwind. |
 | `src/test/` | Configuração compartilhada dos testes. |
 
-A página inicial consome catálogo público; login usa um serviço que valida e traduz respostas. Os dashboards principais de administrador e barbeiro possuem adapters HTTP manuais. As subpáginas administrativas de agendamentos, clientes, barbeiros, serviços e financeiro exibem mocks quando habilitados e estado de integração indisponível fora desse modo. A existência da tela ou de um botão não comprova integração de leitura ou gravação. A jornada pública de agendamento e a listagem/cancelamento do cliente estão integradas à API. O rascunho transitório fica em um provider acima das rotas para permitir retomada após login. Cadastro público e recuperação de senha continuam em construção nas [rotas](../src/routers/index.tsx). Veja [agendamento do cliente](../../back-end/doc/agendamento-cliente.md).
+A página inicial consome catálogo público; login usa um serviço que valida e traduz respostas. Os dashboards principais de administrador e barbeiro possuem adapters HTTP manuais. As áreas administrativas de agendamentos, clientes, barbeiros, serviços, filiais e financeiro possuem integração real. As áreas com modo demonstrativo preservam exemplos explicitamente identificados, sem usá-los como fallback de erros. A existência da tela ou de um botão não comprova integração de leitura ou gravação. A jornada pública de agendamento e a listagem/cancelamento do cliente estão integradas à API. O rascunho transitório fica em um provider acima das rotas para permitir retomada após login. Cadastro público e recuperação de senha continuam em construção nas [rotas](../src/routers/index.tsx). Veja [agendamento do cliente](../../back-end/doc/agendamento-cliente.md).
 
 ## Regra para novas alterações
 
@@ -33,7 +33,7 @@ Cores seguem exclusivamente o [guia de tokens](padroes/cores-front-end.md). Nome
 
 ## Melhorias pendentes
 
-Concluir as páginas em construção e integrações administrativas requer tarefas próprias. Não declarar o frontend inteiramente integrado com base na presença de tipos gerados ou mocks. A documentação não altera esses fluxos.
+Clientes vinculados do barbeiro, transferência com agenda futura, edição operacional por status, reagendamento do cliente e operação de comissões continuam condicionados às decisões de negócio do roadmap. Cadastro público e recuperação de senha permanecem em construção. Não declarar o frontend inteiramente integrado com base na presença de tipos gerados ou mocks. A documentação não altera esses fluxos.
 
 ## Agenda integrada do barbeiro
 
@@ -54,3 +54,5 @@ Gestão integrada de barbeiros consulta indicadores, busca/situação/paginaçã
 Gestão integrada de clientes consulta indicadores, busca nome/telefone/e-mail, status/paginação e detalhe; permite criar/editar/excluir segundo os contratos existentes. Status do usuário é somente leitura. A seção de agendamentos é paginada e só consulta com GERENCIAR_AGENDAMENTOS. Senhas nunca são preenchidas a partir da resposta; edição só envia senha explicitamente digitada. Exclusão vinculada apresenta conflito e mantém o cadastro.
 
 A agenda administrativa integra filtros de período/filial/barbeiro/cliente/situação, detalhe, histórico e ações de atendimento. Lista é paginada no servidor; grade carrega explicitamente todas as páginas e exige reduzir o período acima de 5.000 registros, sem truncar resultados silenciosamente. Resumo identifica se representa a página ou o período completo. Seletores de cadastros só consultam quando suas permissões auxiliares estão presentes.
+
+Financeiro integrado consulta receita calculada, variação, fluxo semanal, atendimentos e comissões agregadas por profissional/status. Não oferece despesas, formas de pagamento ou marcação de recebimento. A tabela de comissões é paginada por profissional/status em todos os períodos, distinguindo seu recorte do painel por data de geração. Detalhe é somente leitura; gestão de comissão espera D07. Links de atendimento e seletores respeitam suas permissões auxiliares.
