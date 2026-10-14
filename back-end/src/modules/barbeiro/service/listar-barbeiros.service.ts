@@ -9,14 +9,16 @@ export class ListarBarbeirosService {
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(input: ListarBarbeirosDto) {
+    const where = input.idFilial === undefined ? {} : { idFilial: input.idFilial };
     const [dados, total] = await this.prisma.$transaction([
       this.prisma.barbeiro.findMany({
+        where,
         include: { usuario: true, filial: true },
         orderBy: { id: 'asc' },
         skip: (input.pagina - 1) * input.limite,
         take: input.limite,
       }),
-      this.prisma.barbeiro.count(),
+      this.prisma.barbeiro.count({ where }),
     ]);
     return respostaPaginada(
       dados.map((barbeiro) => ({ ...barbeiro, usuario: semSenha(barbeiro.usuario) })),

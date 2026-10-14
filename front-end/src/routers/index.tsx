@@ -1,3 +1,4 @@
+import { FiliaisAdministrador } from "../pages/dashboard/dashboard-administrador/filiais";
 import { ServicosBarbeiro } from "../pages/dashboard/dashboard-barbeiro/servicos";
 import { AgendaBarbeiro } from "../pages/dashboard/dashboard-barbeiro/agenda";
 import { DetalheAtendimento } from "../pages/dashboard/dashboard-barbeiro/agenda/detalhe-atendimento";
@@ -87,10 +88,54 @@ export function AppRouter() {
           }
           path="/barbeiro"
         />
-        <Route path="/barbeiro/agenda" element={<RotaProtegida papel="BARBEIRO"><AgendaBarbeiro /></RotaProtegida>} />
-        <Route path="/barbeiro/servicos" element={<RotaProtegida papel="BARBEIRO"><ServicosBarbeiro /></RotaProtegida>} />
-        <Route path="/barbeiro/historico" element={<RotaProtegida papel="BARBEIRO"><AgendaBarbeiro historico /></RotaProtegida>} />
-        <Route path="/barbeiro/agenda/:id" element={<RotaProtegida papel="BARBEIRO"><DetalheAtendimento /></RotaProtegida>} />
+        <Route
+          path="/admin/filiais"
+          element={
+            <RotaProtegida papel="ADMINISTRADOR">
+              <FiliaisAdministrador />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/admin/filiais/:id"
+          element={
+            <RotaProtegida papel="ADMINISTRADOR">
+              <FiliaisAdministrador />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/agenda"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <AgendaBarbeiro />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/servicos"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <ServicosBarbeiro />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/historico"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <AgendaBarbeiro historico />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/agenda/:id"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <DetalheAtendimento />
+            </RotaProtegida>
+          }
+        />
         <Route
           element={
             <RotaProtegida papel="ADMINISTRADOR">
