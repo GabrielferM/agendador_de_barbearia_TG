@@ -1,3 +1,4 @@
+import { ClientesIntegrados } from "./clientes-integrados";
 import {
   DashboardLayout,
   EstadoIntegracaoIndisponivel,
@@ -11,7 +12,7 @@ import {
 } from "./components/components";
 import { clientesMock } from "./mock/dados-mock";
 
-export function ClientesAdministrador() {
+function ClientesDemonstracao() {
   const demonstracao = usarDadosMockados();
   return (
     <DashboardLayout
@@ -30,5 +31,13 @@ export function ClientesAdministrador() {
         <EstadoIntegracaoIndisponivel />
       )}
     </DashboardLayout>
+  );
+}
+
+export function ClientesAdministrador() {
+  return usarDadosMockados() ? (
+    <ClientesDemonstracao />
+  ) : (
+    <ClientesIntegrados />
   );
 }
