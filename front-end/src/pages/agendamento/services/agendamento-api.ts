@@ -1,4 +1,8 @@
 import {
+  executarHttp,
+  ErroOperacao as ErroAgendamento,
+} from "../../../api/operacao-http";
+import {
   catalogoPublicoControllerFiliais,
   catalogoPublicoControllerBarbeiros,
   catalogoPublicoControllerServicos,
@@ -22,13 +26,7 @@ import type {
   AgendamentoControllerListarParams,
 } from "../../../api/models";
 
-export class ErroAgendamento extends Error {
-  status: number;
-  constructor(status: number, mensagem: string) {
-    super(mensagem);
-    this.status = status;
-  }
-}
+export { ErroOperacao as ErroAgendamento } from "../../../api/operacao-http";
 function conferir(
   resposta: { status: number; data: unknown },
   esperado = 200,
@@ -149,7 +147,7 @@ export async function buscarHorarios(
     return invalida();
   return valor as unknown as HorariosDisponiveisRespostaDto;
 }
-function agendamentoValido(item: unknown): boolean {
+export function agendamentoValido(item: unknown): boolean {
   return (
     objeto(item) &&
     Number.isInteger(item.id) &&
@@ -185,8 +183,8 @@ export async function listarAgendamentos(
   filtros: Omit<AgendamentoControllerListarParams, "pagina" | "limite"> = {},
 ) {
   return pagina<AgendamentoRespostaDto>(
-    conferir(
-      await agendamentoControllerListar(
+    await executarHttp(() =>
+      agendamentoControllerListar(
         { ...filtros, pagina: paginaAtual, limite: 10 },
         { signal },
       ),
@@ -198,8 +196,8 @@ export async function cancelarAgendamento(
   id: number,
   motivoCancelamento: string,
 ) {
-  const valor = conferir(
-    await agendamentoControllerAtualizar(id, {
+  const valor = await executarHttp(() =>
+    agendamentoControllerAtualizar(id, {
       status: "CANCELADO",
       motivoCancelamento,
     }),
@@ -213,7 +211,9 @@ export const mensagemErro = (erro: unknown) =>
     : "Não foi possível carregar os dados. Tente novamente.";
 
 export async function buscarMeuAgendamento(id: number, signal?: AbortSignal) {
-  const valor = conferir(await agendamentoControllerBuscar(id, { signal }));
+  const valor = await executarHttp(() =>
+    agendamentoControllerBuscar(id, { signal }),
+  );
   if (!agendamentoValido(valor)) return invalida();
   return valor as AgendamentoRespostaDto;
 }
