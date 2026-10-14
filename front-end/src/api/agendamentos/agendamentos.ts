@@ -31,6 +31,7 @@ import {
 import type {
   AgendamentoBarbeiroRespostaDto,
   AgendamentoControllerCriarHistorico201,
+  AgendamentoControllerHorariosAdministradorParams,
   AgendamentoControllerHorariosParams,
   AgendamentoControllerListarHistoricoParams,
   AgendamentoControllerListarParams,
@@ -476,6 +477,157 @@ export function useAgendamentoControllerHorarios<TData = Awaited<ReturnType<type
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getAgendamentoControllerHorariosQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type agendamentoControllerHorariosAdministradorResponse200 = {
+  data: HorariosDisponiveisRespostaDto
+  status: 200
+}
+
+export type agendamentoControllerHorariosAdministradorResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type agendamentoControllerHorariosAdministradorResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoControllerHorariosAdministradorResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoControllerHorariosAdministradorResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type agendamentoControllerHorariosAdministradorResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type agendamentoControllerHorariosAdministradorResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type agendamentoControllerHorariosAdministradorResponseSuccess = (agendamentoControllerHorariosAdministradorResponse200) & {
+  headers: Headers;
+};
+export type agendamentoControllerHorariosAdministradorResponseError = (agendamentoControllerHorariosAdministradorResponse400 | agendamentoControllerHorariosAdministradorResponse401 | agendamentoControllerHorariosAdministradorResponse403 | agendamentoControllerHorariosAdministradorResponse404 | agendamentoControllerHorariosAdministradorResponse409 | agendamentoControllerHorariosAdministradorResponse429) & {
+  headers: Headers;
+};
+
+export type agendamentoControllerHorariosAdministradorResponse = (agendamentoControllerHorariosAdministradorResponseSuccess | agendamentoControllerHorariosAdministradorResponseError)
+
+export const getAgendamentoControllerHorariosAdministradorUrl = (params: AgendamentoControllerHorariosAdministradorParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/agendamentos/horarios-disponiveis-administrador?${stringifiedParams}` : `${apiBaseUrl}/agendamentos/horarios-disponiveis-administrador`
+}
+
+/**
+ * @summary Disponibilidade administrativa com quantidade e desconto
+ */
+export const agendamentoControllerHorariosAdministrador = async (params: AgendamentoControllerHorariosAdministradorParams, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoControllerHorariosAdministradorResponse> => {
+
+  return httpClient<agendamentoControllerHorariosAdministradorResponse>(getAgendamentoControllerHorariosAdministradorUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAgendamentoControllerHorariosAdministradorQueryKey = (params?: AgendamentoControllerHorariosAdministradorParams,) => {
+    return [
+    `${apiBaseUrl}/agendamentos/horarios-disponiveis-administrador`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAgendamentoControllerHorariosAdministradorQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params: AgendamentoControllerHorariosAdministradorParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAgendamentoControllerHorariosAdministradorQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>> = ({ signal }) => agendamentoControllerHorariosAdministrador(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AgendamentoControllerHorariosAdministradorQueryResult = NonNullable<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>>
+export type AgendamentoControllerHorariosAdministradorQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+
+
+export function useAgendamentoControllerHorariosAdministrador<TData = Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: AgendamentoControllerHorariosAdministradorParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>,
+          TError,
+          Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAgendamentoControllerHorariosAdministrador<TData = Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: AgendamentoControllerHorariosAdministradorParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>,
+          TError,
+          Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAgendamentoControllerHorariosAdministrador<TData = Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: AgendamentoControllerHorariosAdministradorParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Disponibilidade administrativa com quantidade e desconto
+ */
+
+export function useAgendamentoControllerHorariosAdministrador<TData = Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: AgendamentoControllerHorariosAdministradorParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoControllerHorariosAdministrador>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAgendamentoControllerHorariosAdministradorQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

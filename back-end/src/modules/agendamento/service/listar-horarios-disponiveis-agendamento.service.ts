@@ -1,3 +1,4 @@
+import { ItemAgendamentoDto } from '../dto/agendamento.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -28,13 +29,19 @@ export class ListarHorariosDisponiveisAgendamentoService {
     private readonly vinculos: ValidarVinculosAgendamentoService,
   ) {}
 
-  async execute(query: HorariosDisponiveisDto): Promise<HorariosDisponiveisRespostaDto> {
+  async execute(
+    query: HorariosDisponiveisDto,
+    servicos?: ItemAgendamentoDto[],
+    idCliente?: number,
+  ): Promise<HorariosDisponiveisRespostaDto> {
     validarDia(query.data);
     const agora = new Date();
     if (query.data < dataLocal(agora))
       throw new BadRequestException('A data não pode estar no passado.');
+    if (idCliente !== undefined)
+      await this.vinculos.execute(idCliente, query.idBarbeiro, query.idFilial);
     await this.vinculos.validarProfissional(query.idBarbeiro, query.idFilial);
-    const itens = await this.itens.execute(undefined, query.servicoIds);
+    const itens = await this.itens.execute(servicos, servicos ? undefined : query.servicoIds);
     const duracaoTotalMinutos = duracaoItens(itens);
     const resposta: HorariosDisponiveisRespostaDto = {
       fuso: expediente.fuso,

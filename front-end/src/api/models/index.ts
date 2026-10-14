@@ -17,6 +17,7 @@ export * from './agendamentoControllerAtualizar200';
 export * from './agendamentoControllerBuscar200';
 export * from './agendamentoControllerCriar201';
 export * from './agendamentoControllerCriarHistorico201';
+export * from './agendamentoControllerHorariosAdministradorParams';
 export * from './agendamentoControllerHorariosParams';
 export * from './agendamentoControllerListar200';
 export * from './agendamentoControllerListarHistorico200';
