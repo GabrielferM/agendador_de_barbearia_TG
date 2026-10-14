@@ -34,3 +34,7 @@ Cores seguem exclusivamente o [guia de tokens](padroes/cores-front-end.md). Nome
 ## Melhorias pendentes
 
 Concluir as páginas em construção e integrações administrativas requer tarefas próprias. Não declarar o frontend inteiramente integrado com base na presença de tipos gerados ou mocks. A documentação não altera esses fluxos.
+
+## Agenda integrada do barbeiro
+
+`pages/dashboard/dashboard-barbeiro/agenda/` consulta a API existente por adapter que valida status e campos essenciais. As rotas `/barbeiro/agenda` e `/barbeiro/agenda/:id` exigem sessão BARBEIRO e permissão de própria agenda na interface e no servidor. Lista mantém filtros na URL e detalhe retorna à lista filtrada; queries incluem usuário, filtros ou ID. Carregamento, vazio e erro são distintos e não usam fallback demonstrativo.

@@ -67,18 +67,24 @@ export class AgendamentoService {
       });
       return this.semCamposInternos(resultado);
     }
-    if (usuario.barbeiroId)
-      return this.listarService.execute({
-        ...query,
-        idBarbeiro: usuario.barbeiroId,
-        idCliente: undefined,
-      });
+    if (usuario.barbeiroId) {
+      if (!usuario.permissoes.includes('GERENCIAR_PROPRIA_AGENDA')) throw new ForbiddenException();
+      return this.respostaBarbeiro(
+        await this.listarService.execute({
+          ...query,
+          idBarbeiro: usuario.barbeiroId,
+          idCliente: undefined,
+        }),
+      );
+    }
     throw new ForbiddenException();
   }
 
   async buscar(id: number, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
     const resultado = await this.buscarService.execute(id);
+    if (usuario?.permissoes.includes('GERENCIAR_AGENDAMENTOS')) return resultado;
+    if (usuario?.barbeiroId) return this.respostaBarbeiro(resultado);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
 
@@ -123,6 +129,22 @@ export class AgendamentoService {
       ...dto,
       idUsuarioResponsavel: usuario?.id ?? dto.idUsuarioResponsavel,
     });
+  }
+
+  private respostaBarbeiro(valor: unknown): unknown {
+    if (Array.isArray(valor)) return valor.map((item) => this.respostaBarbeiro(item));
+    if (!valor || typeof valor !== 'object') return valor;
+    const registro = valor as Record<string, unknown>;
+    if ('inicioPrevisto' in registro && 'servicos' in registro) {
+      const cliente = registro.cliente as { id: number; usuario: { nome: string } };
+      return {
+        ...(this.semCamposInternos(valor) as Record<string, unknown>),
+        cliente: { id: cliente.id, nome: cliente.usuario.nome },
+      };
+    }
+    return Object.fromEntries(
+      Object.entries(registro).map(([chave, item]) => [chave, this.respostaBarbeiro(item)]),
+    );
   }
 
   private semCamposInternos(valor: unknown): unknown {

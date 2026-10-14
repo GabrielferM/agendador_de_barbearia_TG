@@ -29,6 +29,7 @@ import {
 } from '../client';
 
 import type {
+  AgendamentoBarbeiroRespostaDto,
   AgendamentoControllerCriarHistorico201,
   AgendamentoControllerHorariosParams,
   AgendamentoControllerListarHistorico200,
@@ -41,6 +42,7 @@ import type {
   ErroRespostaDto,
   HorariosDisponiveisRespostaDto,
   LimiteRequisicoesRespostaDto,
+  ListaAgendamentosBarbeiroRespostaDto,
   ListaAgendamentosRespostaDto
 } from '../models';
 
@@ -182,7 +184,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAgendamentoControllerCriarMutationOptions(options), queryClient);
     }
     export type agendamentoControllerListarResponse200 = {
-  data: ListaAgendamentosRespostaDto
+  data: ListaAgendamentosRespostaDto | ListaAgendamentosBarbeiroRespostaDto
   status: 200
 }
 
@@ -755,7 +757,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAgendamentoControllerCriarHistoricoMutationOptions(options), queryClient);
     }
     export type agendamentoControllerBuscarResponse200 = {
-  data: AgendamentoRespostaDto
+  data: AgendamentoRespostaDto | AgendamentoBarbeiroRespostaDto
   status: 200
 }
 

@@ -120,7 +120,7 @@ export function DashboardLayout({
             item.destino && !item.desabilitado ? (
               <NavLink
                 key={item.rotulo}
-                end={item.destino === "/admin"}
+                end={item.destino === "/admin" || item.destino === "/barbeiro"}
                 to={item.destino}
                 className={({ isActive }) =>
                   `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${isActive ? "bg-secondary/30 font-semibold" : "hover:bg-white/10"}`

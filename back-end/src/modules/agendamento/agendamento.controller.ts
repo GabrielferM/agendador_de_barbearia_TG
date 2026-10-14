@@ -1,4 +1,8 @@
 import {
+  AgendamentoBarbeiroRespostaDto,
+  ListaAgendamentosBarbeiroRespostaDto,
+} from './dto/agendamento-barbeiro-resposta.dto';
+import {
   AgendamentoRespostaDto,
   ListaAgendamentosRespostaDto,
 } from './dto/agendamento-resposta.dto';
@@ -26,11 +30,24 @@ import {
   ListarAgendamentosDto,
   ListarHistoricoStatusDto,
 } from './dto/agendamento.dto';
-import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiExtraModels,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { UsuarioAtual } from '../../common/auth/usuario-atual.decorator';
 import type { UsuarioAutenticado } from '../../common/auth/auth.types';
 import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 @ApiTags('Agendamentos')
+@ApiExtraModels(
+  AgendamentoRespostaDto,
+  ListaAgendamentosRespostaDto,
+  AgendamentoBarbeiroRespostaDto,
+  ListaAgendamentosBarbeiroRespostaDto,
+)
 @ApiErrosAutenticados()
 @ApiCrudErrors()
 @Controller('agendamentos')
@@ -42,7 +59,14 @@ export class AgendamentoController {
     return this.service.criar(dto, usuario);
   }
   @Get()
-  @ApiOkResponse({ type: ListaAgendamentosRespostaDto })
+  @ApiOkResponse({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(ListaAgendamentosRespostaDto) },
+        { $ref: getSchemaPath(ListaAgendamentosBarbeiroRespostaDto) },
+      ],
+    },
+  })
   listar(@Query() query: ListarAgendamentosDto, @UsuarioAtual() usuario: UsuarioAutenticado) {
     return this.service.listar(query, usuario);
   }
@@ -71,7 +95,14 @@ export class AgendamentoController {
     return this.service.criarHistorico(id, dto, usuario);
   }
   @Get(':id')
-  @ApiOkResponse({ type: AgendamentoRespostaDto })
+  @ApiOkResponse({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(AgendamentoRespostaDto) },
+        { $ref: getSchemaPath(AgendamentoBarbeiroRespostaDto) },
+      ],
+    },
+  })
   buscar(@Param('id', ParseIntPipe) id: number, @UsuarioAtual() usuario: UsuarioAutenticado) {
     return this.service.buscar(id, usuario);
   }
