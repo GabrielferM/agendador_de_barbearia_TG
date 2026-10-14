@@ -101,14 +101,19 @@ export class AgendamentoService {
         throw new ForbiddenException('Clientes só podem cancelar os próprios agendamentos.');
       }
     }
-    if (
-      usuario?.barbeiroId &&
-      dto.observacaoInterna !== undefined &&
-      !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')
-    ) {
-      throw new ForbiddenException('Campo reservado à administração.');
+    if (usuario?.barbeiroId && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) {
+      if (
+        Object.entries(dto).some(
+          ([chave, valor]) =>
+            valor !== undefined && !['status', 'motivoCancelamento'].includes(chave),
+        )
+      ) {
+        throw new ForbiddenException('Barbeiros só podem executar ações de atendimento.');
+      }
     }
-    const resultado = await this.editarService.execute(id, dto);
+    const resultado = await this.editarService.execute(id, dto, usuario);
+    if (usuario?.permissoes.includes('GERENCIAR_AGENDAMENTOS')) return resultado;
+    if (usuario?.barbeiroId) return this.respostaBarbeiro(resultado);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
 
@@ -124,7 +129,8 @@ export class AgendamentoService {
   }
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
-    if (usuario?.clienteId) throw new ForbiddenException();
+    if (usuario && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
+      throw new ForbiddenException();
     return this.historicoService.criar(id, {
       ...dto,
       idUsuarioResponsavel: usuario?.id ?? dto.idUsuarioResponsavel,
@@ -140,6 +146,8 @@ export class AgendamentoService {
       return {
         ...(this.semCamposInternos(valor) as Record<string, unknown>),
         cliente: { id: cliente.id, nome: cliente.usuario.nome },
+        inicioReal: registro.inicioReal,
+        fimReal: registro.fimReal,
       };
     }
     return Object.fromEntries(

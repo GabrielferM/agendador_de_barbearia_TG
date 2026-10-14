@@ -51,3 +51,11 @@ Melhorias pendentes: expediente por filial, feriados/pausas, cadastro público, 
 A lista e o detalhe privados exigem `GERENCIAR_PROPRIA_AGENDA` para o barbeiro e impõem seu ID da sessão. Filtros de outro profissional não ampliam acesso; detalhes de terceiros retornam 403. A resposta do profissional contém somente o resumo público do agendamento e `cliente{id,nome}`. CPF, nascimento, contatos pessoais, observação cadastral, observação interna e comissão ficam fora dessa projeção. Administradores com `GERENCIAR_AGENDAMENTOS` preservam a resposta administrativa.
 
 O frontend oferece `/barbeiro/agenda` e `/barbeiro/agenda/:id`, com período/status, paginação do servidor e retorno aos filtros da lista. O dashboard abre essas rotas pelos horários e pelo menu. Datas de filtro usam America/Sao_Paulo. Esta entrega permite consulta; as ações de atendimento e histórico pertencem às próximas entregas.
+
+## Atendimento e histórico atômico
+
+PATCH autenticado grava transição, responsável da sessão e histórico dentro da mesma transação serializável. EM_ATENDIMENTO atribui início real e CONCLUIDO atribui fim real no servidor. Cancelamento próprio do cliente também gera histórico. Não há comissão automática nem evento inicial inventado para registros antigos.
+
+Barbeiros podem enviar somente status e motivo de cancelamento, com permissão de própria agenda e propriedade revalidadas dentro da transação. Os estados/transições existentes permanecem. O detalhe exige confirmação antes de cada ação e atualiza caches de agenda, detalhe, dashboards, histórico e disponibilidade; conflito recarrega o estado.
+
+POST histórico fica reservado à administração, recebe responsável da sessão e só complementa a última transição comprovada, coerente com o estado atual. Sem transição registrada retorna 409. Não altera status e não deve ser chamado após PATCH pela interface.

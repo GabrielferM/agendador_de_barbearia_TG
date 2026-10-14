@@ -107,7 +107,14 @@ export class AgendamentoController {
     return this.service.buscar(id, usuario);
   }
   @Patch(':id')
-  @ApiOkResponse({ type: AgendamentoRespostaDto })
+  @ApiOkResponse({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(AgendamentoRespostaDto) },
+        { $ref: getSchemaPath(AgendamentoBarbeiroRespostaDto) },
+      ],
+    },
+  })
   atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AtualizarAgendamentoDto,

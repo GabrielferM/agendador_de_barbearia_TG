@@ -3,6 +3,7 @@ import { duracaoItens, validarExpediente } from '../constants/expediente';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { executarTransacaoSerializavel } from '../../../prisma/transacao';
 import { includeAgendamento } from '../constants/include-agendamento';
 import { transicoesStatusAgendamento } from '../constants/transicoes-status-agendamento';
 import { AtualizarAgendamentoDto } from '../dto/agendamento.dto';
+import { UsuarioAutenticado } from '../../../common/auth/auth.types';
 import { PrepararItensAgendamentoService } from '../validations/preparar-itens-agendamento.service';
 import { ValidarDataHoraAgendamentoService } from '../validations/validar-data-hora-agendamento.service';
 import { VerificarConflitoAgendamentoService } from '../validations/verificar-conflito-agendamento.service';
@@ -26,7 +28,7 @@ export class EditarAgendamentoService {
     private readonly verificarConflito: VerificarConflitoAgendamentoService,
     private readonly validarVinculos: ValidarVinculosAgendamentoService,
   ) {}
-  async execute(id: number, dto: AtualizarAgendamentoDto) {
+  async execute(id: number, dto: AtualizarAgendamentoDto, usuario?: UsuarioAutenticado) {
     try {
       const resultado = await executarTransacaoSerializavel(this.prisma, async (transaction) => {
         const atual = await transaction.agendamento.findUnique({
@@ -34,6 +36,23 @@ export class EditarAgendamentoService {
           include: includeAgendamento,
         });
         if (!atual) throw new NotFoundException('Agendamento não encontrado.');
+        if (usuario && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) {
+          const clienteProprio = usuario.clienteId === atual.idCliente;
+          const barbeiroProprio =
+            usuario.barbeiroId === atual.idBarbeiro &&
+            usuario.permissoes.includes('GERENCIAR_PROPRIA_AGENDA');
+          if (!clienteProprio && !barbeiroProprio)
+            throw new ForbiddenException('Você não pode alterar este agendamento.');
+          const chaves = Object.entries(dto)
+            .filter(([, valor]) => valor !== undefined)
+            .map(([chave]) => chave);
+          if (
+            chaves.some((chave) => !['status', 'motivoCancelamento'].includes(chave)) ||
+            (clienteProprio && dto.status !== StatusAgendamento.CANCELADO)
+          ) {
+            throw new ForbiddenException('Campos não permitidos para este perfil.');
+          }
+        }
         const estadosFinais: StatusAgendamento[] = [
           StatusAgendamento.CONCLUIDO,
           StatusAgendamento.CANCELADO,
@@ -96,6 +115,7 @@ export class EditarAgendamentoService {
             id,
             transaction,
           );
+        const agora = new Date();
         const data: Prisma.AgendamentoUpdateInput = {
           ...(dto.inicio || alterarItens ? { inicioPrevisto, fimPrevisto } : {}),
           ...(alterarItens ? { servicos: { deleteMany: {}, create: itens } } : {}),
@@ -106,10 +126,26 @@ export class EditarAgendamentoService {
             ? { observacaoInterna: dto.observacaoInterna.trim() }
             : {}),
           ...(dto.status ? { status: dto.status } : {}),
+          ...(dto.status === StatusAgendamento.EM_ATENDIMENTO ? { inicioReal: agora } : {}),
+          ...(dto.status === StatusAgendamento.CONCLUIDO ? { fimReal: agora } : {}),
           ...(dto.status === StatusAgendamento.CANCELADO
-            ? { dataCancelamento: new Date(), motivoCancelamento: dto.motivoCancelamento?.trim() }
+            ? { dataCancelamento: agora, motivoCancelamento: dto.motivoCancelamento?.trim() }
             : {}),
         };
+        if (dto.status && usuario) {
+          data.historicoDeStatus = {
+            create: {
+              idUsuarioResponsavel: usuario.id,
+              statusAnterior: atual.status,
+              statusNovo: dto.status,
+              dataAlteracao: agora,
+              motivo:
+                dto.status === StatusAgendamento.CANCELADO
+                  ? dto.motivoCancelamento?.trim()
+                  : undefined,
+            },
+          };
+        }
         return transaction.agendamento.update({
           where: { id },
           data,

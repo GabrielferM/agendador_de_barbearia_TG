@@ -23,5 +23,9 @@ export interface AgendamentoBarbeiroRespostaDto {
   filial: FilialPublicaDto;
   barbeiro: BarbeiroAgendamentoRespostaDto;
   servicos: ItemAgendamentoRespostaDto[];
+  /** @nullable */
+  inicioReal?: string | null;
+  /** @nullable */
+  fimReal?: string | null;
   cliente: ClienteAgendaBarbeiroDto;
 }

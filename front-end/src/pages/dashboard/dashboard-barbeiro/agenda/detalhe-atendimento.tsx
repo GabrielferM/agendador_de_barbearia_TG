@@ -1,3 +1,4 @@
+import { AcoesAtendimento } from "./components/acoes-atendimento";
 import { useQuery } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useAutenticacao } from '../../../../auth/contexto-autenticacao';
@@ -19,6 +20,7 @@ export function DetalheAtendimento() {
     {!permitido ? <p role="alert">Você não possui permissão para consultar a própria agenda.</p> : <EstadoConsulta carregando={consulta.isPending} erro={consulta.error} vazio={!consulta.data} tentar={() => void consulta.refetch()}>
       {consulta.data && <Cartao titulo={`${consulta.data.cliente.nome} · ${nomeStatus(consulta.data.status)}`}>
         <ResumoAgendamento item={consulta.data} />
+        <AcoesAtendimento item={consulta.data} />
         <ul className="mt-5 divide-y divide-border">{consulta.data.servicos.map((s) => <li key={s.idServico} className="py-3 text-sm">{s.servico.nome} · {s.quantidade}× {moeda(Number(s.precoAplicado))} · {s.duracaoAplicadaMinutos} min por unidade · Subtotal {moeda(Number(s.subtotal))}</li>)}</ul>
         {consulta.data.motivoCancelamento && <p>Motivo do cancelamento: {consulta.data.motivoCancelamento}</p>}
       </Cartao>}
