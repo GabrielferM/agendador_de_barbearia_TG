@@ -12,6 +12,7 @@ Interface → hook/serviço → cliente → httpClient → API NestJS
 | Arquivos | Origem |
 | --- | --- |
 | Clientes por tags e `src/api/models/` com cabeçalho de geração | Orval; não editar manualmente. |
+| `src/api/operacao-http.ts` | Manual; valida status e respeita espera de 429 nas novas áreas privadas. |
 | `src/api/client.ts` | Manual; resolve URL base. |
 | `src/api/http-client.ts` | Manual; mutator de transporte. |
 | `src/api/dashboard/` | Adapters e modelos manuais atuais. |
@@ -48,3 +49,5 @@ Para outra origem OpenAPI, defina `ORVAL_SWAGGER_URL` antes de gerar. A geraçã
 O QueryClient global usa `staleTime` de cinco minutos e `retry: 1` para queries; páginas podem sobrescrever essas opções. Respostas HTTP resolvidas não acionam retry como uma promise rejeitada. Para erros veja [tratamento de erros](tratamento-de-erros.md).
 
 Referência: [mutator personalizado do Orval](https://orval.dev/docs/guides/custom-client/).
+
+As novas áreas privadas usam `executarHttp` para conferir status esperado, traduzir falhas e impedir solicitações durante Retry-After (ou espera segura de 30 segundos quando ausente). Adapters validam os campos consumidos da resposta. Escritas não têm retry automático. A compatibilidade `ErroAgendamento` mantém o tratamento da jornada existente. A disponibilidade administrativa tem contrato privado com itens/quantidade/desconto; a consulta pública conserva seu contrato anterior.

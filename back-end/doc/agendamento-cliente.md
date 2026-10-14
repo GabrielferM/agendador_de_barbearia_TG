@@ -59,3 +59,7 @@ PATCH autenticado grava transição, responsável da sessão e histórico dentro
 Barbeiros podem enviar somente status e motivo de cancelamento, com permissão de própria agenda e propriedade revalidadas dentro da transação. Os estados/transições existentes permanecem. O detalhe exige confirmação antes de cada ação e atualiza caches de agenda, detalhe, dashboards, histórico e disponibilidade; conflito recarrega o estado.
 
 POST histórico fica reservado à administração, recebe responsável da sessão e só complementa a última transição comprovada, coerente com o estado atual. Sem transição registrada retorna 409. Não altera status e não deve ser chamado após PATCH pela interface.
+
+## Histórico do profissional
+
+`/barbeiro/historico` consulta agendamentos com início anterior ao instante de abertura, mantendo o status real (inclusive pendências passadas). Período, situação e paginação são aplicados no servidor. O detalhe reutiliza a agenda e apresenta uma linha do tempo paginada. Para barbeiros, eventos contêm transições, data e somente nome do responsável; e-mail e observação administrativa são removidos. Para clientes, o resumo não inclui responsável ou observações administrativas. Legados sem eventos mostram histórico não registrado.

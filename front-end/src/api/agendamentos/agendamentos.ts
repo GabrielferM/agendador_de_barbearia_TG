@@ -32,7 +32,6 @@ import type {
   AgendamentoBarbeiroRespostaDto,
   AgendamentoControllerCriarHistorico201,
   AgendamentoControllerHorariosParams,
-  AgendamentoControllerListarHistorico200,
   AgendamentoControllerListarHistoricoParams,
   AgendamentoControllerListarParams,
   AgendamentoRespostaDto,
@@ -40,6 +39,7 @@ import type {
   CriarAgendamentoDto,
   CriarHistoricoStatusDto,
   ErroRespostaDto,
+  HistoricoAgendamentoRespostaDto,
   HorariosDisponiveisRespostaDto,
   LimiteRequisicoesRespostaDto,
   ListaAgendamentosBarbeiroRespostaDto,
@@ -488,7 +488,7 @@ export function useAgendamentoControllerHorarios<TData = Awaited<ReturnType<type
 
 
 export type agendamentoControllerListarHistoricoResponse200 = {
-  data: AgendamentoControllerListarHistorico200
+  data: HistoricoAgendamentoRespostaDto
   status: 200
 }
 

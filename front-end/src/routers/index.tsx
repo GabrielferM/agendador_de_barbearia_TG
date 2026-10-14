@@ -87,6 +87,7 @@ export function AppRouter() {
           path="/barbeiro"
         />
         <Route path="/barbeiro/agenda" element={<RotaProtegida papel="BARBEIRO"><AgendaBarbeiro /></RotaProtegida>} />
+        <Route path="/barbeiro/historico" element={<RotaProtegida papel="BARBEIRO"><AgendaBarbeiro historico /></RotaProtegida>} />
         <Route path="/barbeiro/agenda/:id" element={<RotaProtegida papel="BARBEIRO"><DetalheAtendimento /></RotaProtegida>} />
         <Route
           element={
