@@ -63,3 +63,7 @@ POST histórico fica reservado à administração, recebe responsável da sessã
 ## Histórico do profissional
 
 `/barbeiro/historico` consulta agendamentos com início anterior ao instante de abertura, mantendo o status real (inclusive pendências passadas). Período, situação e paginação são aplicados no servidor. O detalhe reutiliza a agenda e apresenta uma linha do tempo paginada. Para barbeiros, eventos contêm transições, data e somente nome do responsável; e-mail e observação administrativa são removidos. Para clientes, o resumo não inclui responsável ou observações administrativas. Legados sem eventos mostram histórico não registrado.
+
+## Filtros do cliente
+
+Meus agendamentos mantém criação e cancelamento existentes e acrescenta abas Próximos/Histórico, período/status e consulta do detalhe por ID. A classificação é temporal: próximo significa início igual ou posterior ao instante de abertura; histórico significa início anterior. Agendamentos futuros em estado final continuam visíveis em Próximos com a situação explícita. Filtros são aplicados no servidor; não há reagendamento habilitado.

@@ -1,3 +1,4 @@
+import type { AgendamentoControllerListarParams } from "../../api/models";
 import { Button } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -5,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useAutenticacao } from "../../auth/contexto-autenticacao";
 import {
   cancelarAgendamento,
+  buscarMeuAgendamento,
   listarAgendamentos,
   mensagemErro,
 } from "../agendamento/services/agendamento-api";
@@ -21,6 +23,12 @@ const rotulos: Record<string, string> = {
 };
 export function MeusAgendamentos() {
   const { usuario, sair } = useAutenticacao();
+  const [aba, definirAba] = useState("proximos");
+  const [agora] = useState(() => new Date().toISOString());
+  const [filtros, definirFiltros] = useState<AgendamentoControllerListarParams>(
+    {},
+  );
+  const [detalhe, definirDetalhe] = useState<number | null>(null);
   const [pagina, definirPagina] = useState(1);
   const [cancelando, definirCancelando] = useState<number | null>(null);
   const [motivo, definirMotivo] = useState("");
@@ -28,9 +36,30 @@ export function MeusAgendamentos() {
   const dialogo = useRef<HTMLDialogElement>(null);
   const queryClient = useQueryClient();
   const consulta = useQuery({
-    queryKey: ["meus-agendamentos", usuario?.id, pagina],
-    queryFn: ({ signal }) => listarAgendamentos(pagina, signal),
+    queryKey: ["meus-agendamentos", usuario?.id, pagina, aba, agora, filtros],
+    queryFn: ({ signal }) =>
+      listarAgendamentos(pagina, signal, {
+        ...filtros,
+        inicioDe:
+          aba === "proximos"
+            ? filtros.inicioDe && filtros.inicioDe > agora
+              ? filtros.inicioDe
+              : agora
+            : filtros.inicioDe,
+        inicioAte:
+          aba === "historico"
+            ? filtros.inicioAte && filtros.inicioAte < agora
+              ? filtros.inicioAte
+              : new Date(Date.parse(agora) - 1).toISOString()
+            : filtros.inicioAte,
+      }),
     enabled: !!usuario,
+  });
+  const consultaDetalhe = useQuery({
+    queryKey: ["meu-agendamento", usuario?.id, detalhe],
+    queryFn: ({ signal }) => buscarMeuAgendamento(detalhe!, signal),
+    enabled: detalhe !== null && !!usuario,
+    retry: false,
   });
   const cancelamento = useMutation({
     mutationFn: () => cancelarAgendamento(cancelando!, motivo.trim()),
@@ -39,7 +68,16 @@ export function MeusAgendamentos() {
       definirCancelando(null);
       definirMotivo("");
       definirAviso("Agendamento cancelado.");
-      await queryClient.invalidateQueries({ queryKey: ["meus-agendamentos"] });
+      await Promise.all(
+        [
+          "meus-agendamentos",
+          "meu-agendamento",
+          "agenda-barbeiro",
+          "atendimento",
+          "historico-status",
+          "dashboard",
+        ].map((key) => queryClient.invalidateQueries({ queryKey: [key] })),
+      );
       await queryClient.invalidateQueries({
         queryKey: ["agendar", "horarios"],
       });
@@ -77,6 +115,113 @@ export function MeusAgendamentos() {
             </button>
           </div>
         </header>
+        <nav aria-label="Período dos agendamentos" className="mb-4 flex gap-3">
+          {[
+            ["proximos", "Próximos"],
+            ["historico", "Histórico"],
+          ].map(([valor, rotulo]) => (
+            <Button
+              key={valor}
+              variant={aba === valor ? "primary" : "secondary"}
+              aria-pressed={aba === valor}
+              onPress={() => {
+                definirAba(valor);
+                definirPagina(1);
+                definirDetalhe(null);
+              }}
+            >
+              {rotulo}
+            </Button>
+          ))}
+        </nav>
+        <p className="mb-4 text-sm text-muted">
+          A separação usa a data prevista e preserva a situação do agendamento.
+        </p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const dados = new FormData(e.currentTarget);
+            const de = String(dados.get("de"));
+            const ate = String(dados.get("ate"));
+            const status = String(dados.get("status"));
+            definirFiltros({
+              inicioDe: de
+                ? new Date(`${de}T00:00:00-03:00`).toISOString()
+                : undefined,
+              inicioAte: ate
+                ? new Date(`${ate}T23:59:59.999-03:00`).toISOString()
+                : undefined,
+              status: status
+                ? (status as AgendamentoControllerListarParams["status"])
+                : undefined,
+            });
+            definirPagina(1);
+          }}
+          className="mb-5 flex flex-wrap items-end gap-3"
+        >
+          <label>
+            De
+            <input
+              name="de"
+              type="date"
+              className="block rounded-lg border border-border bg-surface p-2"
+            />
+          </label>
+          <label>
+            Até
+            <input
+              name="ate"
+              type="date"
+              className="block rounded-lg border border-border bg-surface p-2"
+            />
+          </label>
+          <label>
+            Situação
+            <select
+              name="status"
+              className="block rounded-lg border border-border bg-surface p-2"
+            >
+              <option value="">Todas</option>
+              {Object.entries(rotulos).map(([valor, rotulo]) => (
+                <option key={valor} value={valor}>
+                  {rotulo}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button type="submit">Aplicar filtros</Button>
+          <Button
+            type="reset"
+            variant="secondary"
+            onPress={() => {
+              definirFiltros({});
+              definirPagina(1);
+            }}
+          >
+            Limpar
+          </Button>
+        </form>
+        {detalhe !== null && (
+          <section
+            className="mb-5 rounded-2xl border border-border bg-surface p-5"
+            aria-label={`Detalhe do agendamento ${detalhe}`}
+          >
+            <h2 className="mb-3 font-semibold">Detalhes #{detalhe}</h2>
+            <EstadoConsulta
+              carregando={consultaDetalhe.isPending}
+              erro={consultaDetalhe.error}
+              vazio={!consultaDetalhe.data}
+              tentar={() => void consultaDetalhe.refetch()}
+            >
+              {consultaDetalhe.data && (
+                <ResumoAgendamento item={consultaDetalhe.data} />
+              )}
+            </EstadoConsulta>
+            <Button variant="secondary" onPress={() => definirDetalhe(null)}>
+              Fechar detalhes
+            </Button>
+          </section>
+        )}
         {aviso && (
           <p role="status" className="mb-5 text-success">
             {aviso}
@@ -101,6 +246,13 @@ export function MeusAgendamentos() {
                   </span>
                 </div>
                 <ResumoAgendamento item={item} />
+                <Button
+                  className="mt-3"
+                  variant="secondary"
+                  onPress={() => definirDetalhe(item.id)}
+                >
+                  Visualizar #{item.id}
+                </Button>
                 {item.motivoCancelamento && (
                   <p className="mt-4 text-sm">
                     Motivo do cancelamento: {item.motivoCancelamento}
