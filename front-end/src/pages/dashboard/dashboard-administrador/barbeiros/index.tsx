@@ -1,3 +1,4 @@
+import { BarbeirosIntegrados } from "./barbeiros-integrados";
 import {
   DashboardLayout,
   EstadoIntegracaoIndisponivel,
@@ -12,7 +13,7 @@ import {
 } from "./components/components";
 import { barbeirosMock } from "./mock/dados-mock";
 
-export function BarbeirosAdministrador() {
+function BarbeirosDemonstracao() {
   const demonstracao = usarDadosMockados();
   return (
     <DashboardLayout
@@ -32,5 +33,13 @@ export function BarbeirosAdministrador() {
         <EstadoIntegracaoIndisponivel />
       )}
     </DashboardLayout>
+  );
+}
+
+export function BarbeirosAdministrador() {
+  return usarDadosMockados() ? (
+    <BarbeirosDemonstracao />
+  ) : (
+    <BarbeirosIntegrados />
   );
 }
