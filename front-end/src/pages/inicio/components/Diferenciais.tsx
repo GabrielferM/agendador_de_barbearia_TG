@@ -18,13 +18,13 @@ export function Diferenciais({ itens }: DiferenciaisProps) {
         <article className="flex items-center gap-3" key={item.titulo}>
           <span
             aria-hidden="true"
-            className="grid size-9 shrink-0 place-items-center rounded-full border border-secondary text-lg text-secondary"
+            className="grid size-9 2xl:size-12 shrink-0 place-items-center rounded-full border border-secondary text-lg text-secondary"
           >
             {item.icone}
           </span>
           <div>
-            <h2 className="text-xs font-bold text-white">{item.titulo}</h2>
-            <p className="mt-1 text-xs text-secondary">{item.descricao}</p>
+            <h2 className="text-xs xl:text-sm 2xl:text-base font-bold text-white">{item.titulo}</h2>
+            <p className="mt-1 text-xs xl:text-sm 2xl:text-base text-white">{item.descricao}</p>
           </div>
         </article>
       ))}

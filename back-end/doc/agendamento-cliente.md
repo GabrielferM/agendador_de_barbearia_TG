@@ -34,6 +34,8 @@ Criação e alterações de início/duração revalidam expediente, vínculos e 
 
 ## Frontend e integração
 
+Na página inicial, “Agendar este serviço” inicia um novo rascunho com o serviço selecionado, limpando filial, barbeiro, data, horário e observação anteriores. O fluxo valida o serviço novamente no catálogo e o preserva ao escolher a filial enquanto continuar ativo. “Agendar agora” e “Ver disponibilidade” apenas abrem a jornada, sem reiniciar escolhas. Os contatos e o horário ilustrativo apresentados no início são demonstrativos e não alteram o expediente da API.
+
 A filial única é selecionada automaticamente: sua etapa não aparece, mas nome e endereço permanecem no resumo. Com múltiplas filiais, a seleção é a primeira etapa e exige uma escolha válida. Sem filial ativa, a jornada informa a ausência e bloqueia o avanço. Os catálogos são carregados respeitando todas as páginas. Trocar filial limpa barbeiro, data e horário e preserva somente serviços ainda ativos; uma filial removida do catálogo deixa de ser uma escolha válida. Trocar barbeiro limpa data/horário; trocar serviços preserva data e limpa horário. Disponibilidade usa `staleTime: 0` e chave com todas as escolhas; respostas antigas não substituem uma consulta nova.
 
 O rascunho vive em memória acima das rotas, preservando escolhas e observação na navegação para login. O retorno permitido é exclusivamente `/agendar` e somente para cliente. A confirmação requer novo clique após login, reconsulta os catálogos e a disponibilidade, e não repete mutações automaticamente. Recarregar a página reinicia o rascunho. Sucesso, abandono explícito e logout o limpam; expiração da sessão mantém as escolhas e solicita login novamente.

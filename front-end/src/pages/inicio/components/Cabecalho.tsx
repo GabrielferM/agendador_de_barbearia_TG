@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 
-const itensNavegacao = ["Início", "Serviços", "Barbeiros", "Sobre", "Contato"];
 
 export function Cabecalho() {
   return (
@@ -8,37 +7,22 @@ export function Cabecalho() {
       <div className="flex items-center gap-3 text-white">
         <span
           aria-hidden="true"
-          className="grid size-11 place-items-center rounded-full border border-secondary text-2xl text-secondary"
+          className="grid size-11 2xl:size-14 place-items-center rounded-full border border-secondary text-2xl text-secondary"
         >
           ✂
         </span>
         <span className="leading-none">
-          <strong className="block font-serif text-lg tracking-wide sm:text-xl">
+          <strong className="block font-serif text-lg tracking-wide sm:text-xl 2xl:text-2xl">
             CORTE CERTO
           </strong>
-          <span className="block pt-1 text-[0.65rem] font-semibold tracking-[0.28em] text-secondary">
+          <span className="block pt-1 text-[0.65rem] font-semibold tracking-[0.28em] text-white">
             BARBEARIA
           </span>
         </span>
       </div>
 
-      <nav
-        aria-label="Navegação principal"
-        className="hidden items-center gap-6 lg:flex"
-      >
-        {itensNavegacao.map((item) => (
-          <button
-            className="cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-white transition-opacity hover:opacity-75"
-            key={item}
-            type="button"
-          >
-            {item}
-          </button>
-        ))}
-      </nav>
-
       <Link
-        className="cursor-pointer rounded-lg border border-secondary bg-secondary px-4 py-3 text-xs font-bold text-foreground transition-colors hover:bg-surface sm:px-5"
+        className="cursor-pointer rounded-lg border border-secondary bg-secondary px-4 py-3 text-xs font-bold xl:text-sm 2xl:text-base text-foreground transition-colors hover:bg-surface sm:px-5 2xl:px-7 2xl:py-4"
         to="/login"
       >
         Login

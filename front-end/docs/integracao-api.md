@@ -48,3 +48,9 @@ Para outra origem OpenAPI, defina `ORVAL_SWAGGER_URL` antes de gerar. A geraçã
 O QueryClient global usa `staleTime` de cinco minutos e `retry: 1` para queries; páginas podem sobrescrever essas opções. Respostas HTTP resolvidas não acionam retry como uma promise rejeitada. Para erros veja [tratamento de erros](tratamento-de-erros.md).
 
 Referência: [mutator personalizado do Orval](https://orval.dev/docs/guides/custom-client/).
+
+## Catálogo da página inicial
+
+O adapter manual `pages/inicio/services/catalogo-inicio.ts` utiliza os clientes gerados de serviços e barbeiros, sem filtro de filial, e percorre a paginação com limite de 100. Confere status 200, metadados e campos consumidos antes de entregar os itens. HTTP não exitoso, resposta inválida ou falha de rede rejeitam a consulta; listas parciais não são apresentadas como catálogo completo. As chaves TanStack Query são `['inicio', 'servicos']` e `['inicio', 'barbeiros']`.
+
+Não houve alteração de contrato público. Contatos demonstrativos não usam endpoints privados nem são inferidos do telefone da filial.

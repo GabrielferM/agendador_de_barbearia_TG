@@ -63,3 +63,5 @@ Para botões ou variantes nativas do HeroUI, prefira a variante que use o acento
 Ao criar um componente, escolha a intenção visual antes da cor: página (`background`), conteúdo (`surface`), ação (`primary`), texto (`foreground` ou `muted`), estrutura (`border`) ou estado (`success`/`danger`). Garanta contraste suficiente entre texto e fundo; em especial, use texto branco sobre `primary`, `success` e `danger`, e `foreground` sobre `background` e `surface`.
 
 O modo escuro deve sobrescrever esses mesmos tokens em `.dark` ou `[data-theme="dark"]` dentro de `src/index.css`; os componentes não devem mudar suas classes. Ao implementá-lo, mantenha os mapeamentos HeroUI (`accent`, campos e estados) alinhados aos tokens semânticos e atualize este documento.
+
+Na página inicial, preserve o dourado (`secondary`) para ornamentos e títulos grandes sobre marrom. Para textos pequenos sobre `primary`, use branco: o contraste entre `secondary` e `primary` é aproximadamente 4,02:1, abaixo de 4,5:1 para texto normal. Descrições dos cards usam `foreground` sobre superfícies claras. A paleta permanece inalterada.

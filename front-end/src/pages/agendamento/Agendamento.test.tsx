@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { ProvedorAutenticacao } from "../../auth/contexto-autenticacao";
 import { Login } from "../login";
+import { Inicio } from "../inicio";
 import { AgendamentoCliente } from ".";
 import {
   ProvedorRascunhoAgendamento,
@@ -121,6 +122,7 @@ function montar(rota = "/agendar") {
           <MemoryRouter initialEntries={[rota]}>
             <PrepararConfirmacao />
             <Routes>
+              <Route path="/" element={<Inicio />} />
               <Route path="/agendar" element={<AgendamentoCliente />} />
               <Route path="/login" element={<Login />} />
               <Route
@@ -174,6 +176,17 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe("Jornada de agendamento", () => {
+  it("preserva o serviço escolhido no início ao selecionar uma filial", async () => {
+    filiais = [filial, { ...filial, id: 4, nome: "Bairro" }];
+    montar("/");
+    await userEvent.click(await screen.findByRole("button", { name: "Agendar este serviço: Corte" }));
+    await userEvent.click(await screen.findByRole("radio", { name: /^Centro/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Continuar" }));
+    await userEvent.click(await screen.findByRole("radio", { name: /João/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Continuar" }));
+    expect(await screen.findByRole("checkbox", { name: /Corte/ })).toBeChecked();
+    expect(screen.getByText("Serviços (1)")).toBeInTheDocument();
+  });
   it("omite a filial única e exige serviço antes de continuar", async () => {
     montar();
     await screen.findByRole("heading", { name: "Barbeiro (1 de 4)" });
