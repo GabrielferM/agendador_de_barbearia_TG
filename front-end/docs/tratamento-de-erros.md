@@ -2,14 +2,7 @@
 
 ## Implementado
 
-O transporte retorna status mesmo em 4xx/5xx. Portanto, `query.isError` sozinho não identifica toda falha HTTP. [useServicosInicio](../src/pages/inicio/hooks/use-servicos-inicio.ts) combina rejeição e status:
-
-```ts
-const comErro = query.isError ||
-  (query.data !== undefined && query.data.status !== 200);
-```
-
-Esse exemplo é para o catálogo, cujo sucesso esperado é 200; outros endpoints podem ter códigos de sucesso diferentes. Confira o contrato antes de copiar.
+O transporte retorna status mesmo em 4xx/5xx. Portanto, `query.isError` sozinho não identifica toda falha HTTP quando se usa diretamente um cliente gerado. Na página inicial, o [adapter do catálogo](../src/pages/inicio/services/catalogo-inicio.ts) verifica status 200, paginação e campos essenciais e lança erro quando a resposta é inválida. Assim, os hooks da página podem usar `query.isError` e oferecer nova tentativa. Outros consumidores diretos devem inspecionar o status esperado para seu endpoint.
 
 [login-api.ts](../src/pages/login/services/login-api.ts) traduz 401/403 para mensagem genérica de credenciais, 429 para limite de tentativas e outras falhas para indisponibilidade. Lê `Retry-After` em segundos ou data e valida a resposta de sucesso. [O adapter de dashboard](../src/api/dashboard/dashboard.ts) lança `ErroDashboard` quando o status não é 200, ao contrário do mutator comum.
 

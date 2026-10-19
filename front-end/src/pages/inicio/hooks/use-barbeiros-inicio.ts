@@ -1,4 +1,5 @@
-import { useCatalogoPublicoControllerBarbeiros } from "../../../api/catálogo-público/catálogo-público";
+import { useQuery } from "@tanstack/react-query";
+import { buscarBarbeirosInicio } from "../services/catalogo-inicio";
 
 export interface BarbeiroInicio {
   id: number;
@@ -8,15 +9,15 @@ export interface BarbeiroInicio {
 }
 
 export function useBarbeirosInicio() {
-  const query = useCatalogoPublicoControllerBarbeiros({ pagina: 1, limite: 3 });
-  const resposta = query.data?.status === 200 ? query.data.data : undefined;
-  const comErro =
-    query.isError || (query.data !== undefined && query.data.status !== 200);
+  const query = useQuery({
+    queryKey: ["inicio", "barbeiros"],
+    queryFn: ({ signal }) => buscarBarbeirosInicio(signal),
+  });
 
   return {
     ...query,
-    comErro,
-    itens: (resposta?.data ?? []).map<BarbeiroInicio>((barbeiro) => ({
+    comErro: query.isError,
+    itens: (query.data ?? []).map<BarbeiroInicio>((barbeiro) => ({
       id: barbeiro.id,
       nome: barbeiro.nomeProfissional,
       descricao: barbeiro.descricao ?? null,

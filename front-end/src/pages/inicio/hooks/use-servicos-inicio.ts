@@ -1,4 +1,5 @@
-import { useCatalogoPublicoControllerServicos } from "../../../api/catálogo-público/catálogo-público";
+import { useQuery } from "@tanstack/react-query";
+import { buscarServicosInicio } from "../services/catalogo-inicio";
 
 export interface ServicoInicio {
   id: number;
@@ -18,15 +19,15 @@ const formatarPreco = (precoBase: string) =>
   }).format(Number(precoBase));
 
 export function useServicosInicio() {
-  const query = useCatalogoPublicoControllerServicos({ pagina: 1, limite: 3 });
-  const resposta = query.data?.status === 200 ? query.data.data : undefined;
-  const comErro =
-    query.isError || (query.data !== undefined && query.data.status !== 200);
+  const query = useQuery({
+    queryKey: ["inicio", "servicos"],
+    queryFn: ({ signal }) => buscarServicosInicio(signal),
+  });
 
   return {
     ...query,
-    comErro,
-    itens: (resposta?.data ?? []).map<ServicoInicio>((servico) => ({
+    comErro: query.isError,
+    itens: (query.data ?? []).map<ServicoInicio>((servico) => ({
       id: servico.id,
       icone: "✂",
       nome: servico.nome,

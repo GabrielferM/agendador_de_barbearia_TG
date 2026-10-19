@@ -55,3 +55,26 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Navegação por âncoras da página inicial, sem animação para movimento reduzido. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.pagina-inicio) {
+    scroll-behavior: smooth;
+  }
+}
+.pagina-inicio section[id] {
+  scroll-margin-top: 1.5rem;
+}
+.pagina-inicio :is(a, button):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.pagina-inicio :is(h3, p) {
+  overflow-wrap: anywhere;
+}
+
+/* Crescimento fluido em desktops amplos, com limite para monitores ultrawide. */
+.pagina-inicio .inicio-container {
+  width: 100%;
+  max-width: clamp(72rem, 88vw, 112rem);
+}

@@ -33,3 +33,11 @@ Use QueryClient isolado por teste e controle retries para evitar interferência 
 ## Conclusão
 
 Revise o diff e atualize guias e contratos afetados. Relate verificações executadas e limitações. Mudanças apenas em Markdown exigem links e exemplos coerentes; não exigem build, testes da aplicação ou regeneração Orval.
+
+## Página inicial
+
+Os testes em `pages/inicio/inicio.test.tsx` cobrem ordem das seções, destinos, contato demonstrativo sem links, seleção de serviço, avatar após falha de imagem, descrição ausente, carregamento, vazio, erro HTTP com nova tentativa, paginação completa e rejeição de dados inválidos/rede. A suíte de agendamento também percorre início → serviço → filial → barbeiro → serviços, verificando a seleção preservada. A cobertura existente de login continua verificando retomada e confirmação explícita.
+
+Essas verificações usam jsdom e respostas simuladas: não substituem inspeção visual em navegador nem comprovam dados de uma API ativa.
+
+A seção Sobre é verificada por região nomeada, três destaques, duas imagens com texto alternativo e dimensões reservadas, ausência do antigo selo demonstrativo e link para `/agendar`. Contato mantém seu aviso demonstrativo. A ação do Sobre preserva o rascunho existente.
