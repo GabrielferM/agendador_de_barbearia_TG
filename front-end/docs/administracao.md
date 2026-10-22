@@ -31,3 +31,14 @@ Especialidades, jornada individual, disponibilidade percentual e comissão fixa 
 | --- | --- | --- | --- |
 | Barbeiros: lista, busca, status e métricas | GET dashboard/administrador/barbeiros; agregados de Agendamento/Comissao | GERENCIAR_USUARIOS | Busca/paginação no servidor com ordenação estável |
 | Barbeiros: CRUD e filial | POST/GET/PATCH/DELETE barbeiros; GET público/filiais | GERENCIAR_USUARIOS | Detalhe/edição persistem campos reais; vínculos impedem exclusão |
+
+## Implementado: serviços
+
+`/admin/servicos` exige GERENCIAR_SERVICOS e usa GET dashboard/administrador/servicos com busca, ativo e paginação. Indicadores são globais: ativos, mais realizado e receita dos atendimentos concluídos dividida pela quantidade desses atendimentos (ticket médio). POST/GET/PATCH/DELETE /servicos implementam cadastro, detalhe, edição e exclusão. PATCH aceita `ativo` booleano. Nome, descrição, preço base e duração são persistidos; preços e durações históricos dos itens de agendamento não são alterados.
+
+Categoria, filtro de categoria e percentual fixo de comissão foram removidos por ausência no schema. Exclusão com itens vinculados retorna conflito; inativação permanece disponível e impede novas seleções pelo catálogo público/agendamento.
+
+| Tela/ação | Fonte/contrato | Permissão | Verificação/aceite |
+| --- | --- | --- | --- |
+| Serviços: busca, situação, lista e indicadores | GET dashboard/administrador/servicos | GERENCIAR_SERVICOS | Paginação real; total global não depende da página |
+| Serviços: CRUD e ativação | POST/GET/PATCH/DELETE servicos; Servico.ativo | GERENCIAR_SERVICOS | Payload de preço/ativação; preservação dos itens históricos |

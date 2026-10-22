@@ -15,7 +15,7 @@ export function BarbeirosAdministrador() {
   const [excluir, setExcluir] = useState<number | null>(null), [aviso, setAviso] = useState('');
   const consulta = useQuery({ queryKey: ['admin', usuario?.id, 'barbeiros', busca, status, pagina], enabled: permitido, queryFn: ({ signal }) => consultarBarbeiros({ busca, status: status ? status as 'ATIVO' | 'INATIVO' | 'AFASTADO' : undefined, pagina }, signal) });
   const filiais = useQuery({ queryKey: ['admin', usuario?.id, 'filiais-cadastro'], queryFn: ({ signal }) => consultarFiliais(signal), enabled: permitido });
-  const abrir = useMutation({ mutationFn: buscarBarbeiro, onSuccess: dados => { setEditor({ id: abrir.variables!, dados, leitura: true }); setAviso(''); } });
+  const abrir = useMutation({ mutationFn: buscarBarbeiro, onSuccess: (dados, id) => { setEditor({ id, dados, leitura: true }); setAviso(''); } });
   const gravar = useMutation({ mutationFn: (dados: Record<string, string>) => salvarBarbeiro(editor!.id, dados), onSuccess: async () => { setEditor(null); setAviso('Barbeiro salvo.'); await cache.invalidateQueries(); } });
   const remover = useMutation({ mutationFn: excluirBarbeiro, onSuccess: async () => { setExcluir(null); setAviso('Barbeiro excluído.'); setPagina(1); await cache.invalidateQueries(); } });
   const campos: CampoCadastro[] = [
