@@ -2,6 +2,7 @@
 
 | Tarefa | Leitura |
 | --- | --- |
+| Administração | [CRUD administrativo](administracao.md) |
 | Jornada do cliente e disponibilidade | [Agendamento do cliente](../../back-end/doc/agendamento-cliente.md) |
 | Entender páginas, componentes e estado | [Arquitetura](arquitetura.md) |
 | Nomear arquivos e símbolos | [Nomenclatura](nomenclatura.md) |
