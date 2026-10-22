@@ -28,6 +28,7 @@ export class EditarClienteService {
     if (input.dataNascimento !== undefined) data.dataNascimento = new Date(input.dataNascimento);
     if (input.observacao !== undefined) data.observacao = input.observacao.trim();
     const usuario: Prisma.UsuarioUpdateWithoutClienteInput = {};
+    if (input.status !== undefined) usuario.status = input.status;
     if (input.nome !== undefined) usuario.nome = input.nome.trim();
     if (input.email !== undefined) usuario.email = normalizarEmail(input.email);
     if (input.senha !== undefined) usuario.senhaHash = await this.senhas.gerarHash(input.senha);

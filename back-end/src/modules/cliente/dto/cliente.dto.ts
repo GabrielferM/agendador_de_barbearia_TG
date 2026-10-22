@@ -1,4 +1,13 @@
-import { IsDateString, IsEmail, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { StatusUsuario } from '@prisma/client';
+import {
+  IsEnum,
+  IsDateString,
+  IsEmail,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { SENHA_MAXIMA, SENHA_MINIMA } from '../../../common/constants/seguranca';
 import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 
@@ -12,6 +21,7 @@ export class CriarClienteDto {
   @IsOptional() @IsString() observacao?: string;
 }
 export class AtualizarClienteDto {
+  @IsOptional() @IsEnum(StatusUsuario) status?: StatusUsuario;
   @IsOptional() @IsString() @MinLength(2) nome?: string;
   @IsOptional() @IsEmail() email?: string;
   @IsOptional() @IsString() @MinLength(SENHA_MINIMA) @MaxLength(SENHA_MAXIMA) senha?: string;

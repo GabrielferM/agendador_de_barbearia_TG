@@ -35,6 +35,7 @@ export * from './atualizarBarbeiroDto';
 export * from './atualizarBarbeiroDtoStatus';
 export * from './atualizarBarbeiroDtoStatusProfissional';
 export * from './atualizarClienteDto';
+export * from './atualizarClienteDtoStatus';
 export * from './atualizarComissaoDto';
 export * from './atualizarComissaoDtoStatus';
 export * from './atualizarEnderecoDto';
