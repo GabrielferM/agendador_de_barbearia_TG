@@ -18,8 +18,9 @@ export class EditarBarbeiroService {
   ) {}
 
   async execute(id: number, input: AtualizarBarbeiroDto) {
-    await this.buscar.execute(id);
-    if (input.idFilial !== undefined) await this.validarFilial.execute(input.idFilial);
+    const atual = await this.buscar.execute(id);
+    if (input.idFilial !== undefined && input.idFilial !== atual.idFilial)
+      await this.validarFilial.execute(input.idFilial);
     const data: Prisma.BarbeiroUpdateInput = {};
     if (input.idFilial !== undefined) data.filial = { connect: { id: input.idFilial } };
     if (input.descricao !== undefined) data.descricao = input.descricao.trim();
