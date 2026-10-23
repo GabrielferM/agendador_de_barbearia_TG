@@ -19,6 +19,10 @@ pagina?: number;
  * @maximum 100
  */
 limite?: number;
+nomeBarbeiro?: string;
+busca?: string;
+inicioDe?: string;
+inicioAte?: string;
 idBarbeiro?: number;
 idAgendamentoServico?: number;
 status?: ComissaoControllerListarStatus;

@@ -60,3 +60,22 @@ Swagger distingue respostas administrativas de respostas de cliente/barbeiro e d
 | Agenda, busca, filtros e resumo | GET dashboard/administrador/agendamentos; agregados dos itens | GERENCIAR_AGENDAMENTOS | Dias vazios, meses de até 31 dias e fuso; filtros aplicados no banco |
 | Cadastro, detalhe, vínculos, itens, status/cancelamento/exclusão | POST/GET/PATCH/DELETE agendamentos | GERENCIAR_AGENDAMENTOS | Formulário e payload real; transação, conflitos e preços históricos |
 | Clientes para seleção e histórico | GET dashboard/administrador/agendamentos/clientes; GET agendamentos/:id/historico-status | GERENCIAR_AGENDAMENTOS / acesso ao próprio recurso | Projeção sem dados privados; paginação e responsável da sessão |
+
+## Implementado: financeiro e comissões
+
+`/admin/financeiro` exige GERENCIAR_COMISSOES. GET dashboard/administrador/financeiro retorna receita dos itens de atendimentos CONCLUIDOS por início previsto no período, série semanal e até dez atendimentos recentes. Isso não comprova pagamento do cliente. Variação compara um período anterior de mesma duração, não necessariamente o mês anterior. Períodos são inclusivos no fuso da barbearia (máximo 366 dias).
+
+Comissões e agrupamentos usam dataGeracao no período. O total de comissões válidas soma PREVISTA, LIBERADA e PAGA; CANCELADA e ESTORNADA permanecem discriminadas por status, excluídas desse total. A tela não reduz estados mistos por barbeiro a um booleano pago. As somas financeiras usam Decimal no backend. Filtros de busca, nome do barbeiro e status da lista não alteram os indicadores globais do período.
+
+GET /comissoes tem busca por cliente/barbeiro/serviço, nomeBarbeiro específico, status, IDs de profissional/item, período de geração e paginação estável. GET /comissoes/:id abre detalhes e datas. POST /comissoes usa item real selecionado em GET /comissoes/itens-elegiveis, com busca por cliente/barbeiro, filtro opcional idBarbeiro e paginação. Opções elegíveis não têm comissão, possuem subtotal positivo e não pertencem a atendimentos CANCELADOS/NAO_COMPARECEU. O servidor revalida a seleção na transação, calcula valor com Decimal e arredondamento de duas casas. Percentual deve ser maior que zero e no máximo 100; não há percentual padrão nem criação de segunda comissão para o mesmo item.
+
+PATCH /comissoes/:id permite observação e transições PREVISTA → LIBERADA/CANCELADA, LIBERADA → PAGA/CANCELADA e PAGA → ESTORNADA. Liberar ou registrar pagamento exige atendimento concluído. Datas são preenchidas pelo servidor; datas explícitas só são aceitas na transição correspondente, em ordem cronológica e sem futuro. Estorno exige motivo. CANCELADA/ESTORNADA são finais, mantendo a possibilidade de atualizar observação. Operações são serializáveis e conflitos concorrentes retornam 409. Não há DELETE físico nem execução de transferência bancária. As projeções de comissão expõem apenas resumo de profissional, serviço, cliente e atendimento; removem dados cadastrais completos e observações internas do atendimento.
+
+Foram retirados: despesas, lucro líquido, formas de pagamento, lançamento genérico, coluna de forma e exportação fictícia. Não foram criadas entidades/migrations para esses campos. A tabela de até dez atendimentos é explicitamente um recorte recente, não um relatório integral. Mocks, tipos e componentes financeiros que sustentavam essas informações foram removidos.
+
+| Tela/ação | Fonte/contrato | Permissão | Verificação/aceite |
+| --- | --- | --- | --- |
+| Financeiro: período, receita e série | GET dashboard/administrador/financeiro; AgendamentoServico.subtotal | GERENCIAR_COMISSOES | Valores reais de concluídos, dias vazios, precisão e comparação equivalente |
+| Comissões: lista/buscas/filtros/detalhe | GET comissoes e comissoes/:id | GERENCIAR_COMISSOES | Filtros e paginação no banco, sem dados cadastrais completos |
+| Criação e elegibilidade | GET comissoes/itens-elegiveis; POST comissoes | GERENCIAR_COMISSOES | Item real, percentual válido, unicidade e cálculo no servidor |
+| Liberação, pagamento registrado, cancelamento e estorno | PATCH comissoes/:id | GERENCIAR_COMISSOES | Máquina de estados, datas coerentes, motivo de estorno e ausência de DELETE |

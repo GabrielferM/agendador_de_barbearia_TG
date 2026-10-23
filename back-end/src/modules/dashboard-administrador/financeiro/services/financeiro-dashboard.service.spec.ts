@@ -24,6 +24,18 @@ describe('FinanceiroDashboardService', () => {
         [
           {
             idBarbeiro: 2,
+            valorComissao: '10.00',
+            status: StatusComissao.CANCELADA,
+            barbeiro: { nomeProfissional: 'Profissional', usuario: { nome: 'Usuário' } },
+          },
+          {
+            idBarbeiro: 2,
+            valorComissao: '4.00',
+            status: StatusComissao.ESTORNADA,
+            barbeiro: { nomeProfissional: 'Profissional', usuario: { nome: 'Usuário' } },
+          },
+          {
+            idBarbeiro: 2,
             valorComissao: '22.20',
             status: StatusComissao.LIBERADA,
             barbeiro: { nomeProfissional: 'Profissional', usuario: { nome: 'Usuário' } },
@@ -42,6 +54,7 @@ describe('FinanceiroDashboardService', () => {
       receita: 55.5,
       variacaoReceitaPercentual: 11,
       comissoes: 22.2,
+      comissoesPorStatus: { PREVISTA: 0, LIBERADA: 22.2, PAGA: 0, CANCELADA: 10, ESTORNADA: 4 },
     });
     expect(resposta.movimentacoesRecentes[0]).toMatchObject({
       descricao: 'Corte + Barba - Cliente Teste',

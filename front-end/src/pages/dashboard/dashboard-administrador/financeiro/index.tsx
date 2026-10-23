@@ -1,44 +1,51 @@
-import {
-  DashboardLayout,
-  EstadoIntegracaoIndisponivel,
-} from "../../components/dashboard-compartilhado";
-import { usarDadosMockados } from "../../mocks/dados-dashboard";
-import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
-import {
-  ControlesFinanceiros,
-  FluxoFinanceiro,
-  FormasPagamento,
-  IndicadoresFinanceiros,
-  TabelaComissoes,
-  TabelaMovimentacoes,
-} from "./components/components";
-import { comissoesMock, fluxoFinanceiroMock, formasPagamentoMock, movimentacoesMock } from "./mock/dados-mock";
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAutenticacao } from '../../../../auth/contexto-autenticacao';
+import type { AtualizarComissaoDto, ComissaoControllerListarParams } from '../../../../api/models';
+import { DashboardLayout, EstadoCarregamento, EstadoErro } from '../../components/dashboard-compartilhado';
+import { moeda } from '../../components/dashboard-formatadores';
+import { MENU_ADMINISTRADOR } from '../constants/menu-administrador';
+import { estiloBotao, estiloCampo } from '../components/formulario-cadastro';
+import { dataLocal, periodoAgenda } from '../agendamentos/services/agendamentos-api';
+import { buscarComissao, consultarComissoes, consultarFinanceiro, criarComissao, editarComissao, itensElegiveis, STATUS_COMISSAO, TRANSICOES_COMISSAO } from './services/financeiro-api';
+import type { ComissaoAdministrativa } from './services/financeiro-api';
 
 export function FinanceiroAdministrador() {
-  const demonstracao = usarDadosMockados();
-  return (
-    <DashboardLayout
-      titulo="Financeiro"
-      subtitulo="Acompanhe receitas, despesas e comissões"
-      itens={MENU_ADMINISTRADOR}
-      dadosDemonstrativos={demonstracao}
-    >
-      {demonstracao ? (
-        <>
-          <ControlesFinanceiros />
-          <IndicadoresFinanceiros />
-          <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
-            <FluxoFinanceiro semanas={fluxoFinanceiroMock} />
-            <FormasPagamento formas={formasPagamentoMock} />
-          </div>
-          <div className="mt-4 grid gap-4 xl:grid-cols-[1.6fr_1fr]">
-            <TabelaMovimentacoes itens={movimentacoesMock} />
-            <TabelaComissoes itens={comissoesMock} />
-          </div>
-        </>
-      ) : (
-        <EstadoIntegracaoIndisponivel />
-      )}
-    </DashboardLayout>
-  );
+ const { usuario } = useAutenticacao(), cache = useQueryClient(), permitido = !!usuario?.permissoes.includes('GERENCIAR_COMISSOES');
+ const periodo = periodoAgenda(dataLocal(new Date().toISOString()).slice(0, 10), 'Mês');
+ const [inicioDe, setInicio] = useState(periodo.inicioDe), [inicioAte, setFim] = useState(periodo.inicioAte);
+ const [busca, setBusca] = useState(''), [nomeBarbeiro, setBarbeiro] = useState(''), [status, setStatus] = useState(''), [pagina, setPagina] = useState(1);
+ const [novo, setNovo] = useState(false), [buscaItem, setBuscaItem] = useState(''), [paginaItem, setPaginaItem] = useState(1), [idItem, setItem] = useState(''), [percentual, setPercentual] = useState(''), [observacaoNova, setObsNova] = useState('');
+ const [detalhe, setDetalhe] = useState<ComissaoAdministrativa | null>(null), [novoStatus, setNovoStatus] = useState(''), [motivo, setMotivo] = useState(''), [observacao, setObs] = useState(''), [aviso, setAviso] = useState('');
+ const resumo = useQuery({ queryKey: ['admin', usuario?.id, 'financeiro', inicioDe, inicioAte], enabled: permitido && !!inicioDe && !!inicioAte, queryFn: ({ signal }) => consultarFinanceiro(inicioDe, inicioAte, signal) });
+ const filtros: ComissaoControllerListarParams = { inicioDe, inicioAte, busca: busca || undefined, nomeBarbeiro: nomeBarbeiro || undefined, status: (status || undefined) as ComissaoControllerListarParams['status'], pagina, limite: 10 };
+ const comissoes = useQuery({ queryKey: ['admin', usuario?.id, 'comissoes', filtros], enabled: permitido && !!inicioDe && !!inicioAte, queryFn: ({ signal }) => consultarComissoes(filtros, signal) });
+ const elegiveis = useQuery({ queryKey: ['admin', usuario?.id, 'itens-elegiveis', buscaItem, paginaItem], enabled: permitido && novo, queryFn: ({ signal }) => itensElegiveis(buscaItem, paginaItem, signal) });
+ const abrir = useMutation({ mutationFn: buscarComissao, onSuccess: c => { setDetalhe(c); setNovoStatus(''); setMotivo(''); setObs(c.observacao); alterar.reset(); } });
+ const criar = useMutation({ mutationFn: () => { const item = elegiveis.data?.data.find(i => String(i.id) === idItem); if (!item) throw new Error('Selecione um item da consulta atual.'); return criarComissao({ idAgendamentoServico: item.id, idBarbeiro: item.idBarbeiro, percentualAplicado: Number(percentual), observacao: observacaoNova }); }, onSuccess: async () => { setNovo(false); setItem(''); setPercentual(''); setObsNova(''); setAviso('Comissão registrada.'); setPagina(1); await cache.invalidateQueries(); } });
+ const alterar = useMutation({ mutationFn: () => editarComissao(detalhe!.id, { observacao, ...(novoStatus ? { status: novoStatus as AtualizarComissaoDto['status'] } : {}), ...(novoStatus === 'ESTORNADA' ? { motivoEstorno: motivo } : {}) }), onSuccess: async () => { setDetalhe(null); setAviso('Comissão atualizada.'); await cache.invalidateQueries(); } });
+ const formatarData = (d: string | null) => d ? dataLocal(d).replace('T', ' ') : '—';
+ return <DashboardLayout titulo="Financeiro" subtitulo="Receitas de atendimentos e gestão de comissões" itens={MENU_ADMINISTRADOR}>
+ {!permitido ? <p role="alert">Você não possui permissão para gerenciar comissões.</p> : <>
+  <form className="flex flex-wrap gap-3" onSubmit={e => { e.preventDefault(); void resumo.refetch(); void comissoes.refetch(); }}><label>Período inicial<input className={estiloCampo} type="date" required value={inicioDe} onChange={e => { setInicio(e.target.value); setPagina(1); }} /></label><label>Período final<input className={estiloCampo} type="date" required value={inicioAte} onChange={e => { setFim(e.target.value); setPagina(1); }} /></label><button className={estiloBotao}>Atualizar consultas</button><button className={estiloBotao} type="button" onClick={() => { criar.reset(); setNovo(true); setDetalhe(null); }}>Nova comissão</button></form>
+  {aviso && <p role="status">{aviso}</p>}{abrir.error && <p role="alert">{abrir.error.message}</p>}
+  {novo && <form className="my-4 grid gap-3 rounded-xl border border-border bg-surface p-4" aria-label="Nova comissão" onSubmit={e => { e.preventDefault(); if (!criar.isPending) criar.mutate(); }}>
+   <label>Buscar item por cliente ou barbeiro<input className={estiloCampo} value={buscaItem} onChange={e => { setBuscaItem(e.target.value); setPaginaItem(1); setItem(''); }} /></label>
+   {elegiveis.isPending ? <p>Carregando itens…</p> : elegiveis.isError ? <p role="alert">{elegiveis.error.message}</p> : <><label>Item elegível<select className={estiloCampo} required disabled={criar.isPending} value={idItem} onChange={e => setItem(e.target.value)}><option value="">Selecione</option>{elegiveis.data.data.map(i => <option key={i.id} value={i.id}>{formatarData(i.inicio)} · {i.cliente} · {i.barbeiro} · {i.servico} · {moeda.format(Number(i.subtotal))}</option>)}</select></label>{!elegiveis.data.data.length && <p>Nenhum item elegível sem comissão.</p>}<div><button className={estiloBotao} type="button" disabled={paginaItem <= 1} onClick={() => { setPaginaItem(paginaItem - 1); setItem(''); }}>Itens anteriores</button><span> Página {paginaItem} · {elegiveis.data.meta.total} itens </span><button className={estiloBotao} type="button" disabled={paginaItem >= elegiveis.data.meta.totalPaginas} onClick={() => { setPaginaItem(paginaItem + 1); setItem(''); }}>Mais itens</button></div></>}
+   <label>Percentual aplicado (%)<input className={estiloCampo} type="number" required min="0.01" max="100" step="0.01" disabled={criar.isPending} value={percentual} onChange={e => setPercentual(e.target.value)} /></label><label>Observação da nova comissão<textarea className={estiloCampo} disabled={criar.isPending} value={observacaoNova} onChange={e => setObsNova(e.target.value)} /></label>{criar.error && <p role="alert">{criar.error.message}</p>}<div><button className={estiloBotao} disabled={criar.isPending || !idItem || elegiveis.isFetching}>Registrar comissão</button><button className={estiloBotao} type="button" disabled={criar.isPending} onClick={() => setNovo(false)}>Fechar cadastro</button></div>
+  </form>}
+  {detalhe && <section className="my-4 rounded-xl border border-border bg-surface p-4" aria-label="Detalhe da comissão"><h2 className="font-semibold">Comissão de {detalhe.barbeiro}</h2><p>{detalhe.cliente} · {detalhe.servico} · {formatarData(detalhe.inicio)}</p><dl><dt>Base de cálculo</dt><dd>{moeda.format(Number(detalhe.base))}</dd><dt>Percentual aplicado</dt><dd>{detalhe.percentual}%</dd><dt>Valor</dt><dd>{moeda.format(Number(detalhe.valor))}</dd><dt>Situação</dt><dd>{detalhe.status}</dd><dt>Geração</dt><dd>{formatarData(detalhe.dataGeracao)}</dd><dt>Liberação</dt><dd>{formatarData(detalhe.dataLiberacao)}</dd><dt>Pagamento registrado</dt><dd>{formatarData(detalhe.dataPagamento)}</dd><dt>Estorno</dt><dd>{formatarData(detalhe.dataEstorno)} {detalhe.motivoEstorno}</dd></dl>
+   <form className="my-3 grid gap-2" aria-label="Atualizar comissão" onSubmit={e => { e.preventDefault(); if (!alterar.isPending) alterar.mutate(); }}><label>Nova situação<select className={estiloCampo} value={novoStatus} disabled={alterar.isPending} onChange={e => setNovoStatus(e.target.value)}><option value="">Manter situação</option>{TRANSICOES_COMISSAO[detalhe.status].map(s => <option key={s}>{s}</option>)}</select></label>{novoStatus === 'ESTORNADA' && <label>Motivo do estorno<input className={estiloCampo} required value={motivo} onChange={e => setMotivo(e.target.value)} /></label>}<label>Observação<textarea className={estiloCampo} disabled={alterar.isPending} value={observacao} onChange={e => setObs(e.target.value)} /></label><p className="text-sm text-muted">Datas são registradas pelo servidor. Registrar pagamento não executa transferência financeira.</p>{alterar.error && <p role="alert">{alterar.error.message}</p>}<div><button className={estiloBotao} disabled={alterar.isPending}>Confirmar atualização</button><button className={estiloBotao} type="button" disabled={alterar.isPending} onClick={() => setDetalhe(null)}>Fechar detalhe</button></div></form>
+  </section>}
+  {resumo.isPending ? <EstadoCarregamento /> : resumo.isError ? <EstadoErro mensagem={resumo.error.message} tentarNovamente={() => void resumo.refetch()} /> : <>
+   <div className="my-4 grid gap-4 sm:grid-cols-2"><section className="rounded-xl border border-border bg-surface p-4"><h2>Receita de atendimentos concluídos</h2><strong>{moeda.format(resumo.data.receita)}</strong><p>{resumo.data.variacao}% em relação ao período anterior de mesma duração.</p><p className="text-sm text-muted">Valores dos itens concluídos; não comprovam recebimento em caixa.</p></section><section className="rounded-xl border border-border bg-surface p-4"><h2>Comissões válidas no período</h2><strong>{moeda.format(resumo.data.comissoes)}</strong><p>Previstas, liberadas e pagas; referência pela data de geração.</p>{STATUS_COMISSAO.map(s => <p key={s}>{s}: {moeda.format(resumo.data.porStatus[s])}</p>)}</section></div>
+   <section className="my-4 rounded-xl border border-border bg-surface p-4"><h2 className="font-semibold">Receita semanal dos atendimentos</h2>{resumo.data.semanas.map(s => <div key={s.inicio} className="my-2 grid grid-cols-[8rem_1fr_auto] items-center gap-2"><span>{s.inicio.split('-').reverse().join('/')}</span><div className="h-3 rounded bg-background"><div className="h-3 rounded bg-primary" style={{ width: `${s.receita / Math.max(1, ...resumo.data.semanas.map(i => i.receita)) * 100}%` }} /></div><span>{moeda.format(s.receita)}</span></div>)}</section>
+   <section className="my-4 overflow-x-auto rounded-xl border border-border bg-surface p-4"><h2 className="font-semibold">Até 10 atendimentos concluídos recentes no período</h2><table className="w-full text-left text-sm"><thead><tr><th>Data</th><th>Atendimento</th><th>Valor</th></tr></thead><tbody>{resumo.data.atendimentos.map(a => <tr key={a.id}><td>{formatarData(a.data)}</td><td>{a.descricao}</td><td>{moeda.format(a.valor)}</td></tr>)}</tbody></table>{!resumo.data.atendimentos.length && <p>Nenhum atendimento concluído no período.</p>}</section>
+   <section className="my-4 overflow-x-auto rounded-xl border border-border bg-surface p-4"><h2 className="font-semibold">Comissões por barbeiro e situação</h2><table className="w-full text-left text-sm"><thead><tr><th>Barbeiro</th>{STATUS_COMISSAO.map(s => <th key={s}>{s}</th>)}</tr></thead><tbody>{resumo.data.barbeiros.map(b => <tr key={b.id}><td>{b.nome}</td>{STATUS_COMISSAO.map(s => <td key={s}>{moeda.format(b.porStatus[s])}</td>)}</tr>)}</tbody></table></section>
+  </>}
+  <section className="my-4"><h2 className="font-semibold">Gestão de comissões</h2><p className="text-sm text-muted">Filtros da lista não alteram os indicadores globais do período.</p><div className="flex flex-wrap gap-2"><label>Buscar comissão<input className={estiloCampo} value={busca} onChange={e => { setBusca(e.target.value); setPagina(1); }} /></label><label>Buscar barbeiro<input className={estiloCampo} value={nomeBarbeiro} onChange={e => { setBarbeiro(e.target.value); setPagina(1); }} /></label><label>Situação da comissão<select className={estiloCampo} value={status} onChange={e => { setStatus(e.target.value); setPagina(1); }}><option value="">Todas</option>{STATUS_COMISSAO.map(s => <option key={s}>{s}</option>)}</select></label></div>
+   {comissoes.isPending ? <EstadoCarregamento /> : comissoes.isError ? <EstadoErro mensagem={comissoes.error.message} tentarNovamente={() => void comissoes.refetch()} /> : <><div className="my-3 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr>{['Barbeiro', 'Cliente', 'Serviço', 'Geração', 'Valor', 'Situação', 'Ações'].map(c => <th key={c}>{c}</th>)}</tr></thead><tbody>{comissoes.data.data.map(c => <tr key={c.id} className="border-t border-border"><td>{c.barbeiro}</td><td>{c.cliente}</td><td>{c.servico}</td><td>{formatarData(c.dataGeracao)}</td><td>{moeda.format(Number(c.valor))}</td><td>{c.status}</td><td><button className={estiloBotao} disabled={abrir.isPending} onClick={() => abrir.mutate(c.id)}>Detalhes da comissão {c.id}</button></td></tr>)}</tbody></table></div>{!comissoes.data.data.length && <p>Nenhuma comissão encontrada.</p>}<nav aria-label="Paginação de comissões" className="flex gap-3"><button className={estiloBotao} disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)}>Anterior</button><span>Página {pagina} de {Math.max(1, comissoes.data.meta.totalPaginas)} · {comissoes.data.meta.total} comissões</span><button className={estiloBotao} disabled={pagina >= comissoes.data.meta.totalPaginas} onClick={() => setPagina(pagina + 1)}>Próxima</button></nav></>}
+  </section>
+ </>}
+ </DashboardLayout>;
 }

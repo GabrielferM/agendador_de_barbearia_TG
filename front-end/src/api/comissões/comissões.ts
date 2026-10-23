@@ -30,13 +30,14 @@ import {
 
 import type {
   AtualizarComissaoDto,
-  ComissaoControllerAtualizar200,
-  ComissaoControllerBuscar200,
-  ComissaoControllerCriar201,
+  ComissaoControllerItensElegiveisParams,
   ComissaoControllerListarParams,
+  ComissaoRespostaDto,
   CriarComissaoDto,
   ErroRespostaDto,
-  LimiteRequisicoesRespostaDto
+  ItensElegiveisComissaoRespostaDto,
+  LimiteRequisicoesRespostaDto,
+  ListaComissoesRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -62,7 +63,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type comissaoControllerCriarResponse201 = {
-  data: ComissaoControllerCriar201
+  data: ComissaoRespostaDto
   status: 201
 }
 
@@ -177,7 +178,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getComissaoControllerCriarMutationOptions(options), queryClient);
     }
     export type comissaoControllerListarResponse200 = {
-  data: void
+  data: ListaComissoesRespostaDto
   status: 200
 }
 
@@ -321,8 +322,153 @@ export function useComissaoControllerListar<TData = Awaited<ReturnType<typeof co
 
 
 
+export type comissaoControllerItensElegiveisResponse200 = {
+  data: ItensElegiveisComissaoRespostaDto
+  status: 200
+}
+
+export type comissaoControllerItensElegiveisResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type comissaoControllerItensElegiveisResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type comissaoControllerItensElegiveisResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type comissaoControllerItensElegiveisResponse404 = {
+  data: ErroRespostaDto
+  status: 404
+}
+
+export type comissaoControllerItensElegiveisResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type comissaoControllerItensElegiveisResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type comissaoControllerItensElegiveisResponseSuccess = (comissaoControllerItensElegiveisResponse200) & {
+  headers: Headers;
+};
+export type comissaoControllerItensElegiveisResponseError = (comissaoControllerItensElegiveisResponse400 | comissaoControllerItensElegiveisResponse401 | comissaoControllerItensElegiveisResponse403 | comissaoControllerItensElegiveisResponse404 | comissaoControllerItensElegiveisResponse409 | comissaoControllerItensElegiveisResponse429) & {
+  headers: Headers;
+};
+
+export type comissaoControllerItensElegiveisResponse = (comissaoControllerItensElegiveisResponseSuccess | comissaoControllerItensElegiveisResponseError)
+
+export const getComissaoControllerItensElegiveisUrl = (params?: ComissaoControllerItensElegiveisParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/comissoes/itens-elegiveis?${stringifiedParams}` : `${apiBaseUrl}/comissoes/itens-elegiveis`
+}
+
+export const comissaoControllerItensElegiveis = async (params?: ComissaoControllerItensElegiveisParams, options?: Parameters<typeof httpClient>[1]): Promise<comissaoControllerItensElegiveisResponse> => {
+
+  return httpClient<comissaoControllerItensElegiveisResponse>(getComissaoControllerItensElegiveisUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getComissaoControllerItensElegiveisQueryKey = (params?: ComissaoControllerItensElegiveisParams,) => {
+    return [
+    `${apiBaseUrl}/comissoes/itens-elegiveis`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getComissaoControllerItensElegiveisQueryOptions = <TData = Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: ComissaoControllerItensElegiveisParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getComissaoControllerItensElegiveisQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>> = ({ signal }) => comissaoControllerItensElegiveis(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ComissaoControllerItensElegiveisQueryResult = NonNullable<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>>
+export type ComissaoControllerItensElegiveisQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+
+
+export function useComissaoControllerItensElegiveis<TData = Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: undefined |  ComissaoControllerItensElegiveisParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>,
+          TError,
+          Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useComissaoControllerItensElegiveis<TData = Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: ComissaoControllerItensElegiveisParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>,
+          TError,
+          Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useComissaoControllerItensElegiveis<TData = Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: ComissaoControllerItensElegiveisParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useComissaoControllerItensElegiveis<TData = Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: ComissaoControllerItensElegiveisParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comissaoControllerItensElegiveis>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getComissaoControllerItensElegiveisQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 export type comissaoControllerBuscarResponse200 = {
-  data: ComissaoControllerBuscar200
+  data: ComissaoRespostaDto
   status: 200
 }
 
@@ -460,7 +606,7 @@ export function useComissaoControllerBuscar<TData = Awaited<ReturnType<typeof co
 
 
 export type comissaoControllerAtualizarResponse200 = {
-  data: ComissaoControllerAtualizar200
+  data: ComissaoRespostaDto
   status: 200
 }
 
