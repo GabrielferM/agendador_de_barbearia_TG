@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { StatusAgendamento } from '@prisma/client';
+import { Prisma, StatusAgendamento } from '@prisma/client';
 import type {
   AgendamentoResumoDashboardDto,
   IndicadorDashboardDto,
@@ -17,6 +17,8 @@ import { PrismaService } from '../../../../prisma/prisma.service';
 import { STATUS_AGENDAMENTO_VALIDO } from '../constants/dashboard.constants';
 import type { BarbeiroDesempenho } from '../types/dashboard.types';
 import { calcularVariacao } from '../validator/variacao-dashboard.validator';
+
+const somar = (a: number, b: unknown) => new Prisma.Decimal(a).add(String(b)).toNumber();
 
 @Injectable()
 export class DashboardService {
@@ -67,7 +69,7 @@ export class DashboardService {
         where: { statusProfissional: 'ATIVO', usuario: { status: 'ATIVO' } },
       }),
       this.prisma.agendamento.findMany({
-        orderBy: { inicioPrevisto: 'desc' },
+        orderBy: [{ dataCriacao: 'desc' }, { id: 'desc' }],
         take: 5,
         include: {
           cliente: { include: { usuario: { select: { nome: true } } } },
@@ -83,7 +85,13 @@ export class DashboardService {
         select: {
           idBarbeiro: true,
           barbeiro: { select: { nomeProfissional: true, fotoUrl: true } },
-          servicos: { select: { subtotal: true, servico: { select: { id: true, nome: true } } } },
+          servicos: {
+            select: {
+              quantidade: true,
+              subtotal: true,
+              servico: { select: { id: true, nome: true } },
+            },
+          },
         },
       }),
     ]);
@@ -94,7 +102,7 @@ export class DashboardService {
     }
     for (const item of itensConcluidos) {
       const chave = chaveDiaBarbearia(item.agendamento.inicioPrevisto);
-      receitaPorDia.set(chave, (receitaPorDia.get(chave) ?? 0) + Number(item.subtotal));
+      receitaPorDia.set(chave, somar(receitaPorDia.get(chave) ?? 0, item.subtotal));
     }
 
     const chaveHoje = hoje.toISOString().slice(0, 10);
@@ -112,12 +120,12 @@ export class DashboardService {
       };
       atual.atendimentos += 1;
       for (const item of atendimento.servicos) {
-        atual.receita += Number(item.subtotal);
+        atual.receita = somar(atual.receita, item.subtotal);
         const servico = servicos.get(item.servico.id) ?? {
           nome: item.servico.nome,
           quantidade: 0,
         };
-        servico.quantidade += 1;
+        servico.quantidade += item.quantidade;
         servicos.set(item.servico.id, servico);
       }
       barbeiros.set(atendimento.idBarbeiro, atual);
@@ -163,7 +171,7 @@ export class DashboardService {
         barbeiro: item.barbeiro.nomeProfissional || item.barbeiro.usuario.nome,
         servicos: item.servicos.map((servico) => servico.servico.nome),
         status: item.status,
-        total: item.servicos.reduce((total, servico) => total + Number(servico.subtotal), 0),
+        total: item.servicos.reduce((total, servico) => somar(total, servico.subtotal), 0),
       })) satisfies AgendamentoResumoDashboardDto[],
     });
   }

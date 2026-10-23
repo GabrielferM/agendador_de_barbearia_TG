@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { useAutenticacao } from "../../../auth/contexto-autenticacao";
+import { estiloBotao } from "./components/formulario-cadastro";
 import { useQuery } from "@tanstack/react-query";
 import {
   ErroDashboard,
@@ -32,23 +35,26 @@ function variacao(valor: number) {
 
 export function DashboardAdministrador() {
   const demonstracao = usarDadosMockados();
+  const { usuario } = useAutenticacao();
+  const permitido = !!usuario?.permissoes.includes("GERENCIAR_AGENDAMENTOS");
   const consulta = useQuery({
-    queryKey: ["dashboard", "administrador", demonstracao ? "mock" : "api"],
-    queryFn: obterDashboardAdministrador,
-    enabled: !demonstracao,
+    queryKey: ["dashboard", "administrador", usuario?.id, demonstracao ? "mock" : "api"],
+    queryFn: ({ signal }) => obterDashboardAdministrador(signal),
+    enabled: !demonstracao && permitido,
     initialData: demonstracao ? dashboardAdministradorMock : undefined,
     staleTime: 60_000,
+    retry: (tentativas, erro) => !(erro instanceof ErroDashboard && [401, 403, 429].includes(erro.status)) && tentativas < 1,
   });
   useSessaoDashboard(consulta.error);
 
   return (
     <DashboardLayout
       titulo="Dashboard administrativo"
-      subtitulo="Visão geral da barbearia em tempo real"
+      subtitulo="Visão geral dos dados registrados na barbearia"
       itens={MENU_ADMINISTRADOR}
       dadosDemonstrativos={demonstracao}
     >
-      {consulta.isPending ? (
+      {!permitido ? (<p role="alert">Você não possui permissão para visualizar este painel.</p>) : consulta.isPending ? (
         <EstadoCarregamento />
       ) : consulta.isError ? (
         <EstadoErro
@@ -61,6 +67,11 @@ export function DashboardAdministrador() {
         />
       ) : (
         <>
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <button className={estiloBotao} disabled={consulta.isFetching || demonstracao} onClick={() => void consulta.refetch()}>Atualizar painel</button>
+            <p className="text-sm text-muted">Atualizado em {dataCurta(consulta.data.geradoEm)} às {hora(consulta.data.geradoEm)}. Receita representa itens concluídos, sem comprovar recebimento em caixa.</p>
+            <Link className={estiloBotao} to="/admin/agendamentos">Abrir agenda</Link>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <Kpi
               rotulo="Agendamentos hoje"
@@ -85,7 +96,7 @@ export function DashboardAdministrador() {
             <Kpi
               rotulo="Barbeiros ativos"
               valor={numero.format(consulta.data.barbeirosAtivos)}
-              detalhe="Equipe disponível"
+              detalhe="Profissionais e contas ativos"
               icone="usuarios"
             />
             <Kpi
@@ -140,7 +151,7 @@ export function DashboardAdministrador() {
           </div>
 
           <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-            <Cartao titulo="Agendamentos recentes" className="overflow-hidden">
+            <Cartao titulo="Agendamentos cadastrados recentemente" className="overflow-hidden">
               {consulta.data.agendamentosRecentes.length ? (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[650px] text-left text-sm">
