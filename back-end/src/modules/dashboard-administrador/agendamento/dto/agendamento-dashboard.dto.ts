@@ -1,8 +1,20 @@
+import { PaginacaoDto } from '../../../../common/dto/paginacao.dto';
+import { MetaPaginacaoDto } from '../../../../common/swagger/respostas.dto';
+import { Type } from 'class-transformer';
 import { StatusAgendamento } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional } from 'class-validator';
+import { IsDateString, IsOptional, IsString, IsInt, IsEnum, Min } from 'class-validator';
 
 export class ConsultarAgendaDashboardDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() busca?: string;
+  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(1) idCliente?: number;
+  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(1) idBarbeiro?: number;
+  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(1) idFilial?: number;
+  @ApiPropertyOptional({ enum: StatusAgendamento })
+  @IsOptional()
+  @IsEnum(StatusAgendamento)
+  status?: StatusAgendamento;
+
   @ApiPropertyOptional({ format: 'date-time', description: 'Primeiro dia do período.' })
   @IsOptional()
   @IsDateString()
@@ -38,4 +50,16 @@ export class AgendaDashboardRespostaDto {
   @ApiProperty({ example: { PENDENTE: 2, CONFIRMADO: 5 } })
   totaisPorStatus!: Record<StatusAgendamento, number>;
   @ApiProperty({ type: [DiaAgendaDashboardDto] }) dias!: DiaAgendaDashboardDto[];
+}
+
+export class ConsultarClientesAgendaDto extends PaginacaoDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() busca?: string;
+}
+export class ClienteOpcaoAgendaDto {
+  @ApiProperty() id!: number;
+  @ApiProperty() nome!: string;
+}
+export class ClientesOpcoesAgendaRespostaDto {
+  @ApiProperty({ type: [ClienteOpcaoAgendaDto] }) data!: ClienteOpcaoAgendaDto[];
+  @ApiProperty({ type: MetaPaginacaoDto }) meta!: MetaPaginacaoDto;
 }

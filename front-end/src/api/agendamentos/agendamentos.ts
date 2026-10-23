@@ -29,6 +29,7 @@ import {
 } from '../client';
 
 import type {
+  AgendamentoAdministrativoRespostaDto,
   AgendamentoBarbeiroRespostaDto,
   AgendamentoControllerCriarHistorico201,
   AgendamentoControllerHorariosParams,
@@ -42,6 +43,7 @@ import type {
   ErroRespostaDto,
   HorariosDisponiveisRespostaDto,
   LimiteRequisicoesRespostaDto,
+  ListaAgendamentosAdministrativosRespostaDto,
   ListaAgendamentosBarbeiroRespostaDto,
   ListaAgendamentosRespostaDto
 } from '../models';
@@ -69,7 +71,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type agendamentoControllerCriarResponse201 = {
-  data: AgendamentoRespostaDto
+  data: AgendamentoRespostaDto | AgendamentoAdministrativoRespostaDto
   status: 201
 }
 
@@ -184,7 +186,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAgendamentoControllerCriarMutationOptions(options), queryClient);
     }
     export type agendamentoControllerListarResponse200 = {
-  data: ListaAgendamentosRespostaDto | ListaAgendamentosBarbeiroRespostaDto
+  data: ListaAgendamentosRespostaDto | ListaAgendamentosAdministrativosRespostaDto | ListaAgendamentosBarbeiroRespostaDto
   status: 200
 }
 
@@ -757,7 +759,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getAgendamentoControllerCriarHistoricoMutationOptions(options), queryClient);
     }
     export type agendamentoControllerBuscarResponse200 = {
-  data: AgendamentoRespostaDto | AgendamentoBarbeiroRespostaDto
+  data: AgendamentoRespostaDto | AgendamentoAdministrativoRespostaDto | AgendamentoBarbeiroRespostaDto
   status: 200
 }
 
@@ -895,7 +897,7 @@ export function useAgendamentoControllerBuscar<TData = Awaited<ReturnType<typeof
 
 
 export type agendamentoControllerAtualizarResponse200 = {
-  data: AgendamentoRespostaDto
+  data: AgendamentoRespostaDto | AgendamentoAdministrativoRespostaDto
   status: 200
 }
 

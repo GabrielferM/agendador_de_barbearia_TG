@@ -20,7 +20,7 @@ export class CriarAgendamentoService {
     private readonly validarVinculos: ValidarVinculosAgendamentoService,
     private readonly verificarConflito: VerificarConflitoAgendamentoService,
   ) {}
-  async execute(dto: CriarAgendamentoDto) {
+  async execute(dto: CriarAgendamentoDto, idResponsavel?: number) {
     const inicioPrevisto = this.validarDataHora.execute(dto.inicio);
     if (inicioPrevisto <= new Date())
       throw new BadRequestException('O início deve estar no futuro.');
@@ -58,6 +58,13 @@ export class CriarAgendamentoService {
             observacaoCliente: dto.observacaoCliente?.trim(),
             observacaoInterna: dto.observacaoInterna?.trim(),
             servicos: { create: servicos },
+            ...(idResponsavel !== undefined
+              ? {
+                  historicoDeStatus: {
+                    create: { idUsuarioResponsavel: idResponsavel, statusNovo: 'PENDENTE' },
+                  },
+                }
+              : {}),
           },
           include: includeAgendamento,
         });

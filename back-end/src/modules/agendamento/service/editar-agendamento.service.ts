@@ -12,7 +12,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { executarTransacaoSerializavel } from '../../../prisma/transacao';
 import { includeAgendamento } from '../constants/include-agendamento';
 import { transicoesStatusAgendamento } from '../constants/transicoes-status-agendamento';
-import { AtualizarAgendamentoDto } from '../dto/agendamento.dto';
+import { AtualizarAgendamentoDto, CriarHistoricoStatusDto } from '../dto/agendamento.dto';
 import { PrepararItensAgendamentoService } from '../validations/preparar-itens-agendamento.service';
 import { ValidarDataHoraAgendamentoService } from '../validations/validar-data-hora-agendamento.service';
 import { VerificarConflitoAgendamentoService } from '../validations/verificar-conflito-agendamento.service';
@@ -26,7 +26,12 @@ export class EditarAgendamentoService {
     private readonly verificarConflito: VerificarConflitoAgendamentoService,
     private readonly validarVinculos: ValidarVinculosAgendamentoService,
   ) {}
-  async execute(id: number, dto: AtualizarAgendamentoDto) {
+  async execute(
+    id: number,
+    dto: AtualizarAgendamentoDto,
+    idResponsavel?: number,
+    historico?: CriarHistoricoStatusDto,
+  ) {
     try {
       const resultado = await executarTransacaoSerializavel(this.prisma, async (transaction) => {
         const atual = await transaction.agendamento.findUnique({
@@ -46,6 +51,32 @@ export class EditarAgendamentoService {
         if (dto.status === StatusAgendamento.CANCELADO && !dto.motivoCancelamento?.trim())
           throw new BadRequestException('Motivo do cancelamento é obrigatório.');
 
+        if (historico?.statusAnterior !== undefined && historico.statusAnterior !== atual.status)
+          throw new ConflictException('O status anterior foi alterado. Atualize os dados.');
+        const idCliente = dto.idCliente ?? atual.idCliente;
+        const idBarbeiro = dto.idBarbeiro ?? atual.idBarbeiro;
+        const idFilial = dto.idFilial ?? atual.idFilial;
+        const trocarVinculos =
+          idCliente !== atual.idCliente ||
+          idBarbeiro !== atual.idBarbeiro ||
+          idFilial !== atual.idFilial;
+        if (
+          (trocarVinculos || dto.status === StatusAgendamento.CANCELADO) &&
+          (await transaction.agendamentoServico.count({
+            where: {
+              idAgendamento: id,
+              comissao: {
+                is:
+                  dto.status === StatusAgendamento.CANCELADO && !trocarVinculos
+                    ? { status: { notIn: ['CANCELADA', 'ESTORNADA'] } }
+                    : {},
+              },
+            },
+          }))
+        )
+          throw new ConflictException(
+            'Resolva as comissões vinculadas antes de alterar vínculos ou cancelar.',
+          );
         let inicioPrevisto = atual.inicioPrevisto;
         if (dto.inicio) {
           inicioPrevisto = this.validarDataHora.execute(dto.inicio);
@@ -74,29 +105,29 @@ export class EditarAgendamentoService {
               ordemExecucao: item.ordemExecucao,
             }));
         const fimPrevisto = new Date(inicioPrevisto.getTime() + duracaoItens(itens) * 60000);
-        if (dto.inicio || alterarItens) {
+        if (dto.inicio || alterarItens || trocarVinculos) {
           validarExpediente(inicioPrevisto, fimPrevisto);
-          await this.validarVinculos.execute(
-            atual.idCliente,
-            atual.idBarbeiro,
-            atual.idFilial,
-            transaction,
-          );
+          await this.validarVinculos.execute(idCliente, idBarbeiro, idFilial, transaction);
           await this.prepararItens.execute(
             undefined,
             itens.map((item) => item.idServico),
             transaction,
           );
         }
-        if (dto.inicio || alterarItens)
+        if (dto.inicio || alterarItens || trocarVinculos)
           await this.verificarConflito.execute(
-            atual.idBarbeiro,
+            idBarbeiro,
             inicioPrevisto,
             fimPrevisto,
             id,
             transaction,
           );
         const data: Prisma.AgendamentoUpdateInput = {
+          ...(dto.idCliente !== undefined ? { cliente: { connect: { id: idCliente } } } : {}),
+          ...(dto.idBarbeiro !== undefined ? { barbeiro: { connect: { id: idBarbeiro } } } : {}),
+          ...(dto.idFilial !== undefined ? { filial: { connect: { id: idFilial } } } : {}),
+          ...(dto.status === StatusAgendamento.EM_ATENDIMENTO ? { inicioReal: new Date() } : {}),
+          ...(dto.status === StatusAgendamento.CONCLUIDO ? { fimReal: new Date() } : {}),
           ...(dto.inicio || alterarItens ? { inicioPrevisto, fimPrevisto } : {}),
           ...(alterarItens ? { servicos: { deleteMany: {}, create: itens } } : {}),
           ...(dto.observacaoCliente !== undefined
@@ -110,11 +141,26 @@ export class EditarAgendamentoService {
             ? { dataCancelamento: new Date(), motivoCancelamento: dto.motivoCancelamento?.trim() }
             : {}),
         };
-        return transaction.agendamento.update({
+        const resultado = await transaction.agendamento.update({
           where: { id },
           data,
           include: includeAgendamento,
         });
+        if (dto.status && idResponsavel !== undefined) {
+          const registro = await transaction.historicoStatusAgendamento.create({
+            data: {
+              idAgendamento: id,
+              idUsuarioResponsavel: idResponsavel,
+              statusAnterior: atual.status,
+              statusNovo: dto.status,
+              motivo: dto.motivoCancelamento?.trim() ?? historico?.motivo?.trim(),
+              observacao: historico?.observacao?.trim(),
+            },
+            include: { usuarioResponsavel: { select: { id: true, nome: true, email: true } } },
+          });
+          if (historico) return registro;
+        }
+        return resultado;
       });
       return serializarResposta(resultado);
     } catch (erro) {

@@ -29,7 +29,9 @@ describe('AppController (e2e)', () => {
   const prisma = {
     filial: { findUnique: jest.fn() },
     barbeiro: { findUnique: jest.fn() },
-    cliente: { findUnique: jest.fn() },
+    cliente: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() },
+    agendamentoServico: { count: jest.fn() },
+    historicoStatusAgendamento: { create: jest.fn(), findMany: jest.fn(), count: jest.fn() },
     servico: { findMany: jest.fn() },
     agendamento: {
       findMany: jest.fn(),
@@ -74,6 +76,14 @@ describe('AppController (e2e)', () => {
     prisma.agendamento.findMany.mockReset().mockResolvedValue([]);
     prisma.agendamento.findFirst.mockReset().mockResolvedValue(null);
     prisma.agendamento.findUnique.mockReset().mockResolvedValue({ idCliente: 9, idBarbeiro: 2 });
+    prisma.cliente.findMany.mockReset().mockResolvedValue([]);
+    prisma.cliente.count.mockReset().mockResolvedValue(0);
+    prisma.agendamentoServico.count.mockReset().mockResolvedValue(0);
+    prisma.historicoStatusAgendamento.create
+      .mockReset()
+      .mockImplementation(({ data }: { data: object }) => Promise.resolve({ id: 1, ...data }));
+    prisma.historicoStatusAgendamento.findMany.mockReset().mockResolvedValue([]);
+    prisma.historicoStatusAgendamento.count.mockReset().mockResolvedValue(0);
     prisma.agendamento.create.mockReset();
     prisma.agendamento.update.mockReset();
     prisma.agendamento.count.mockReset().mockResolvedValue(0);
@@ -321,15 +331,66 @@ describe('AppController (e2e)', () => {
     expect(resultado.body as unknown).toMatchObject({ id: 10, servicos: [{ subtotal: '50.00' }] });
     for (const campo of ['senhaHash', 'cpf', 'cnpj', 'observacaoInterna', 'comissao', 'email'])
       expect(JSON.stringify(resultado.body)).not.toContain(campo);
-    const gravado = await prisma.agendamento.create.mock.results[0].value as Record<string, unknown>;
-    prisma.agendamento.findUnique.mockResolvedValue({ ...gravado, idCliente: 1, idBarbeiro: 2, idFilial: 1 });
-    prisma.agendamento.update.mockResolvedValue({ ...gravado, status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' });
-    await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO' }).expect(400);
-    await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso', inicio: dto.inicio }).expect(403);
-    const cancelado = await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' }).expect(200);
+    const gravado = (await prisma.agendamento.create.mock.results[0].value) as Record<
+      string,
+      unknown
+    >;
+    prisma.agendamento.findUnique.mockResolvedValue({
+      ...gravado,
+      idCliente: 1,
+      idBarbeiro: 2,
+      idFilial: 1,
+    });
+    prisma.agendamento.update.mockResolvedValue({
+      ...gravado,
+      status: 'CANCELADO',
+      motivoCancelamento: 'Outro compromisso',
+    });
+    await agente
+      .patch('/agendamentos/10')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'CANCELADO' })
+      .expect(400);
+    await agente
+      .patch('/agendamentos/10')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso', inicio: dto.inicio })
+      .expect(403);
+    const cancelado = await agente
+      .patch('/agendamentos/10')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' })
+      .expect(200);
     expect(cancelado.body as unknown).toMatchObject({ status: 'CANCELADO' });
     prisma.agendamento.findFirst.mockResolvedValue({ id: 10 });
     await agente.post('/agendamentos').set('X-CSRF-Token', csrf).send(dto).expect(409);
+  });
+
+  it('protege opções da agenda e retorna somente ID/nome ao administrador', async () => {
+    await request(app.getHttpServer())
+      .get('/dashboard/administrador/agendamentos/clientes')
+      .expect(401);
+    const agente = request.agent(app.getHttpServer());
+    await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    await agente.get('/dashboard/administrador/agendamentos/clientes').expect(403);
+    const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: object[] } };
+    usuario.papel.codigo = 'ADMINISTRADOR';
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_AGENDAMENTOS' } },
+    ];
+    prisma.cliente.findMany.mockResolvedValue([
+      { id: 1, usuario: { nome: 'Cliente', email: 'nao-expor', senhaHash: 'nao-expor' } },
+    ]);
+    prisma.cliente.count.mockResolvedValue(1);
+    const resposta = await agente
+      .get('/dashboard/administrador/agendamentos/clientes?busca=Cliente')
+      .expect(200);
+    expect(resposta.body as unknown).toMatchObject({ data: [{ id: 1, nome: 'Cliente' }] });
+    expect(JSON.stringify(resposta.body)).not.toContain('nao-expor');
+    await agente.get('/dashboard/administrador/agendamentos?status=INVALIDO').expect(400);
   });
 
   it('/api-json (GET) exposes the OpenAPI contract', async () => {
