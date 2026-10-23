@@ -125,7 +125,7 @@ describe("sessão e rotas protegidas", () => {
               nome: "Admin",
               email: "admin@exemplo.com",
               papel: "ADMINISTRADOR",
-              permissoes: ["GERENCIAR_USUARIOS"],
+              permissoes: ["GERENCIAR_USUARIOS", "GERENCIAR_AGENDAMENTOS"],
             },
           }),
           { status: 200 },

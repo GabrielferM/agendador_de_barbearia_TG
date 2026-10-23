@@ -25,5 +25,9 @@ describe('Edição de barbeiro', () => {
     );
     await servico.execute(1, { idFilial: 4 });
     expect(validar).toHaveBeenCalledWith(4);
+    await servico.execute(1, { dataAdmissao: null });
+    expect(update).toHaveBeenLastCalledWith(
+      expect.objectContaining({ data: { dataAdmissao: null } }),
+    );
   });
 });

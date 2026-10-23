@@ -27,7 +27,7 @@ export class AtualizarClienteDto {
   @IsOptional() @IsString() @MinLength(SENHA_MINIMA) @MaxLength(SENHA_MAXIMA) senha?: string;
   @IsOptional() @IsString() cpf?: string;
   @IsOptional() @IsString() telefone?: string;
-  @IsOptional() @IsDateString() dataNascimento?: string;
+  @IsOptional() @IsDateString() dataNascimento?: string | null;
   @IsOptional() @IsString() observacao?: string;
 }
 export class ListarClientesDto extends PaginacaoDto {}

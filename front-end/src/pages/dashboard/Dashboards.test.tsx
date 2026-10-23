@@ -28,7 +28,7 @@ function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR") {
             nome: "Pessoa Teste",
             email: "pessoa@exemplo.com",
             papel,
-            permissoes: [],
+            permissoes: papel === "ADMINISTRADOR" ? ["GERENCIAR_AGENDAMENTOS"] : [],
           },
         }),
       );
