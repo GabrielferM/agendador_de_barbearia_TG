@@ -7,9 +7,14 @@
  */
 
 export interface CriarComissaoDto {
-  idAgendamentoServico: number;
-  idBarbeiro: number;
   /** @minimum 1 */
+  idAgendamentoServico: number;
+  /** @minimum 1 */
+  idBarbeiro: number;
+  /**
+     * @minimum 1
+     * @maximum 100
+     */
   percentualAplicado: number;
   observacao?: string;
 }

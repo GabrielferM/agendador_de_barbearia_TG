@@ -1,5 +1,21 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ListarItensElegiveisComissaoDto } from './dto/comissao.dto';
+import {
+  ComissaoRespostaDto,
+  ListaComissoesRespostaDto,
+  ItensElegiveisComissaoRespostaDto,
+} from './dto/comissao-resposta.dto';
+import {
+  Body,
+  Controller,
+  Header,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { ExigirPermissoes } from '../../common/auth/exigir-permissoes.decorator';
 import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 import { ComissaoService } from './comissao.service';
@@ -11,19 +27,32 @@ import { AtualizarComissaoDto, CriarComissaoDto, ListarComissoesDto } from './dt
 @Controller('comissoes')
 export class ComissaoController {
   constructor(private readonly service: ComissaoService) {}
-  @Post() criar(@Body() dto: CriarComissaoDto) {
+  @Post()
+  @ApiCreatedResponse({ type: ComissaoRespostaDto })
+  criar(@Body() dto: CriarComissaoDto) {
     return this.service.criar(dto);
   }
-  @Get() listar(@Query() query: ListarComissoesDto) {
+  @Get()
+  @Header('Cache-Control', 'no-store')
+  @ApiOkResponse({ type: ListaComissoesRespostaDto })
+  listar(@Query() query: ListarComissoesDto) {
     return this.service.listar(query);
   }
-  @Get(':id') buscar(@Param('id', ParseIntPipe) id: number) {
+  @Get('itens-elegiveis')
+  @Header('Cache-Control', 'no-store')
+  @ApiOkResponse({ type: ItensElegiveisComissaoRespostaDto })
+  itensElegiveis(@Query() query: ListarItensElegiveisComissaoDto) {
+    return this.service.itensElegiveis(query);
+  }
+  @Get(':id')
+  @Header('Cache-Control', 'no-store')
+  @ApiOkResponse({ type: ComissaoRespostaDto })
+  buscar(@Param('id', ParseIntPipe) id: number) {
     return this.service.buscar(id);
   }
-  @Patch(':id') atualizar(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: AtualizarComissaoDto,
-  ) {
+  @Patch(':id')
+  @ApiOkResponse({ type: ComissaoRespostaDto })
+  atualizar(@Param('id', ParseIntPipe) id: number, @Body() dto: AtualizarComissaoDto) {
     return this.service.atualizar(id, dto);
   }
 }

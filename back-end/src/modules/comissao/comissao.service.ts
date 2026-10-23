@@ -1,3 +1,5 @@
+import { ListarItensElegiveisComissaoService } from './service/listar-itens-elegiveis-comissao.service';
+import { ListarItensElegiveisComissaoDto } from './dto/comissao.dto';
 import { Injectable } from '@nestjs/common';
 import { AtualizarComissaoDto, CriarComissaoDto, ListarComissoesDto } from './dto/comissao.dto';
 import { BuscarComissaoService } from './service/buscar-comissao.service';
@@ -8,11 +10,16 @@ import { ListarComissoesService } from './service/listar-comissoes.service';
 @Injectable()
 export class ComissaoService {
   constructor(
+    private readonly itensService: ListarItensElegiveisComissaoService,
     private readonly criarService: CriarComissaoService,
     private readonly listarService: ListarComissoesService,
     private readonly buscarService: BuscarComissaoService,
     private readonly editarService: EditarComissaoService,
   ) {}
+
+  itensElegiveis(query: ListarItensElegiveisComissaoDto) {
+    return this.itensService.execute(query);
+  }
 
   async criar(dto: CriarComissaoDto) {
     return this.criarService.execute(dto);

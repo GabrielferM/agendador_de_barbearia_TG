@@ -5,9 +5,11 @@
  * Contrato OpenAPI da API REST do Agendador de Barbearia.
  * OpenAPI spec version: 1.0
  */
+import type { FinanceiroDashboardRespostaDtoIndicadoresComissoesPorStatus } from './financeiroDashboardRespostaDtoIndicadoresComissoesPorStatus';
 
 export type FinanceiroDashboardRespostaDtoIndicadores = {
   receita: number;
   variacaoReceitaPercentual: number;
   comissoes: number;
+  comissoesPorStatus: FinanceiroDashboardRespostaDtoIndicadoresComissoesPorStatus;
 };
