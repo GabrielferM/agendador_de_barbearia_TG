@@ -4,6 +4,8 @@ import {
 } from './dto/agendamento-barbeiro-resposta.dto';
 import {
   AgendamentoRespostaDto,
+  AgendamentoAdministrativoRespostaDto,
+  ListaAgendamentosAdministrativosRespostaDto,
   ListaAgendamentosRespostaDto,
 } from './dto/agendamento-resposta.dto';
 import { Publico } from '../../common/auth/publico.decorator';
@@ -43,6 +45,8 @@ import type { UsuarioAutenticado } from '../../common/auth/auth.types';
 import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decorators';
 @ApiTags('Agendamentos')
 @ApiExtraModels(
+  AgendamentoAdministrativoRespostaDto,
+  ListaAgendamentosAdministrativosRespostaDto,
   AgendamentoRespostaDto,
   ListaAgendamentosRespostaDto,
   AgendamentoBarbeiroRespostaDto,
@@ -54,7 +58,14 @@ import { ApiCrudErrors, ApiErrosAutenticados } from '../../common/swagger/decora
 export class AgendamentoController {
   constructor(private readonly service: AgendamentoService) {}
   @Post()
-  @ApiCreatedResponse({ type: AgendamentoRespostaDto })
+  @ApiCreatedResponse({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(AgendamentoRespostaDto) },
+        { $ref: getSchemaPath(AgendamentoAdministrativoRespostaDto) },
+      ],
+    },
+  })
   criar(@Body() dto: CriarAgendamentoDto, @UsuarioAtual() usuario: UsuarioAutenticado) {
     return this.service.criar(dto, usuario);
   }
@@ -63,6 +74,7 @@ export class AgendamentoController {
     schema: {
       oneOf: [
         { $ref: getSchemaPath(ListaAgendamentosRespostaDto) },
+        { $ref: getSchemaPath(ListaAgendamentosAdministrativosRespostaDto) },
         { $ref: getSchemaPath(ListaAgendamentosBarbeiroRespostaDto) },
       ],
     },
@@ -99,6 +111,7 @@ export class AgendamentoController {
     schema: {
       oneOf: [
         { $ref: getSchemaPath(AgendamentoRespostaDto) },
+        { $ref: getSchemaPath(AgendamentoAdministrativoRespostaDto) },
         { $ref: getSchemaPath(AgendamentoBarbeiroRespostaDto) },
       ],
     },
@@ -107,7 +120,14 @@ export class AgendamentoController {
     return this.service.buscar(id, usuario);
   }
   @Patch(':id')
-  @ApiOkResponse({ type: AgendamentoRespostaDto })
+  @ApiOkResponse({
+    schema: {
+      oneOf: [
+        { $ref: getSchemaPath(AgendamentoRespostaDto) },
+        { $ref: getSchemaPath(AgendamentoAdministrativoRespostaDto) },
+      ],
+    },
+  })
   atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AtualizarAgendamentoDto,

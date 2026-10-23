@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { OrigemAgendamento, StatusAgendamento } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
@@ -16,8 +17,18 @@ import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 
 export class ItemAgendamentoDto {
   @Type(() => Number) @IsInt() idServico!: number;
-  @IsOptional() @Type(() => Number) @IsInt() @Min(1) quantidade = 1;
-  @IsOptional() @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @Min(0) desconto = 0;
+  @ApiPropertyOptional({ type: Number, default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  quantidade: number = 1;
+  @ApiPropertyOptional({ type: Number, default: 0, minimum: 0 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  desconto: number = 0;
 }
 export class CriarAgendamentoDto {
   @Type(() => Number) @IsInt() idCliente!: number;
@@ -41,6 +52,10 @@ export class CriarAgendamentoDto {
   @IsOptional() @IsString() observacaoInterna?: string;
 }
 export class AtualizarAgendamentoDto {
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) idCliente?: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) idBarbeiro?: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) idFilial?: number;
+
   @IsOptional()
   @IsDateString()
   inicio?: string;

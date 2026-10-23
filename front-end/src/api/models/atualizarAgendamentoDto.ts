@@ -9,6 +9,12 @@ import type { AtualizarAgendamentoDtoStatus } from './atualizarAgendamentoDtoSta
 import type { ItemAgendamentoDto } from './itemAgendamentoDto';
 
 export interface AtualizarAgendamentoDto {
+  /** @minimum 1 */
+  idCliente?: number;
+  /** @minimum 1 */
+  idBarbeiro?: number;
+  /** @minimum 1 */
+  idFilial?: number;
   inicio?: string;
   /** @minItems 1 */
   servicos?: ItemAgendamentoDto[];

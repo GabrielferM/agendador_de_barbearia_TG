@@ -34,3 +34,28 @@ export class ListaAgendamentosRespostaDto {
   @ApiProperty({ type: [AgendamentoRespostaDto] }) data!: AgendamentoRespostaDto[];
   @ApiProperty({ type: MetaPaginacaoDto }) meta!: MetaPaginacaoDto;
 }
+
+export class ClienteAgendamentoAdministrativoDto {
+  @ApiProperty() id!: number;
+  @ApiProperty({ example: { nome: 'Cliente' } }) usuario!: { nome: string };
+}
+export class ItemAgendamentoAdministrativoDto extends ItemAgendamentoRespostaDto {
+  @ApiProperty() id!: number;
+  @ApiProperty() desconto!: string;
+}
+export class AgendamentoAdministrativoRespostaDto extends AgendamentoRespostaDto {
+  @ApiProperty() idCliente!: number;
+  @ApiProperty() idBarbeiro!: number;
+  @ApiProperty() idFilial!: number;
+  @ApiProperty() origem!: string;
+  @ApiPropertyOptional({ nullable: true, type: String }) observacaoInterna?: string | null;
+  @ApiProperty({ type: ClienteAgendamentoAdministrativoDto })
+  cliente!: ClienteAgendamentoAdministrativoDto;
+  @ApiProperty({ type: [ItemAgendamentoAdministrativoDto] })
+  declare servicos: ItemAgendamentoAdministrativoDto[];
+}
+export class ListaAgendamentosAdministrativosRespostaDto {
+  @ApiProperty({ type: [AgendamentoAdministrativoRespostaDto] })
+  data!: AgendamentoAdministrativoRespostaDto[];
+  @ApiProperty({ type: MetaPaginacaoDto }) meta!: MetaPaginacaoDto;
+}

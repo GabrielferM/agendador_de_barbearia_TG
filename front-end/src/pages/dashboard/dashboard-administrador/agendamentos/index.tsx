@@ -1,36 +1,51 @@
-import {
-  DashboardLayout,
-  EstadoIntegracaoIndisponivel,
-} from "../../components/dashboard-compartilhado";
-import { usarDadosMockados } from "../../mocks/dados-dashboard";
-import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
-import {
-  ControlesAgenda,
-  GradeSemanal,
-  ResumoAgenda,
-} from "./components/components";
-import { agendaSemanalMock } from "./mock/dados-mock";
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAutenticacao } from '../../../../auth/contexto-autenticacao';
+import type { AtualizarAgendamentoDto, CriarAgendamentoDto, AgendamentoDashboardControllerObterParams } from '../../../../api/models';
+import { DashboardLayout, EstadoCarregamento, EstadoErro } from '../../components/dashboard-compartilhado';
+import { MENU_ADMINISTRADOR } from '../constants/menu-administrador';
+import { estiloBotao, estiloCampo } from '../components/formulario-cadastro';
+import { consultarFiliais } from '../barbeiros/services/barbeiros-api';
+import { FormularioAgendamento } from './components/formulario-agendamento';
+import { buscarAgendamento, consultarAgenda, consultarHistorico, gravarAgendamento, removerAgendamento, dataLocal, deslocar, periodoAgenda, STATUS_AGENDA, TRANSICOES, catalogoAgenda, clientesAgenda } from './services/agendamentos-api';
+import type { DetalheAgenda } from './services/agendamentos-api';
 
 export function AgendamentosAdministrador() {
-  const demonstracao = usarDadosMockados();
-  return (
-    <DashboardLayout
-      titulo="Agendamentos"
-      subtitulo="Gerencie a agenda da barbearia"
-      itens={MENU_ADMINISTRADOR}
-      dadosDemonstrativos={demonstracao}
-    >
-      {demonstracao ? (
-        <>
-          <ControlesAgenda />
-          <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-            <GradeSemanal dias={agendaSemanalMock} />
-            <ResumoAgenda dia={agendaSemanalMock[0]} />
-          </div>
-        </>
-      ) : (
-        <EstadoIntegracaoIndisponivel />
-      )}
-    </DashboardLayout>
-  );
+ const { usuario } = useAutenticacao(), cache = useQueryClient(), permitido = !!usuario?.permissoes.includes('GERENCIAR_AGENDAMENTOS');
+ const [data, setData] = useState(dataLocal(new Date().toISOString()).slice(0, 10)), [visao, setVisao] = useState('Semana');
+ const [busca, setBusca] = useState(''), [status, setStatus] = useState(''), [filial, setFilial] = useState(''), [barbeiro, setBarbeiro] = useState(''), [cliente, setCliente] = useState('');
+ const [buscaCliente, setBuscaCliente] = useState(''), [paginaCliente, setPaginaCliente] = useState(1);
+ const [editor, setEditor] = useState<{ atual: DetalheAgenda | null; leitura: boolean } | null>(null), [paginaHistorico, setPaginaHistorico] = useState(1);
+ const [acao, setAcao] = useState(''), [motivo, setMotivo] = useState(''), [excluir, setExcluir] = useState<number | null>(null), [aviso, setAviso] = useState('');
+ const filtros: AgendamentoDashboardControllerObterParams = { ...periodoAgenda(data, visao), busca: busca || undefined, status: (status || undefined) as AgendamentoDashboardControllerObterParams['status'], idFilial: filial ? Number(filial) : undefined, idBarbeiro: barbeiro ? Number(barbeiro) : undefined, idCliente: cliente ? Number(cliente) : undefined };
+ const consulta = useQuery({ queryKey: ['admin', usuario?.id, 'agenda', filtros], enabled: permitido, queryFn: ({ signal }) => consultarAgenda(filtros, signal) });
+ const filiais = useQuery({ queryKey: ['admin', usuario?.id, 'filiais-cadastro'], enabled: permitido, queryFn: ({ signal }) => consultarFiliais(signal) });
+ const catalogo = useQuery({ queryKey: ['admin', usuario?.id, 'catalogo-agenda', filial], enabled: permitido, queryFn: ({ signal }) => catalogoAgenda(filial ? Number(filial) : undefined, signal) });
+ const clientes = useQuery({ queryKey: ['admin', usuario?.id, 'opcoes-clientes', buscaCliente, paginaCliente], enabled: permitido, queryFn: ({ signal }) => clientesAgenda(buscaCliente, paginaCliente, signal) });
+ const abrir = useMutation({ mutationFn: buscarAgendamento, onSuccess: atual => { setEditor({ atual, leitura: true }); setPaginaHistorico(1); setAcao(''); setMotivo(''); } });
+ const atualizar = async () => { setEditor(null); setAcao(''); setAviso('Agendamento salvo.'); await cache.invalidateQueries(); };
+ const salvar = useMutation({ mutationFn: (dados: CriarAgendamentoDto | AtualizarAgendamentoDto) => gravarAgendamento(editor?.atual?.id ?? null, dados), onSuccess: atualizar });
+ const mudarStatus = useMutation({ mutationFn: () => gravarAgendamento(editor!.atual!.id, { status: acao as AtualizarAgendamentoDto['status'], ...(acao === 'CANCELADO' ? { motivoCancelamento: motivo } : {}) }), onSuccess: atualizar });
+ const remover = useMutation({ mutationFn: removerAgendamento, onSuccess: async () => { setExcluir(null); setEditor(null); setAviso('Agendamento excluído.'); await cache.invalidateQueries(); } });
+ const historico = useQuery({ queryKey: ['admin', usuario?.id, 'historico-agenda', editor?.atual?.id, paginaHistorico], enabled: permitido && !!editor?.atual?.id, queryFn: ({ signal }) => consultarHistorico(editor!.atual!.id, paginaHistorico, signal) });
+ function navegar(sentido: number) { if (visao !== 'Mês') setData(deslocar(data, sentido * (visao === 'Semana' ? 7 : 1))); else { const d = new Date(data.slice(0, 7) + '-01T12:00:00-03:00'); d.setUTCMonth(d.getUTCMonth() + sentido); setData(dataLocal(d.toISOString()).slice(0, 10)); } }
+ const dia = consulta.data?.find(d => d.data === data);
+ const erro = abrir.error ?? remover.error ?? mudarStatus.error;
+ return <DashboardLayout titulo="Agendamentos" subtitulo="Gerencie a agenda da barbearia" itens={MENU_ADMINISTRADOR}>
+ {!permitido ? <p role="alert">Você não possui permissão para gerenciar agendamentos.</p> : <>
+  <div className="flex flex-wrap items-end gap-2"><button className={estiloBotao} onClick={() => { salvar.reset(); setEditor({ atual: null, leitura: false }); }}>Novo agendamento</button><button className={estiloBotao} aria-label="Período anterior" onClick={() => navegar(-1)}>Anterior</button><label>Data selecionada<input className={estiloCampo} type="date" required value={data} onChange={e => { if (e.target.value) setData(e.target.value); }} /></label><button className={estiloBotao} aria-label="Próximo período" onClick={() => navegar(1)}>Próximo</button><label>Visualização<select className={estiloCampo} value={visao} onChange={e => setVisao(e.target.value)}>{['Dia', 'Semana', 'Mês'].map(v => <option key={v}>{v}</option>)}</select></label></div>
+  <div className="my-3 flex flex-wrap gap-2"><label>Buscar na agenda<input className={estiloCampo} value={busca} onChange={e => setBusca(e.target.value)} /></label><label>Status<select className={estiloCampo} value={status} onChange={e => setStatus(e.target.value)}><option value="">Todos</option>{STATUS_AGENDA.map(s => <option key={s}>{s}</option>)}</select></label><label>Filial do filtro<select className={estiloCampo} value={filial} onChange={e => { setFilial(e.target.value); setBarbeiro(''); }}><option value="">Todas</option>{filiais.data?.map(f => <option key={f.valor} value={f.valor}>{f.rotulo}</option>)}</select></label><label>Barbeiro do filtro<select className={estiloCampo} value={barbeiro} onChange={e => setBarbeiro(e.target.value)}><option value="">Todos</option>{catalogo.data?.barbeiros.map(b => <option key={b.valor} value={b.valor}>{b.rotulo}</option>)}</select></label><label>Buscar cliente do filtro<input className={estiloCampo} value={buscaCliente} onChange={e => { setBuscaCliente(e.target.value); setPaginaCliente(1); }} /></label><label>Cliente do filtro<select className={estiloCampo} value={cliente} onChange={e => setCliente(e.target.value)}><option value="">Todos</option>{clientes.data?.data.map(c => <option key={c.valor} value={c.valor}>{c.rotulo}</option>)}</select></label><button className={estiloBotao} disabled={paginaCliente <= 1} onClick={() => setPaginaCliente(paginaCliente - 1)}>Clientes anteriores</button><button className={estiloBotao} disabled={!clientes.data || paginaCliente >= clientes.data.meta.totalPaginas} onClick={() => setPaginaCliente(paginaCliente + 1)}>Mais clientes</button></div>
+  {(filiais.error || catalogo.error || clientes.error) && <p role="alert">{filiais.error?.message || catalogo.error?.message || clientes.error?.message}</p>}{aviso && <p role="status">{aviso}</p>}{erro && <p role="alert">{erro.message}</p>}
+  {editor && <section aria-label="Agendamento selecionado"><FormularioAgendamento key={`${editor.atual?.id}-${editor.leitura}`} atual={editor.atual} leitura={editor.leitura} pendente={salvar.isPending} erro={salvar.error?.message} salvar={dados => salvar.mutate(dados)} fechar={() => setEditor(null)} />{editor.atual && editor.leitura && !!TRANSICOES[editor.atual.status]?.length && <button className={estiloBotao} onClick={() => { salvar.reset(); setEditor({ ...editor, leitura: false }); }}>Editar agendamento</button>}
+   {editor.atual && <><form className="my-3 flex flex-wrap gap-2" onSubmit={e => { e.preventDefault(); if (!mudarStatus.isPending) mudarStatus.mutate(); }} aria-label="Alteração de status"><label>Novo status<select className={estiloCampo} value={acao} onChange={e => setAcao(e.target.value)} required><option value="">Selecione</option>{TRANSICOES[editor.atual.status]?.map(s => <option key={s}>{s}</option>)}</select></label>{acao === 'CANCELADO' && <label>Motivo do cancelamento<input className={estiloCampo} required value={motivo} onChange={e => setMotivo(e.target.value)} /></label>}<button className={estiloBotao} disabled={!acao || mudarStatus.isPending}>{acao === 'CANCELADO' ? 'Confirmar cancelamento' : 'Confirmar novo status'}</button></form>
+   <h2 className="font-semibold">Histórico de status</h2>{historico.isPending ? <p>Carregando histórico…</p> : historico.isError ? <p role="alert">{historico.error.message}</p> : <><ul>{historico.data.data.map(h => <li key={h.id}>{dataLocal(h.data).replace('T', ' ')} · {h.status} · {h.responsavel} {h.motivo}</li>)}</ul>{!historico.data.data.length && <p>Sem histórico registrado.</p>}<button className={estiloBotao} disabled={paginaHistorico <= 1} onClick={() => setPaginaHistorico(paginaHistorico - 1)}>Histórico anterior</button><button className={estiloBotao} disabled={paginaHistorico >= historico.data.meta.totalPaginas} onClick={() => setPaginaHistorico(paginaHistorico + 1)}>Mais histórico</button></>}
+   <button className={estiloBotao} onClick={() => { remover.reset(); setExcluir(editor.atual!.id); }}>Excluir agendamento</button></>}
+  </section>}
+  {excluir !== null && <div role="alertdialog" aria-label="Confirmar exclusão de agendamento"><p>Excluir definitivamente o agendamento e seu histórico? Comissões vinculadas impedem a exclusão. Para manter o histórico, use cancelamento.</p><button className={estiloBotao} disabled={remover.isPending} onClick={() => remover.mutate(excluir)}>Confirmar exclusão</button><button className={estiloBotao} disabled={remover.isPending} onClick={() => setExcluir(null)}>Voltar</button></div>}
+  {consulta.isPending ? <EstadoCarregamento /> : consulta.isError ? <EstadoErro mensagem={consulta.error.message} tentarNovamente={() => void consulta.refetch()} /> : <>
+   <section className="my-4 rounded-xl border border-border bg-surface p-4" aria-label="Resumo do dia"><h2 className="font-semibold">Resumo do dia {data.split('-').reverse().join('/')}</h2><div className="flex flex-wrap gap-3">{STATUS_AGENDA.map(s => <p key={s}>{s.replaceAll('_', ' ')}: {dia?.agendamentos.filter(a => a.status === s).length ?? 0}</p>)}</div></section>
+   <div className={`grid gap-3 ${visao === 'Dia' ? '' : 'md:grid-cols-3 xl:grid-cols-7'}`}>{consulta.data.map(d => <section key={d.data} className="min-h-36 rounded-xl border border-border bg-surface p-3"><button className={estiloBotao} onClick={() => setData(d.data)}>{d.rotulo} {d.data.split('-').reverse().join('/')}</button>{d.agendamentos.map(a => <button key={a.id} className="my-2 block w-full rounded-lg border border-border bg-background p-2 text-left text-sm focus-visible:outline-primary" disabled={abrir.isPending} onClick={() => { salvar.reset(); mudarStatus.reset(); abrir.mutate(a.id); }}>{dataLocal(a.inicio).slice(11)} · {a.cliente}<br />{a.barbeiro}<br />{a.servicos.join(' + ')}<br />{a.status.replaceAll('_', ' ')}</button>)}{!d.agendamentos.length && <p className="text-sm text-muted">Sem agendamentos.</p>}</section>)}</div>
+  </>}
+ </>}
+ </DashboardLayout>;
 }
