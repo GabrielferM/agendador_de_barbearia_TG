@@ -42,3 +42,21 @@ Categoria, filtro de categoria e percentual fixo de comissão foram removidos po
 | --- | --- | --- | --- |
 | Serviços: busca, situação, lista e indicadores | GET dashboard/administrador/servicos | GERENCIAR_SERVICOS | Paginação real; total global não depende da página |
 | Serviços: CRUD e ativação | POST/GET/PATCH/DELETE servicos; Servico.ativo | GERENCIAR_SERVICOS | Payload de preço/ativação; preservação dos itens históricos |
+
+## Implementado: agendamentos
+
+`/admin/agendamentos` exige GERENCIAR_AGENDAMENTOS. A agenda consulta GET dashboard/administrador/agendamentos por período (máximo de 31 dias), busca por nome do cliente/profissional, IDs de cliente/barbeiro/filial e status. Dia, semana de segunda a domingo e mês usam datas em America/Sao_Paulo; a visualização mensal consulta somente os dias do mês, sem exceder o limite com dias adjacentes. O resumo reflete o dia selecionado e os filtros, incluindo NAO_COMPARECEU.
+
+O formulário usa opções paginadas de clientes (GET dashboard/administrador/agendamentos/clientes: somente ID/nome de clientes ativos), filiais e catálogo públicos reais. O cadastro envia origem ADMINISTRADOR e itens com quantidade/desconto. Horários livres são sugestões para uma unidade de cada serviço; a gravação sempre revalida duração, expediente, vínculos e conflitos. A edição mantém itens/preços históricos quando os serviços não foram alterados e permite trocar os vínculos apenas ao administrador. Itens ou vínculos com comissões não podem ser alterados; cancelar exige resolver comissões ainda não canceladas/estornadas.
+
+POST/PATCH/GET/DELETE agendamentos são os contratos de gravação/detalhe. Exclusão é confirmada e apaga também histórico; comissões vinculadas impedem exclusão. Cancelamento exige motivo e mantém o histórico. Estados finais não permitem edição e as transições seguem a máquina de estados existente. Início/fim reais são registrados ao iniciar/concluir.
+
+Mudanças de status e histórico são gravados na mesma transação serializável; o responsável vem da sessão. POST historico-status passa pela mesma regra de transição e não permite inventar histórico desacoplado do estado do atendimento. Status anterior informado e desatualizado resulta em conflito. Cadastro autenticado também grava o estado inicial por nested write. O histórico tem consulta paginada própria. Nenhuma tela faz duas mutações para sincronizar status e histórico.
+
+Swagger distingue respostas administrativas de respostas de cliente/barbeiro e descreve IDs e descontos necessários à edição. A declaração de quantidade/desconto de entrada explicita tipo numérico, corrigindo o contrato gerado como objeto.
+
+| Tela/ação | Fonte/contrato | Permissão | Verificação/aceite |
+| --- | --- | --- | --- |
+| Agenda, busca, filtros e resumo | GET dashboard/administrador/agendamentos; agregados dos itens | GERENCIAR_AGENDAMENTOS | Dias vazios, meses de até 31 dias e fuso; filtros aplicados no banco |
+| Cadastro, detalhe, vínculos, itens, status/cancelamento/exclusão | POST/GET/PATCH/DELETE agendamentos | GERENCIAR_AGENDAMENTOS | Formulário e payload real; transação, conflitos e preços históricos |
+| Clientes para seleção e histórico | GET dashboard/administrador/agendamentos/clientes; GET agendamentos/:id/historico-status | GERENCIAR_AGENDAMENTOS / acesso ao próprio recurso | Projeção sem dados privados; paginação e responsável da sessão |

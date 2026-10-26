@@ -37,7 +37,7 @@ export class AgendamentoService {
 
   async criar(dto: CriarAgendamentoDto, usuario?: UsuarioAutenticado) {
     if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
-      return this.criarService.execute(dto);
+      return this.criarService.execute(dto, usuario?.id);
     if (!usuario.clienteId || !usuario.permissoes.includes('CRIAR_AGENDAMENTO'))
       throw new ForbiddenException();
     if (
@@ -48,11 +48,14 @@ export class AgendamentoService {
     ) {
       throw new ForbiddenException('Clientes não podem definir campos administrativos.');
     }
-    const resultado = await this.criarService.execute({
-      ...dto,
-      idCliente: usuario.clienteId,
-      origem: OrigemAgendamento.SITE,
-    });
+    const resultado = await this.criarService.execute(
+      {
+        ...dto,
+        idCliente: usuario.clienteId,
+        origem: OrigemAgendamento.SITE,
+      },
+      usuario.id,
+    );
     return this.semCamposInternos(resultado);
   }
 
@@ -108,7 +111,13 @@ export class AgendamentoService {
     ) {
       throw new ForbiddenException('Campo reservado à administração.');
     }
-    const resultado = await this.editarService.execute(id, dto);
+    if (
+      usuario &&
+      !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS') &&
+      [dto.idCliente, dto.idBarbeiro, dto.idFilial].some((valor) => valor !== undefined)
+    )
+      throw new ForbiddenException('Troca de vínculos reservada à administração.');
+    const resultado = await this.editarService.execute(id, dto, usuario?.id);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
 
@@ -125,10 +134,17 @@ export class AgendamentoService {
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
     if (usuario?.clienteId) throw new ForbiddenException();
-    return this.historicoService.criar(id, {
-      ...dto,
-      idUsuarioResponsavel: usuario?.id ?? dto.idUsuarioResponsavel,
-    });
+    return this.editarService.execute(
+      id,
+      {
+        status: dto.statusNovo,
+        ...(dto.statusNovo === StatusAgendamento.CANCELADO
+          ? { motivoCancelamento: dto.motivo }
+          : {}),
+      },
+      usuario?.id ?? dto.idUsuarioResponsavel,
+      dto,
+    );
   }
 
   private respostaBarbeiro(valor: unknown): unknown {

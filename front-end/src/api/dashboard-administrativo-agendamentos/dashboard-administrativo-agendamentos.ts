@@ -26,7 +26,9 @@ import {
 
 import type {
   AgendaDashboardRespostaDto,
+  AgendamentoDashboardControllerClientesParams,
   AgendamentoDashboardControllerObterParams,
+  ClientesOpcoesAgendaRespostaDto,
   ErroRespostaDto,
   LimiteRequisicoesRespostaDto
 } from '../models';
@@ -52,6 +54,136 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export type agendamentoDashboardControllerClientesResponse200 = {
+  data: ClientesOpcoesAgendaRespostaDto
+  status: 200
+}
+
+export type agendamentoDashboardControllerClientesResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type agendamentoDashboardControllerClientesResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type agendamentoDashboardControllerClientesResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type agendamentoDashboardControllerClientesResponseSuccess = (agendamentoDashboardControllerClientesResponse200) & {
+  headers: Headers;
+};
+export type agendamentoDashboardControllerClientesResponseError = (agendamentoDashboardControllerClientesResponse401 | agendamentoDashboardControllerClientesResponse403 | agendamentoDashboardControllerClientesResponse429) & {
+  headers: Headers;
+};
+
+export type agendamentoDashboardControllerClientesResponse = (agendamentoDashboardControllerClientesResponseSuccess | agendamentoDashboardControllerClientesResponseError)
+
+export const getAgendamentoDashboardControllerClientesUrl = (params?: AgendamentoDashboardControllerClientesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/dashboard/administrador/agendamentos/clientes?${stringifiedParams}` : `${apiBaseUrl}/dashboard/administrador/agendamentos/clientes`
+}
+
+export const agendamentoDashboardControllerClientes = async (params?: AgendamentoDashboardControllerClientesParams, options?: Parameters<typeof httpClient>[1]): Promise<agendamentoDashboardControllerClientesResponse> => {
+
+  return httpClient<agendamentoDashboardControllerClientesResponse>(getAgendamentoDashboardControllerClientesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAgendamentoDashboardControllerClientesQueryKey = (params?: AgendamentoDashboardControllerClientesParams,) => {
+    return [
+    `${apiBaseUrl}/dashboard/administrador/agendamentos/clientes`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAgendamentoDashboardControllerClientesQueryOptions = <TData = Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: AgendamentoDashboardControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAgendamentoDashboardControllerClientesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>> = ({ signal }) => agendamentoDashboardControllerClientes(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AgendamentoDashboardControllerClientesQueryResult = NonNullable<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>>
+export type AgendamentoDashboardControllerClientesQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+
+
+export function useAgendamentoDashboardControllerClientes<TData = Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: undefined |  AgendamentoDashboardControllerClientesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>,
+          TError,
+          Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAgendamentoDashboardControllerClientes<TData = Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: AgendamentoDashboardControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>,
+          TError,
+          Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAgendamentoDashboardControllerClientes<TData = Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: AgendamentoDashboardControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useAgendamentoDashboardControllerClientes<TData = Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: AgendamentoDashboardControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agendamentoDashboardControllerClientes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAgendamentoDashboardControllerClientesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export type agendamentoDashboardControllerObterResponse200 = {
   data: AgendaDashboardRespostaDto
