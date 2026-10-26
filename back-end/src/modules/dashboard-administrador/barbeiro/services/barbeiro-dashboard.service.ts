@@ -37,7 +37,7 @@ export class BarbeiroDashboardService {
       await this.prisma.$transaction([
         this.prisma.barbeiro.findMany({
           where,
-          orderBy: { nomeProfissional: 'asc' },
+          orderBy: [{ nomeProfissional: 'asc' }, { id: 'asc' }],
           skip: (query.pagina - 1) * query.limite,
           take: query.limite,
           include: { usuario: { select: { nome: true } }, filial: { select: { nome: true } } },
