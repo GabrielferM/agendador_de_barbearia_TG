@@ -140,7 +140,6 @@ describe("dashboards", () => {
 
   it.each([
     ["/admin/agendamentos", "Agendamentos", "Resumo do dia"],
-    ["/admin/clientes", "Clientes", "Lista de clientes"],
     ["/admin/barbeiros", "Barbeiros", "Disponibilidade de hoje"],
     ["/admin/servicos", "Serviços", "Catálogo de serviços"],
     ["/admin/financeiro", "Financeiro", "Fluxo financeiro"],
@@ -175,7 +174,7 @@ describe("dashboards", () => {
     const link = await screen.findByRole("link", { name: "Clientes" });
     await userEvent.click(link);
     expect(
-      await screen.findByRole("heading", { name: "Lista de clientes" }),
+      await screen.findByRole("heading", { name: "Clientes", level: 1 }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Clientes" })).toHaveAttribute(
       "aria-current",
@@ -183,14 +182,10 @@ describe("dashboards", () => {
     );
   });
 
-  it("mantém ações de escrita desabilitadas no exemplo", async () => {
-    vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
+  it("impede operações de clientes sem a permissão administrativa", async () => {
     renderizar("/admin/clientes", "ADMINISTRADOR");
-    expect(
-      await screen.findByRole("button", {
-        name: /Novo cliente.*integração real/,
-      }),
-    ).toBeDisabled();
+    expect(await screen.findByText("Você não possui permissão para gerenciar clientes.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Novo cliente" })).not.toBeInTheDocument();
   });
 
   it("mostra indisponibilidade sem consultar APIs quando o modo mock está desligado", async () => {
