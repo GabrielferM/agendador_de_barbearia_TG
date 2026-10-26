@@ -71,4 +71,4 @@ A base HTTP do frontend é `http://localhost:3000`, sobrescrita por `VITE_API_UR
 
 Antes de alterar código, siga os AGENTS e a arquitetura da aplicação. Para verificações, consulte [testes do backend](back-end/doc/testes.md) e [testes do frontend](front-end/docs/testes.md). Contratos atuais estão no Swagger; arquivos gerados antigos não garantem que uma rota continue disponível.
 
-O [schema Prisma](back-end/prisma/schema.prisma) é a fonte oficial de persistência. A arquitetura adotada usa serviços de caso de uso e PrismaService centralizado, sem repositories adicionais. A [segurança compartilhada](front-end/docs/seguranca-autenticacao.md) explica sessão, autorização e controles ainda pendentes.
+O [schema Prisma](back-end/prisma/schema.prisma) é a fonte oficial de persistência. A arquitetura usa serviços de caso de uso, mappers e repositories específicos por domínio quando necessários, com acesso ao banco centralizado pelo PrismaService. A [segurança compartilhada](front-end/docs/seguranca-autenticacao.md) explica sessão, autorização e controles ainda pendentes.

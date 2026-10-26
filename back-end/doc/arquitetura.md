@@ -6,14 +6,14 @@ NestJS e TypeScript expõem a API REST; Prisma acessa PostgreSQL. O [schema](../
 
 ```text
 HTTP → guards → Controller → service de fachada → service de caso de uso
-     → PrismaService → Prisma Client → PostgreSQL
+     → repository → PrismaService → Prisma Client → PostgreSQL
 ```
 
-Os pipes validam argumentos antes da execução do método do controller. Controllers lidam com HTTP, DTOs, cookies e delegação; não consultam Prisma. A fachada expõe operações do domínio e pode aplicar autorização contextual. O caso de uso executa regras, consultas e gravações. Serviços em `validations/` encapsulam validações e cálculos reutilizados. Health é um caso simples com controller e service, sem fachada adicional.
+Os pipes validam argumentos antes da execução do método do controller. Controllers lidam com HTTP, DTOs, cookies e delegação; não consultam Prisma. A fachada expõe operações do domínio e pode aplicar autorização contextual. O caso de uso executa as regras e coordena repositories e mappers quando o domínio os utiliza. O repository encapsula o acesso a dados do domínio, usando o PrismaService centralizado; o mapper concentra a conversão entre representações de dados, sem assumir responsabilidades HTTP ou regras de negócio. Serviços em `validations/` encapsulam validações e cálculos reutilizados. Health é um caso simples com controller e service, sem fachada adicional.
 
 A fachada [AgendamentoService](../src/modules/agendamento/agendamento.service.ts) delega a validação de propriedade ao [ValidarAcessoAgendamentoService](../src/modules/agendamento/validations/validar-acesso-agendamento.service.ts) e mantém a sanitização da resposta. Os submódulos do dashboard administrativo separam arquivos em pastas como `controller/`; preserve essa organização ao trabalhar nesses módulos.
 
-O [PrismaService](../src/prisma/prisma.service.ts) centraliza cliente, adapter PostgreSQL, pool e ciclo de conexão. Os módulos importam PrismaModule conforme necessário; não criam clientes independentes. ConfigModule é global. `common/` contém autenticação, segurança, DTOs e utilitários transversais; `config/` concentra ambiente e Swagger.
+O [PrismaService](../src/prisma/prisma.service.ts) centraliza cliente, adapter PostgreSQL, pool e ciclo de conexão. Os repositories usam esse serviço; os módulos importam PrismaModule conforme necessário e não criam clientes independentes. ConfigModule é global. `common/` contém autenticação, segurança, DTOs e utilitários transversais; `config/` concentra ambiente e Swagger.
 
 ## Implementado: domínio
 
@@ -45,15 +45,17 @@ src/modules/<dominio>/
   <dominio>.service.ts
   dto/
   service/       # casos de uso
+  mapper/
+  repository/
   constants/     # somente quando necessário
   validations/   # somente quando houver regras reutilizadas
 ```
 
-Use como referência [criar serviço](../src/modules/servico/service/criar-servico.service.ts) e [criar agendamento](../src/modules/agendamento/service/criar-agendamento.service.ts). Não crie diretórios vazios, repository genérico, TypeORM ou camadas de Clean Architecture/CQRS sem necessidade demonstrada. Registre providers e imports no módulo responsável. Consulte [nomenclatura](nomenclatura.md).
+Use como referência [criar serviço](../src/modules/servico/service/criar-servico.service.ts) e [criar agendamento](../src/modules/agendamento/service/criar-agendamento.service.ts). Quando o domínio usar `mapper/` e `repository/`, mantenha-os específicos ao domínio e registre seus providers e imports no módulo responsável. Não crie diretórios vazios, repositories genéricos, TypeORM ou camadas de Clean Architecture/CQRS sem necessidade demonstrada. Consulte [nomenclatura](nomenclatura.md).
 
 ## Persistência e contratos
 
-**Implementado:** criação e edição de agendamento executam consultas de apoio, validação de vínculos, verificação de conflito e gravação na mesma transação interativa com isolamento `Serializable`. O helper [executarTransacaoSerializavel](../src/prisma/transacao.ts) repete até três vezes quando o Prisma retorna `P2034`; depois disso, o caso de uso responde 409 com mensagem segura. A criação grava os itens por nested write. O login usa transação para atualizar usuário e criar sessão.
+**Implementado:** repositories centralizam o acesso a dados dos domínios que os adotam, enquanto mappers isolam conversões entre representações. Criação e edição de agendamento executam consultas de apoio, validação de vínculos, verificação de conflito e gravação na mesma transação interativa com isolamento `Serializable`. O helper [executarTransacaoSerializavel](../src/prisma/transacao.ts) repete até três vezes quando o Prisma retorna `P2034`; depois disso, o caso de uso responde 409 com mensagem segura. A criação grava os itens por nested write. O login usa transação para atualizar usuário e criar sessão.
 
 **Regra para novas alterações:** use nested writes ou `$transaction` quando gravações precisam ser atômicas. Dentro de uma transação interativa, use o cliente `tx` recebido. Não altere schema ou histórico de migrations sem necessidade explícita. Reutilize tipos e enums do Prisma internamente, mas controle os DTOs de resposta HTTP.
 
