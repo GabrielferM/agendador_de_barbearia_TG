@@ -29,3 +29,7 @@ Testes com respostas HTTP/Prisma simuladas não comprovam persistência em Postg
 A abertura mostra a semana atual, de segunda a domingo. Dia, semana e mês permitem navegar entre períodos e voltar para hoje. Datas e horários seguem America/Sao_Paulo. Selecionar um dia atualiza seu resumo; contagens e rótulos contemplam os seis status reais. Carregamento, falha com nova tentativa e períodos/dias vazios são distintos. Queries incluem usuário e período e recebem sinal de cancelamento.
 
 Cadastro e alteração administrativos de agendamentos permanecem pendentes; os antigos controles demonstrativos de criação foram retirados. Essa integração cobre leitura, sem alterar contratos ou persistência. Testes usam HTTP simulado e não comprovam acesso a banco real.
+
+## Dashboard integrado
+
+`/admin` sempre consulta `GET /dashboard/administrador`, inclusive com mocks habilitados. Exige `GERENCIAR_AGENDAMENTOS`, usa cache por usuário e cancelamento da consulta, valida a resposta e distingue falha e vazio. Indicadores e gráficos vêm do servidor. Receita representa o valor dos serviços concluídos, não confirmação de pagamento.

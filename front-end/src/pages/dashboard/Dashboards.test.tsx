@@ -28,7 +28,7 @@ function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR") {
             nome: "Pessoa Teste",
             email: "pessoa@exemplo.com",
             papel,
-            permissoes: [],
+            permissoes: papel === "ADMINISTRADOR" ? ["GERENCIAR_AGENDAMENTOS"] : [],
           },
         }),
       );
@@ -104,21 +104,14 @@ describe("dashboards", () => {
     );
   });
 
-  it("mostra os dados administrativos mockados sem consultar o endpoint", async () => {
+  it("consulta dados administrativos reais mesmo com mocks habilitados", async () => {
     vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     renderizar("/admin", "ADMINISTRADOR");
-
-    expect(await screen.findByText("Dados demonstrativos")).toBeInTheDocument();
-    expect(screen.getByText("342")).toBeInTheDocument();
-    expect(screen.getByText("Matheus Lima")).toBeInTheDocument();
-    expect(screen.getAllByText("07/09").length).toBeGreaterThan(0);
-    expect(
-      vi
-        .mocked(fetch)
-        .mock.calls.some(([entrada]) =>
-          String(entrada).includes("/dashboard/"),
-        ),
-    ).toBe(false);
+    expect(await screen.findByText("Clientes ativos")).toBeInTheDocument();
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.queryByText("Dados demonstrativos")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matheus Lima")).not.toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/dashboard\/administrador$/), expect.anything());
   });
 
   it("mostra agenda e próximos horários mockados do barbeiro", async () => {
