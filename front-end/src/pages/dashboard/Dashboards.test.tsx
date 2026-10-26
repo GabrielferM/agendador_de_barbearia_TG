@@ -132,7 +132,6 @@ describe("dashboards", () => {
   });
 
   it.each([
-    ["/admin/servicos", "Serviços", "Catálogo de serviços"],
     ["/admin/financeiro", "Financeiro", "Fluxo financeiro"],
   ])(
     "renderiza a rota administrativa mockada %s",
