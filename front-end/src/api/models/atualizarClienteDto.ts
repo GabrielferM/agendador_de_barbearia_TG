@@ -19,6 +19,7 @@ export interface AtualizarClienteDto {
   senha?: string;
   cpf?: string;
   telefone?: string;
-  dataNascimento?: string;
+  /** @nullable */
+  dataNascimento?: string | null;
   observacao?: string;
 }

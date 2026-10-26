@@ -30,7 +30,7 @@ describe('AppController (e2e)', () => {
     filial: { findUnique: jest.fn() },
     barbeiro: { findUnique: jest.fn() },
     cliente: { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn() },
-    agendamentoServico: { count: jest.fn() },
+    agendamentoServico: { count: jest.fn(), findMany: jest.fn() },
     historicoStatusAgendamento: { create: jest.fn(), findMany: jest.fn(), count: jest.fn() },
     servico: { findMany: jest.fn() },
     agendamento: {
@@ -79,6 +79,7 @@ describe('AppController (e2e)', () => {
     prisma.cliente.findMany.mockReset().mockResolvedValue([]);
     prisma.cliente.count.mockReset().mockResolvedValue(0);
     prisma.agendamentoServico.count.mockReset().mockResolvedValue(0);
+    prisma.agendamentoServico.findMany.mockReset().mockResolvedValue([]);
     prisma.historicoStatusAgendamento.create
       .mockReset()
       .mockImplementation(({ data }: { data: object }) => Promise.resolve({ id: 1, ...data }));
@@ -391,6 +392,48 @@ describe('AppController (e2e)', () => {
     expect(resposta.body as unknown).toMatchObject({ data: [{ id: 1, nome: 'Cliente' }] });
     expect(JSON.stringify(resposta.body)).not.toContain('nao-expor');
     await agente.get('/dashboard/administrador/agendamentos?status=INVALIDO').expect(400);
+  });
+
+  it('protege itens de comissão, sanitiza as opções e valida percentual/CSRF', async () => {
+    await request(app.getHttpServer()).get('/comissoes/itens-elegiveis').expect(401);
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    await agente.get('/comissoes/itens-elegiveis').expect(403);
+    const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: object[] } };
+    usuario.papel.codigo = 'ADMINISTRADOR';
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_COMISSOES' } },
+    ];
+    prisma.agendamentoServico.findMany.mockResolvedValue([
+      {
+        id: 8,
+        subtotal: new Prisma.Decimal(50),
+        servico: { nome: 'Corte' },
+        agendamento: {
+          id: 1,
+          idBarbeiro: 2,
+          inicioPrevisto: new Date(),
+          cliente: { usuario: { nome: 'Cliente', senhaHash: 'nao-expor' } },
+          barbeiro: { nomeProfissional: 'João' },
+        },
+      },
+    ]);
+    prisma.agendamentoServico.count.mockResolvedValue(1);
+    const resposta = await agente.get('/comissoes/itens-elegiveis').expect(200);
+    expect(resposta.body as unknown).toMatchObject({
+      data: [{ id: 8, idBarbeiro: 2, subtotal: '50.00' }],
+    });
+    expect(JSON.stringify(resposta.body)).not.toContain('nao-expor');
+    const dto = { idAgendamentoServico: 8, idBarbeiro: 2, percentualAplicado: 101 };
+    await agente.post('/comissoes').send(dto).expect(403);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((cookie) => cookie.startsWith('csrf='))!
+      .split(';')[0]
+      .slice(5);
+    await agente.post('/comissoes').set('X-CSRF-Token', csrf).send(dto).expect(400);
   });
 
   it('/api-json (GET) exposes the OpenAPI contract', async () => {

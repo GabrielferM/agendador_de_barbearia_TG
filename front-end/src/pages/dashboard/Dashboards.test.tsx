@@ -28,7 +28,7 @@ function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR") {
             nome: "Pessoa Teste",
             email: "pessoa@exemplo.com",
             papel,
-            permissoes: [],
+            permissoes: papel === "ADMINISTRADOR" ? ["GERENCIAR_AGENDAMENTOS"] : [],
           },
         }),
       );
@@ -138,33 +138,6 @@ describe("dashboards", () => {
     ).toBe(false);
   });
 
-  it.each([
-    ["/admin/financeiro", "Financeiro", "Fluxo financeiro"],
-  ])(
-    "renderiza a rota administrativa mockada %s",
-    async (rota, titulo, conteudo) => {
-      vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
-      renderizar(rota, "ADMINISTRADOR");
-      expect(
-        await screen.findByRole("heading", { name: titulo, level: 1 }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: conteudo }),
-      ).toBeInTheDocument();
-      expect(screen.getByText("Dados demonstrativos")).toBeInTheDocument();
-      expect(
-        screen.getAllByText(/segunda-feira, 07 de setembro de 2026/i).length,
-      ).toBeGreaterThan(0);
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(([entrada]) =>
-            String(entrada).includes("/dashboard/"),
-          ),
-      ).toBe(false);
-    },
-  );
-
   it("navega pela sidebar e destaca a área administrativa atual", async () => {
     vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     renderizar("/admin", "ADMINISTRADOR");
@@ -185,18 +158,10 @@ describe("dashboards", () => {
     expect(screen.queryByRole("button", { name: "Novo cliente" })).not.toBeInTheDocument();
   });
 
-  it("mostra indisponibilidade sem consultar APIs quando o modo mock está desligado", async () => {
+  it("não consulta financeiro sem a permissão necessária", async () => {
     renderizar("/admin/financeiro", "ADMINISTRADOR");
-    expect(
-      await screen.findByText("Área disponível em modo demonstrativo"),
-    ).toBeInTheDocument();
-    expect(
-      vi
-        .mocked(fetch)
-        .mock.calls.some(([entrada]) =>
-          String(entrada).includes("/dashboard/"),
-        ),
-    ).toBe(false);
+    expect(await screen.findByText("Você não possui permissão para gerenciar comissões.")).toBeInTheDocument();
+    expect(vi.mocked(fetch).mock.calls.some(([entrada]) => String(entrada).includes("/dashboard/administrador/financeiro"))).toBe(false);
   });
 
   it("impede que barbeiro acesse uma rota administrativa complementar", async () => {

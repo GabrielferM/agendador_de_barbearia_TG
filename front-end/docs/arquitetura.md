@@ -13,7 +13,7 @@ React e TypeScript compõem a SPA, executada pelo Vite. React Router organiza a 
 | `src/index.css` | Tokens, estilos globais e integração HeroUI/Tailwind. |
 | `src/test/` | Configuração compartilhada dos testes. |
 
-A página inicial consome catálogo público; login usa um serviço que valida e traduz respostas. Os dashboards principais de administrador e barbeiro possuem adapters HTTP manuais. Clientes, barbeiros, serviços e agendamentos possuem [integração administrativa](administracao.md). A subpágina financeira ainda exibe mocks quando habilitados e estado de integração indisponível fora desse modo. A existência da tela ou de um botão não comprova integração de leitura ou gravação. A jornada pública de agendamento e a listagem/cancelamento do cliente estão integradas à API. O rascunho transitório fica em um provider acima das rotas para permitir retomada após login. Cadastro público e recuperação de senha continuam em construção nas [rotas](../src/routers/index.tsx). Veja [agendamento do cliente](../../back-end/doc/agendamento-cliente.md).
+A página inicial consome catálogo público; login usa um serviço que valida e traduz respostas. Os dashboards principais de administrador e barbeiro possuem adapters HTTP manuais. Clientes, barbeiros, serviços, agendamentos e financeiro possuem [integração administrativa](administracao.md). As subpáginas administrativas usam dados reais e não recorrem a mocks em falhas. A existência da tela ou de um botão não comprova integração de leitura ou gravação. A jornada pública de agendamento e a listagem/cancelamento do cliente estão integradas à API. O rascunho transitório fica em um provider acima das rotas para permitir retomada após login. Cadastro público e recuperação de senha continuam em construção nas [rotas](../src/routers/index.tsx). Veja [agendamento do cliente](../../back-end/doc/agendamento-cliente.md).
 
 ## Regra para novas alterações
 
@@ -33,7 +33,7 @@ Cores seguem exclusivamente o [guia de tokens](padroes/cores-front-end.md). Nome
 
 ## Melhorias pendentes
 
-Concluir as páginas em construção e integrações administrativas requer tarefas próprias. Não declarar o frontend inteiramente integrado com base na presença de tipos gerados ou mocks. A documentação não altera esses fluxos.
+Concluir cadastro público e recuperação de senha e ampliar a validação visual em navegador requer tarefas próprias. Não declarar o frontend inteiramente integrado com base na presença de tipos gerados ou mocks. A documentação não altera esses fluxos.
 
 ## Agenda integrada do barbeiro
 

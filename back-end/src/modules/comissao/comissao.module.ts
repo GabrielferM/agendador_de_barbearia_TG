@@ -1,3 +1,4 @@
+import { ListarItensElegiveisComissaoService } from './service/listar-itens-elegiveis-comissao.service';
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { ComissaoController } from './comissao.controller';
@@ -11,6 +12,7 @@ import { ListarComissoesService } from './service/listar-comissoes.service';
   controllers: [ComissaoController],
   providers: [
     ComissaoService,
+    ListarItensElegiveisComissaoService,
     CriarComissaoService,
     ListarComissoesService,
     BuscarComissaoService,

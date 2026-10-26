@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { adicionarDias, chaveDiaBarbearia } from '../../../../common/utils/periodo-dashboard';
 import { serializarResposta } from '../../../../common/utils/resposta';
@@ -6,6 +7,8 @@ import { STATUS_COMISSAO, STATUS_RECEITA } from '../constants/financeiro-dashboa
 import type { ConsultarFinanceiroDashboardDto } from '../dto/financeiro-dashboard.dto';
 import type { ComissaoPorBarbeiroDashboard } from '../types/financeiro-dashboard.types';
 import { validarPeriodoFinanceiro } from '../validator/periodo-financeiro.validator';
+
+const somar = (a: number, b: unknown) => new Prisma.Decimal(a).add(String(b)).toNumber();
 
 function variacao(atual: number, anterior: number) {
   if (anterior === 0) return atual === 0 ? 0 : 100;
@@ -50,13 +53,13 @@ export class FinanceiroDashboardService {
     ]);
     const receita = atendimentos.reduce(
       (total, item) =>
-        total + item.servicos.reduce((subtotal, servico) => subtotal + Number(servico.subtotal), 0),
+        somar(
+          total,
+          item.servicos.reduce((subtotal, servico) => somar(subtotal, servico.subtotal), 0),
+        ),
       0,
     );
-    const receitaAnterior = itensAnteriores.reduce(
-      (total, item) => total + Number(item.subtotal),
-      0,
-    );
+    const receitaAnterior = itensAnteriores.reduce((total, item) => somar(total, item.subtotal), 0);
     const fluxoSemanal = new Map<string, number>();
     for (let data = periodo.inicio; data < periodo.fimExclusivo; data = adicionarDias(data, 7)) {
       fluxoSemanal.set(data.toISOString().slice(0, 10), 0);
@@ -70,8 +73,8 @@ export class FinanceiroDashboardService {
       const inicioSemana = adicionarDias(periodo.inicio, Math.floor(diasDesdeInicio / 7) * 7)
         .toISOString()
         .slice(0, 10);
-      const valor = item.servicos.reduce((total, servico) => total + Number(servico.subtotal), 0);
-      fluxoSemanal.set(inicioSemana, (fluxoSemanal.get(inicioSemana) ?? 0) + valor);
+      const valor = item.servicos.reduce((total, servico) => somar(total, servico.subtotal), 0);
+      fluxoSemanal.set(inicioSemana, somar(fluxoSemanal.get(inicioSemana) ?? 0, valor));
     }
     const comissoesPorBarbeiro = new Map<number, ComissaoPorBarbeiroDashboard>();
     for (const item of comissoes) {
@@ -82,11 +85,22 @@ export class FinanceiroDashboardService {
         porStatus: Object.fromEntries(STATUS_COMISSAO.map((status) => [status, 0])),
       };
       const valor = Number(item.valorComissao);
-      atual.total += valor;
-      atual.porStatus[item.status] += valor;
+      if (!['CANCELADA', 'ESTORNADA'].includes(item.status))
+        atual.total = somar(atual.total, valor);
+      atual.porStatus[item.status] = somar(atual.porStatus[item.status], valor);
       comissoesPorBarbeiro.set(item.idBarbeiro, atual);
     }
-    const totalComissoes = comissoes.reduce((total, item) => total + Number(item.valorComissao), 0);
+    const porStatus = Object.fromEntries(
+      STATUS_COMISSAO.map((status) => [
+        status,
+        comissoes
+          .filter((c) => c.status === status)
+          .reduce((total, item) => somar(total, item.valorComissao), 0),
+      ]),
+    );
+    const totalComissoes = comissoes
+      .filter((c) => !['CANCELADA', 'ESTORNADA'].includes(c.status))
+      .reduce((total, item) => somar(total, item.valorComissao), 0);
 
     return serializarResposta({
       geradoEm: agora.toISOString(),
@@ -98,6 +112,7 @@ export class FinanceiroDashboardService {
         receita,
         variacaoReceitaPercentual: variacao(receita, receitaAnterior),
         comissoes: totalComissoes,
+        comissoesPorStatus: porStatus,
       },
       fluxoSemanal: [...fluxoSemanal].map(([inicio, valor]) => ({ inicio, receita: valor })),
       movimentacoesRecentes: atendimentos.slice(0, 10).map((item) => ({
@@ -105,7 +120,7 @@ export class FinanceiroDashboardService {
         data: item.inicioPrevisto,
         descricao: `${item.servicos.map((servico) => servico.servico.nome).join(' + ')} - ${item.cliente.usuario.nome}`,
         categoria: 'Receita' as const,
-        valor: item.servicos.reduce((total, servico) => total + Number(servico.subtotal), 0),
+        valor: item.servicos.reduce((total, servico) => somar(total, servico.subtotal), 0),
         status: item.status,
       })),
       comissoesPorBarbeiro: [...comissoesPorBarbeiro.values()].sort((a, b) => b.total - a.total),

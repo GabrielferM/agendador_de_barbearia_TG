@@ -19,7 +19,7 @@ export async function buscarBarbeiro(id: number) {
  return { nome: texto(u.nome), email: texto(u.email), idFilial: String(numero(b.idFilial)), nomeProfissional: texto(b.nomeProfissional), descricao: typeof b.descricao === 'string' ? b.descricao : '', fotoUrl: typeof b.fotoUrl === 'string' ? b.fotoUrl : '', dataAdmissao: typeof b.dataAdmissao === 'string' ? b.dataAdmissao.slice(0, 10) : '', statusProfissional: texto(b.statusProfissional) };
 }
 export function salvarBarbeiro(id: number | null, dados: Record<string, string>) {
- const payload = { ...dados, idFilial: Number(dados.idFilial), senha: dados.senha || undefined, dataAdmissao: dados.dataAdmissao || undefined };
+ const payload = { ...dados, idFilial: Number(dados.idFilial), senha: dados.senha || undefined, dataAdmissao: dados.dataAdmissao || (id === null ? undefined : null) };
  return id === null ? executarHttp(() => barbeiroControllerCriar(payload as unknown as CriarBarbeiroDto), 201) : executarHttp(() => barbeiroControllerAtualizar(id, payload as AtualizarBarbeiroDto));
 }
 export const excluirBarbeiro = (id: number) => executarHttp(() => barbeiroControllerRemover(id));

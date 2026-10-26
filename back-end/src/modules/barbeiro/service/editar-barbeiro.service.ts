@@ -24,7 +24,8 @@ export class EditarBarbeiroService {
     const data: Prisma.BarbeiroUpdateInput = {};
     if (input.idFilial !== undefined) data.filial = { connect: { id: input.idFilial } };
     if (input.descricao !== undefined) data.descricao = input.descricao.trim();
-    if (input.dataAdmissao !== undefined) data.dataAdmissao = new Date(input.dataAdmissao);
+    if (input.dataAdmissao !== undefined)
+      data.dataAdmissao = input.dataAdmissao === null ? null : new Date(input.dataAdmissao);
     if (input.nomeProfissional !== undefined) data.nomeProfissional = input.nomeProfissional.trim();
     if (input.fotoUrl !== undefined) data.fotoUrl = input.fotoUrl.trim();
     if (input.statusProfissional !== undefined) data.statusProfissional = input.statusProfissional;

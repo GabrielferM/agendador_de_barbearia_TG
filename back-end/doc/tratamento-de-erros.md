@@ -38,3 +38,7 @@ No agendamento, filial inativa, profissional/usuário inativo, vínculo com outr
 Um eventual formato único de erro continua exigindo decisão de contrato e atualização coordenada do consumidor. Ao alterar uma falha, teste status, corpo seguro, documento OpenAPI e comportamento do cliente, incluindo erro desconhecido. Veja [testes](testes.md).
 
 Referência consultada: [exceções do NestJS](https://docs.nestjs.com/exception-filters). As escolhas de organização acima são convenções deste projeto.
+
+## Administração financeira
+
+Comissões usam 400 para percentual fora de (0,100], motivo de estorno ausente ou datas incompatíveis; 404 para item/comissão inexistentes; 409 para comissão duplicada, vínculo incompatível, atendimento inelegível, transição inválida ou conflito de serialização. Liberação/pagamento exigem atendimento concluído. Veja os [fluxos administrativos](../../front-end/docs/administracao.md). Não exponha erros Prisma ou dados cadastrais completos nas respostas financeiras.

@@ -22,6 +22,18 @@ describe('Edição administrativa de cliente', () => {
     );
     expect(resultado.usuario).not.toHaveProperty('senhaHash');
   });
+  it('permite remover a data de nascimento opcional', async () => {
+    const update = jest.fn().mockResolvedValue({ id: 1, usuario: { id: 1 } });
+    const servico = new EditarClienteService(
+      { cliente: { update } } as unknown as PrismaService,
+      { execute: jest.fn() } as unknown as BuscarClienteService,
+      {} as SenhaService,
+    );
+    await servico.execute(1, { dataNascimento: null });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { dataNascimento: null } }),
+    );
+  });
   it('rejeita status inexistente no DTO', async () => {
     const dto = Object.assign(new AtualizarClienteDto(), { status: 'INVALIDO' });
     expect(await validate(dto)).toEqual(

@@ -14,7 +14,7 @@ export async function buscarCliente(id: number) {
   return { nome: texto(u.nome), email: texto(u.email), telefone: typeof u.telefone === 'string' ? u.telefone : '', status: texto(u.status), cpf: texto(c.cpf), dataNascimento: typeof c.dataNascimento === 'string' ? c.dataNascimento.slice(0, 10) : '', observacao: typeof c.observacao === 'string' ? c.observacao : '' };
 }
 export const salvarCliente = (id: number | null, dados: Record<string, string>) => {
-  const payload = { ...dados, senha: dados.senha || undefined, dataNascimento: dados.dataNascimento || undefined };
+  const payload = { ...dados, senha: dados.senha || undefined, dataNascimento: dados.dataNascimento || (id === null ? undefined : null) };
   if (id !== null) return executarHttp(() => clienteControllerAtualizar(id, payload as AtualizarClienteDto));
   const { status: _status, ...criacao } = payload as typeof payload & { status?: string };
   void _status;

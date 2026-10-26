@@ -25,7 +25,8 @@ export class EditarClienteService {
         throw new BadRequestException('CPF inválido.');
       }
     }
-    if (input.dataNascimento !== undefined) data.dataNascimento = new Date(input.dataNascimento);
+    if (input.dataNascimento !== undefined)
+      data.dataNascimento = input.dataNascimento === null ? null : new Date(input.dataNascimento);
     if (input.observacao !== undefined) data.observacao = input.observacao.trim();
     const usuario: Prisma.UsuarioUpdateWithoutClienteInput = {};
     if (input.status !== undefined) usuario.status = input.status;

@@ -31,7 +31,7 @@ export class AtualizarBarbeiroDto {
   @IsOptional() @IsString() nomeProfissional?: string;
   @IsOptional() @IsString() descricao?: string;
   @IsOptional() @IsString() fotoUrl?: string;
-  @IsOptional() @IsDateString() dataAdmissao?: string;
+  @IsOptional() @IsDateString() dataAdmissao?: string | null;
   @IsOptional() @IsEnum(StatusBarbeiro) statusProfissional?: StatusBarbeiro;
 }
 export class ListarBarbeirosDto extends PaginacaoDto {}
