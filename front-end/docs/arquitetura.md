@@ -33,7 +33,7 @@ Cores seguem exclusivamente o [guia de tokens](padroes/cores-front-end.md). Nome
 
 ## Melhorias pendentes
 
-Concluir as páginas em construção e integrações administrativas requer tarefas próprias. Não declarar o frontend inteiramente integrado com base na presença de tipos gerados ou mocks. A documentação não altera esses fluxos.
+Concluir cadastro público e recuperação de senha e ampliar a validação visual em navegador requer tarefas próprias. Não declarar o frontend inteiramente integrado com base na presença de tipos gerados ou mocks. A documentação não altera esses fluxos.
 
 ## Agenda integrada do barbeiro
 

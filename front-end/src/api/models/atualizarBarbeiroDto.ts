@@ -20,6 +20,7 @@ export interface AtualizarBarbeiroDto {
   nomeProfissional?: string;
   descricao?: string;
   fotoUrl?: string;
-  dataAdmissao?: string;
+  /** @nullable */
+  dataAdmissao?: string | null;
   statusProfissional?: AtualizarBarbeiroDtoStatusProfissional;
 }
