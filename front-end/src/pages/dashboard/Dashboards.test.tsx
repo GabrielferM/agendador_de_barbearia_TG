@@ -132,7 +132,6 @@ describe("dashboards", () => {
   });
 
   it.each([
-    ["/admin/barbeiros", "Barbeiros", "Disponibilidade de hoje"],
     ["/admin/servicos", "Serviços", "Catálogo de serviços"],
     ["/admin/financeiro", "Financeiro", "Fluxo financeiro"],
   ])(

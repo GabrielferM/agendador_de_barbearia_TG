@@ -33,3 +33,9 @@ Cadastro e alteração administrativos de agendamentos permanecem pendentes; os 
 ## Dashboard integrado
 
 `/admin` sempre consulta `GET /dashboard/administrador`, inclusive com mocks habilitados. Exige `GERENCIAR_AGENDAMENTOS`, usa cache por usuário e cancelamento da consulta, valida a resposta e distingue falha e vazio. Indicadores e gráficos vêm do servidor. Receita representa o valor dos serviços concluídos, não confirmação de pagamento.
+
+## Barbeiros integrados
+
+`/admin/barbeiros` sempre consulta `GET /dashboard/administrador/barbeiros` com busca, status e paginação no servidor e `GERENCIAR_USUARIOS`. Indicadores são globais; cards correspondem à página filtrada. Cache inclui usuário e filtros; consultas são canceláveis, verificam status e validam dados. Não há fallback de mocks.
+
+Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita concluída e comissões registradas. O total global a pagar inclui todos os períodos; o valor no card inclui apenas comissões geradas no mês. Especialidades, jornada e percentual padrão não existem no schema; a tela informa essa ausência. Cadastro/edição e disponibilidade individual ficam fora desta consulta, sem controles fictícios.
