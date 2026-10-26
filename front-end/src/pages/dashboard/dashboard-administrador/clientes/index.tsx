@@ -14,7 +14,7 @@ export function ClientesAdministrador() {
   const [editor, setEditor] = useState<{ id: number | null; dados: Record<string, string>; leitura: boolean } | null>(null);
   const [excluir, setExcluir] = useState<number | null>(null), [aviso, setAviso] = useState('');
   const consulta = useQuery({ queryKey: ['admin', usuario?.id, 'clientes', busca, status, pagina], enabled: permitido, queryFn: ({ signal }) => consultarClientes({ busca, status: status ? status as 'ATIVO' | 'INATIVO' | 'BLOQUEADO' : undefined, pagina }, signal) });
-  const abrir = useMutation({ mutationFn: buscarCliente, onSuccess: dados => { setEditor({ id: abrir.variables!, dados, leitura: true }); setAviso(''); } });
+  const abrir = useMutation({ mutationFn: buscarCliente, onSuccess: (dados, id) => { setEditor({ id, dados, leitura: true }); setAviso(''); } });
   const gravar = useMutation({ mutationFn: (dados: Record<string, string>) => salvarCliente(editor!.id, dados), onSuccess: async () => { setEditor(null); setAviso('Cliente salvo.'); await cache.invalidateQueries(); } });
   const remover = useMutation({ mutationFn: excluirCliente, onSuccess: async () => { setExcluir(null); setAviso('Cliente excluído.'); setPagina(1); await cache.invalidateQueries(); } });
   const campos: CampoCadastro[] = [
