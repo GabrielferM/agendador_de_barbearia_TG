@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Cartao } from "../../../components/dashboard-compartilhado";
 import { moeda } from "../../../components/dashboard-formatadores";
 import {
@@ -34,9 +35,10 @@ export function IndicadoresBarbeiros({
 }
 
 export function CartoesBarbeiros({
-  barbeiros,
+  barbeiros, acoes,
 }: {
   barbeiros: Resposta["data"];
+  acoes?: (barbeiro: Resposta["data"][number]) => ReactNode;
 }) {
   if (!barbeiros.length)
     return <p className="py-8 text-center">Nenhum barbeiro encontrado.</p>;
@@ -91,6 +93,7 @@ export function CartoesBarbeiros({
               </div>
             ))}
           </dl>
+          {acoes?.(b)}
         </Cartao>
       ))}
     </div>

@@ -7,12 +7,17 @@ import {
   EstadoErro,
 } from "../../components/dashboard-compartilhado";
 import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
-import { estiloBotao, estiloCampo } from "../components/formulario-cadastro";
+import { estiloBotao, estiloCampo, estiloPrimario } from "../components/formulario-cadastro";
 import {
   IndicadoresBarbeiros,
   CartoesBarbeiros,
 } from "./components/components";
 import { consultarBarbeiros } from "./services/barbeiros-api";
+
+import { useGestaoCadastro } from '../components/gestao-cadastro';
+import { EditorCadastro, AcoesCadastro } from '../components/editor-cadastro';
+import type { CampoCadastro } from '../components/formulario-cadastro';
+import { buscarBarbeiro, salvarBarbeiro, excluirBarbeiro, listarFiliaisCadastro } from './services/gestao-barbeiros-api';
 
 export function BarbeirosAdministrador() {
   const { usuario } = useAutenticacao();
@@ -20,6 +25,15 @@ export function BarbeirosAdministrador() {
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
   const [pagina, setPagina] = useState(1);
+  const gestao = useGestaoCadastro({ buscar: buscarBarbeiro, salvar: salvarBarbeiro, excluir: excluirBarbeiro }, () => setPagina(1));
+  const filiais = useQuery({ queryKey: ['admin', usuario?.id, 'filiais-cadastro'], enabled: permitido && !!gestao.editor, queryFn: ({ signal }) => listarFiliaisCadastro(signal) });
+  const campos: CampoCadastro[] = [
+    { nome: 'nome', rotulo: 'Nome', obrigatorio: true, tamanhoMinimo: 2 }, { nome: 'email', rotulo: 'E-mail', tipo: 'email', obrigatorio: true },
+    ...(!gestao.editor?.leitura ? [{ nome: 'senha', rotulo: gestao.editor?.id ? 'Nova senha (opcional)' : 'Senha', tipo: 'password' as const, obrigatorio: gestao.editor?.id === null, tamanhoMinimo: 15 }] : []),
+    { nome: 'nomeProfissional', rotulo: 'Nome profissional' }, { nome: 'descricao', rotulo: 'Descrição' }, { nome: 'fotoUrl', rotulo: 'Foto (URL)', tipo: 'url' }, { nome: 'dataAdmissao', rotulo: 'Admissão', tipo: 'date' },
+    { nome: 'idFilial', rotulo: 'Filial', obrigatorio: true, opcoes: filiais.data ?? [] },
+    { nome: 'statusProfissional', rotulo: 'Status profissional', opcoes: ['ATIVO','INATIVO','AFASTADO'].map(valor => ({ valor, rotulo: valor })) },
+  ];
   const consulta = useQuery({
     queryKey: ["admin", usuario?.id, "barbeiros", busca, status, pagina],
     enabled: permitido,
@@ -71,6 +85,10 @@ export function BarbeirosAdministrador() {
               </select>
             </label>
           </div>
+          <button className={estiloPrimario} disabled={gestao.gravar.isPending || gestao.abrir.isPending} onClick={gestao.novo}>Novo barbeiro</button>
+          {gestao.editor && (filiais.isPending ? <p role="status">Carregando filiais…</p> : filiais.isError ? <EstadoErro mensagem={filiais.error.message} tentarNovamente={() => void filiais.refetch()} /> : !filiais.data.length ? <p role="alert">Nenhuma filial cadastrada. Cadastre uma filial antes de incluir o profissional.</p> : null)}
+          {(!gestao.editor || filiais.isSuccess && !!filiais.data.length) && <EditorCadastro gestao={gestao} campos={campos} />}
+          <p className="my-3 text-sm text-muted">O status profissional controla o cadastro da equipe. Ele é independente do status de acesso da conta.</p>
           {consulta.isPending ? (
             <EstadoCarregamento />
           ) : consulta.isError ? (
@@ -81,7 +99,7 @@ export function BarbeirosAdministrador() {
           ) : (
             <>
               <IndicadoresBarbeiros dados={consulta.data.indicadores} />
-              <CartoesBarbeiros barbeiros={consulta.data.data} />
+              <CartoesBarbeiros barbeiros={consulta.data.data} acoes={b => <AcoesCadastro gestao={gestao} id={b.id} nome={b.nome} />} />
               <nav
                 aria-label="Paginação de barbeiros"
                 className="my-5 flex items-center gap-3"
