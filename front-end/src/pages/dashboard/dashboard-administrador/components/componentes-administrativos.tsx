@@ -36,7 +36,7 @@ export function BotaoIndisponivel({
       type="button"
       disabled
       title="Disponível na integração real"
-      className={`min-h-12 cursor-not-allowed rounded-xl border px-5 text-sm font-semibold opacity-70 ${destaque ? "border-primary bg-primary text-white" : "border-primary bg-surface text-primary"}`}
+      className={`min-h-12 cursor-not-allowed rounded-xl border px-5 text-sm font-semibold opacity-70 ${destaque ? "border-primary bg-support text-primary" : "border-primary bg-surface text-primary"}`}
     >
       {children}
       <span className="sr-only"> — Disponível na integração real</span>
@@ -58,7 +58,7 @@ export function IndicadorSimples({
   return (
     <Cartao>
       <div className="flex items-center gap-4">
-        <span className="grid size-12 place-items-center rounded-xl bg-primary text-white">
+        <span className="grid size-12 place-items-center rounded-xl bg-support text-primary">
           <Icone nome={icone} />
         </span>
         <div>

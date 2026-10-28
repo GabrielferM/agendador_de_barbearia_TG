@@ -33,7 +33,7 @@ export function ServicosAdministrador() {
         <p role="alert">Você não possui permissão para consultar servicos.</p>
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap gap-3">
+          <div className="admin-toolbar">
             <label className="flex-1">
               Buscar servico
               <input
@@ -102,10 +102,7 @@ export function ServicosAdministrador() {
                   Próxima
                 </button>
               </nav>
-              <p className="text-sm text-muted">
-                Categorias e percentuais padrão de comissão ainda não são
-                cadastrados no sistema.
-              </p>
+
             </>
           )}
         </>

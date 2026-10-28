@@ -15,7 +15,7 @@ export function ControlesPeriodo({
   const [erro, setErro] = useState("");
   return (
     <form
-      className="mb-5 flex flex-wrap items-end gap-3"
+      className="admin-toolbar"
       onSubmit={(e) => {
         e.preventDefault();
         const dias =

@@ -1,7 +1,7 @@
 import { BadgeStatus } from "../../components/componentes-administrativos";
 import { estiloBotao } from "../../components/formulario-cadastro";
 import { nomeStatus } from "../../../components/dashboard-formatadores";
-import { formatarDia } from "../calendario";
+import { formatarDia, hojeBarbearia } from "../calendario";
 import type { DiaAgenda, VisualizacaoAgenda } from "../types";
 
 const hora = (valor: string) => new Intl.DateTimeFormat("pt-BR", {
@@ -19,8 +19,8 @@ export function GradeSemanal({ dias, selecionado, selecionarDia, visualizacao }:
           <section key={dia.data} className="border-b border-r border-border">
             <header className="border-b border-border p-2 text-center">
               <button className={`${estiloBotao} w-full ${selecionado === dia.data ? "bg-background font-bold" : ""}`}
-                aria-label={formatarDia(dia.data, true)} aria-pressed={selecionado === dia.data} onClick={() => selecionarDia(dia.data)}>
-                <span className="block">{dia.rotulo}</span>
+                aria-current={dia.data === hojeBarbearia() ? "date" : undefined} aria-label={formatarDia(dia.data, true)} aria-pressed={selecionado === dia.data} onClick={() => selecionarDia(dia.data)}>
+                <span className="block">{dia.rotulo}{dia.data === hojeBarbearia() && <span className="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs text-white">Hoje</span>}</span>
                 <span className="text-xs text-muted">{formatarDia(dia.data)}</span>
               </button>
             </header>

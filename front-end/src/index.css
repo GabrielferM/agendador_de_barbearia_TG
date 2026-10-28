@@ -10,7 +10,8 @@
   --primary-hover: #472c19;
   --secondary: #c89b6d;
   --foreground: #2b2118;
-  --muted: #8b7b6b;
+  --muted: #716151;
+  --support: #eee4d8;
   --border: #e7ddd3;
   --success: #4f7a55;
   --danger: #b84a4a;
@@ -36,6 +37,14 @@
 
 /* Expõe bg-primary, hover:bg-primary-hover e bg-secondary no Tailwind v4. */
 @theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-support: var(--support);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-secondary: var(--secondary);
@@ -77,4 +86,27 @@ body {
 .pagina-inicio .inicio-container {
   width: 100%;
   max-width: clamp(72rem, 88vw, 112rem);
+}
+
+/* Composição restrita ao administrador; mantém os outros perfis. */
+.painel-administrador { font-variant-numeric: tabular-nums; }
+.painel-administrador > section > header { border-bottom: 1px solid var(--border); padding-bottom: 1.25rem; }
+.painel-administrador h1 { letter-spacing: -.025em; }
+.painel-administrador :is(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.painel-administrador aside :is(button, a):focus-visible { outline-color: white; }
+.admin-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; padding: 1rem; margin-bottom: 1.25rem; background: var(--support); border: 1px solid var(--border); border-radius: 1rem; }
+.admin-toolbar label { display: grid; gap: .4rem; font-size: .875rem; min-width: min(100%, 10rem); }
+.admin-toolbar label:first-child { flex: 1 1 18rem; }
+.admin-toolbar :is(input, select) { width: 100%; min-height: 2.75rem; background: var(--surface); }
+.painel-administrador table { border-collapse: collapse; }
+.painel-administrador th { background: var(--support); color: var(--foreground); font-size: .75rem; font-weight: 600; white-space: nowrap; }
+.painel-administrador :is(th, td) { padding: .85rem 1rem; }
+.painel-administrador tbody tr { border-bottom: 1px solid var(--border); }
+.painel-administrador tbody tr:hover { background: var(--background); }
+.painel-administrador td:last-child { white-space: nowrap; }
+.painel-administrador td:last-child button + button { margin-left: .35rem; }
+@media (max-width: 639px) {
+  .admin-toolbar { align-items: stretch; }
+  .admin-toolbar > * { width: 100%; }
+  .painel-administrador nav[aria-label^="Paginação"] { flex-wrap: wrap; font-size: .8rem; }
 }

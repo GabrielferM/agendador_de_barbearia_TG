@@ -49,3 +49,16 @@ Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita c
 `/admin/financeiro` exige `GERENCIAR_COMISSOES` e consulta `GET /dashboard/administrador/financeiro`. Abre do início do mês até hoje em America/Sao_Paulo; formulário aplica um período válido. Cache inclui usuário e período, com cancelamento, validação da resposta, erro/nova tentativa e vazios independentes para atendimentos e comissões.
 
 Exibe receita de serviços concluídos, variação contra o intervalo anterior de mesma duração, série em intervalos de sete dias, dez últimos atendimentos concluídos e comissões por barbeiro separadas nos cinco status reais. Total registrado inclui canceladas/estornadas, sem rotulá-lo como valor devido. Receita não comprova recebimento. O banco não registra despesas nem formas de pagamento: não há números inventados de despesas/lucro, gráfico de pagamentos ou botões fictícios para lançamento/exportação. Persistência desses conceitos e respectivas ações exige evolução própria do domínio.
+
+## Hierarquia visual administrativa
+
+As seis telas compartilham a composição `.painel-administrador`, preservando sidebar
+marrom, item ativo caramelo, fundo creme e toolbars em `support`. Clientes usa cards
+para indicadores. Tabelas têm cabeçalho, separadores, hover e ações compactas com
+nomes acessíveis. Formulários focam o primeiro campo e bloqueiam envio pendente.
+Hoje recebe indicação textual independente da seleção no calendário. Gráficos sem
+atividade usam estado vazio, sem barras mínimas sugerindo receita inexistente.
+
+Validação nesta etapa: lint/build/testes de frontend e inspeção do CSS compilado.
+Não houve inspeção visual em navegador: o download do Chromium falhou no ambiente.
+Ajustes finos de responsividade e capturas antes/depois permanecem pendentes de QA.
