@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { adicionarDias, inicioMesBarbearia } from '../../../../common/utils/periodo-dashboard';
+import {
+  adicionarDias,
+  inicioDiaBarbearia,
+  inicioMesBarbearia,
+} from '../../../../common/utils/periodo-dashboard';
 import { serializarResposta } from '../../../../common/utils/resposta';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { STATUS_SERVICO_REALIZADO } from '../constants/servicos-dashboard.constants';
@@ -14,7 +18,7 @@ export class ServicosDashboardService {
   async obter(query: ConsultarServicosDashboardDto) {
     const agora = new Date();
     const inicioMes = inicioMesBarbearia(agora);
-    const amanha = adicionarDias(agora, 1);
+    const amanha = adicionarDias(inicioDiaBarbearia(agora), 1);
     const busca = normalizarBuscaServico(query.busca);
     const ativo = converterAtivo(query.ativo);
     const where = {

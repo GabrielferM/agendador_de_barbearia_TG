@@ -1,7 +1,9 @@
 import { ServicosDashboardService } from './servicos-dashboard.service';
 
 describe('ServicosDashboardService', () => {
+  afterEach(() => jest.useRealTimers());
   it('aplica busca, status e paginação e converte valores decimais', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-10-26T23:30:00-03:00'));
     const findMany = jest.fn();
     const prisma = {
       servico: { findMany, count: jest.fn() },
@@ -31,6 +33,16 @@ describe('ServicosDashboardService', () => {
       ativo: 'true',
     });
 
+    expect(prisma.agendamento.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          inicioPrevisto: {
+            gte: new Date('2026-10-01T00:00:00-03:00'),
+            lt: new Date('2026-10-27T00:00:00-03:00'),
+          },
+        }),
+      }),
+    );
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { ativo: true, nome: { contains: 'corte', mode: 'insensitive' } },
