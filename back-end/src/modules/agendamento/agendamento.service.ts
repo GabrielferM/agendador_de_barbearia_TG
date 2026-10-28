@@ -37,7 +37,10 @@ export class AgendamentoService {
 
   async criar(dto: CriarAgendamentoDto, usuario?: UsuarioAutenticado) {
     if (!usuario || usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
-      return this.criarService.execute(dto);
+      return this.criarService.execute(
+        { ...dto, origem: OrigemAgendamento.ADMINISTRADOR },
+        usuario?.id,
+      );
     if (!usuario.clienteId || !usuario.permissoes.includes('CRIAR_AGENDAMENTO'))
       throw new ForbiddenException();
     if (
@@ -48,11 +51,14 @@ export class AgendamentoService {
     ) {
       throw new ForbiddenException('Clientes não podem definir campos administrativos.');
     }
-    const resultado = await this.criarService.execute({
-      ...dto,
-      idCliente: usuario.clienteId,
-      origem: OrigemAgendamento.SITE,
-    });
+    const resultado = await this.criarService.execute(
+      {
+        ...dto,
+        idCliente: usuario.clienteId,
+        origem: OrigemAgendamento.SITE,
+      },
+      usuario.id,
+    );
     return this.semCamposInternos(resultado);
   }
 
@@ -108,7 +114,12 @@ export class AgendamentoService {
     ) {
       throw new ForbiddenException('Campo reservado à administração.');
     }
-    const resultado = await this.editarService.execute(id, dto);
+    if (
+      (dto.idCliente !== undefined || dto.idBarbeiro !== undefined || dto.idFilial !== undefined) &&
+      !usuario?.permissoes.includes('GERENCIAR_AGENDAMENTOS')
+    )
+      throw new ForbiddenException('Troca de vínculos reservada à administração.');
+    const resultado = await this.editarService.execute(id, dto, usuario?.id);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
 
@@ -125,10 +136,15 @@ export class AgendamentoService {
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
     if (usuario?.clienteId) throw new ForbiddenException();
-    return this.historicoService.criar(id, {
-      ...dto,
-      idUsuarioResponsavel: usuario?.id ?? dto.idUsuarioResponsavel,
-    });
+    // Histórico de transição só pode nascer junto da mudança real de estado.
+    return this.editarService.execute(
+      id,
+      {
+        status: dto.statusNovo,
+        motivoCancelamento: dto.motivo,
+      },
+      usuario?.id,
+    );
   }
 
   private respostaBarbeiro(valor: unknown): unknown {

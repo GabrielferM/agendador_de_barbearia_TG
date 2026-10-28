@@ -1,8 +1,16 @@
 import { StatusAgendamento } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, Min, IsDateString, IsOptional } from 'class-validator';
 
 export class ConsultarAgendaDashboardDto {
+  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(1) idCliente?: number;
+  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(1) idBarbeiro?: number;
+  @ApiPropertyOptional({ enum: StatusAgendamento })
+  @IsOptional()
+  @IsEnum(StatusAgendamento)
+  status?: StatusAgendamento;
+
   @ApiPropertyOptional({ format: 'date-time', description: 'Primeiro dia do período.' })
   @IsOptional()
   @IsDateString()

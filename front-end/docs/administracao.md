@@ -97,3 +97,28 @@ Inativação impede novas seleções; editar catálogo não reescreve Agendament
 Preço deve ser positivo com até duas casas e duração inteira positiva. Exclusão
 preserva conflito com vínculos. Cliente Orval regenerado a partir do OpenAPI atual.
 Testes cobrem false persistido e rejeição HTTP de string no lugar de booleano.
+
+### Gestão administrativa da agenda
+
+A gestão usa `/agendamentos`, com origem ADMINISTRADOR imposta pelo servidor na
+criação administrativa. Seletores carregam cadastros reais e todas as páginas;
+busca de cliente ajuda a seleção, e barbeiros são agrupados pela filial. A consulta
+de disponibilidade não reserva horário. O servidor revalida expediente, vínculos,
+serviços e sobreposição em transação serializável, com repetição de P2034.
+
+PATCH permite trocar cliente/filial/profissional apenas com permissão administrativa;
+comissões impedem troca de vínculos/itens. Na edição, serviços vazios preservam os
+itens e valores históricos. A interface envia apenas campos efetivamente alterados.
+Estados finais impedem alterações. Reagendamento de atendimento iniciado é bloqueado.
+Status e histórico são gravados juntos, com responsável da sessão e horários reais
+para início/conclusão. POST de histórico passa pela mesma máquina de estados, sem
+aceitar um histórico fictício independente da transição.
+
+Exclusão física é restrita a pendentes legados sem histórico nem comissões, validada
+na mesma transação; registros com histórico são preservados via cancelamento com
+motivo. O detalhe mostra histórico paginado. Filtros por cliente/profissional/status
+são enviados ao calendário no servidor, não aplicados sobre uma página local.
+A grade mensal inclui semanas completas, até 42 dias, em America/Sao_Paulo.
+
+Checks usam HTTP/Prisma simulados; concorrência real e persistência com servidor
+PostgreSQL ainda precisam de homologação. Nenhuma operação em banco remoto ocorreu.

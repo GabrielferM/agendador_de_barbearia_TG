@@ -41,6 +41,10 @@ export class CriarAgendamentoDto {
   @IsOptional() @IsString() observacaoInterna?: string;
 }
 export class AtualizarAgendamentoDto {
+  @IsOptional() @Type(() => Number) @IsInt() idCliente?: number;
+  @IsOptional() @Type(() => Number) @IsInt() idBarbeiro?: number;
+  @IsOptional() @Type(() => Number) @IsInt() idFilial?: number;
+
   @IsOptional()
   @IsDateString()
   inicio?: string;

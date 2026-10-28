@@ -31,7 +31,7 @@ export class ListarAgendamentosService {
       this.prisma.agendamento.findMany({
         where,
         include: includeAgendamento,
-        orderBy: { inicioPrevisto: 'asc' },
+        orderBy: [{ inicioPrevisto: 'asc' }, { id: 'asc' }],
         skip: (query.pagina - 1) * query.limite,
         take: query.limite,
       }),

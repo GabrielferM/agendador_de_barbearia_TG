@@ -15,12 +15,12 @@ describe('validarPeriodoAgenda', () => {
     expect(periodo.fimExclusivo.toISOString()).toBe('2026-09-04T03:00:00.000Z');
   });
 
-  it('rejeita período invertido ou superior a 31 dias', () => {
+  it('rejeita período invertido ou superior a 42 dias', () => {
     expect(() => validarPeriodoAgenda({ inicioDe: '2026-09-10', inicioAte: '2026-09-01' })).toThrow(
       'inicioAte deve ser igual ou posterior a inicioDe.',
     );
-    expect(() => validarPeriodoAgenda({ inicioDe: '2026-01-01', inicioAte: '2026-02-02' })).toThrow(
-      'no máximo 31 dias',
+    expect(() => validarPeriodoAgenda({ inicioDe: '2026-01-01', inicioAte: '2026-02-12' })).toThrow(
+      'no máximo 42 dias',
     );
   });
 });

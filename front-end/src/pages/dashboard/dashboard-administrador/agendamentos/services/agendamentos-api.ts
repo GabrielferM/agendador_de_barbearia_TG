@@ -2,8 +2,8 @@ import { agendamentoDashboardControllerObter } from "../../../../../api/dashboar
 import type { DiaAgenda } from "../types";
 import { ItemAgendaDashboardDtoStatus } from "../../../../../api/models/itemAgendaDashboardDtoStatus";
 
-export async function consultarAgenda(inicioDe: string, inicioAte: string, signal?: AbortSignal): Promise<DiaAgenda[]> {
-  const resposta = await agendamentoDashboardControllerObter({ inicioDe, inicioAte }, { signal }).catch(() => {
+export async function consultarAgenda(inicioDe: string, inicioAte: string, signal?: AbortSignal, filtros?: { idCliente: string; idBarbeiro: string; status: string }): Promise<DiaAgenda[]> {
+  const resposta = await agendamentoDashboardControllerObter({ inicioDe, inicioAte, idCliente: filtros?.idCliente ? Number(filtros.idCliente) : undefined, idBarbeiro: filtros?.idBarbeiro ? Number(filtros.idBarbeiro) : undefined, status: filtros?.status ? filtros.status as ItemAgendaDashboardDtoStatus : undefined }, { signal }).catch(() => {
     throw new Error("Não foi possível carregar os agendamentos. Tente novamente.");
   });
   if (resposta.status !== 200) {
