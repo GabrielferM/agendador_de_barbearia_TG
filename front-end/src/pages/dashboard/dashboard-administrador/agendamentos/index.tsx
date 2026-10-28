@@ -6,6 +6,7 @@ import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
 import { ControlesAgenda, GradeSemanal, ResumoAgenda } from "./components/components";
 import { consultarAgenda } from "./services/agendamentos-api";
 import { hojeBarbearia, moverPeriodo, periodoAgenda } from "./calendario";
+import { GestaoAgenda } from "./components/gestao-agenda";
 import type { VisualizacaoAgenda } from "./types";
 
 export function AgendamentosAdministrador() {
@@ -13,16 +14,18 @@ export function AgendamentosAdministrador() {
   const permitido = !!usuario?.permissoes.includes("GERENCIAR_AGENDAMENTOS");
   const [data, selecionarDia] = useState(hojeBarbearia);
   const [visualizacao, mudarVisualizacao] = useState<VisualizacaoAgenda>("Semana");
+  const [filtros, alterarFiltros] = useState({ idCliente: "", idBarbeiro: "", status: "" });
   const { inicioDe, inicioAte } = periodoAgenda(data, visualizacao);
   const consulta = useQuery({
-    queryKey: ["admin", usuario?.id, "agendamentos", inicioDe, inicioAte],
+    queryKey: ["admin", usuario?.id, "agendamentos", inicioDe, inicioAte, filtros],
     enabled: permitido,
-    queryFn: ({ signal }) => consultarAgenda(inicioDe, inicioAte, signal),
+    queryFn: ({ signal }) => consultarAgenda(inicioDe, inicioAte, signal, filtros),
   });
   const dia = consulta.data?.find(dia => dia.data === data);
   return (
     <DashboardLayout titulo="Agendamentos" subtitulo="Consulte a agenda da barbearia" itens={MENU_ADMINISTRADOR}>
       {!permitido ? <p role="alert">Você não possui permissão para consultar agendamentos.</p> : <>
+        <GestaoAgenda dias={consulta.data ?? []} filtros={filtros} alterarFiltros={alterarFiltros} />
         <ControlesAgenda inicioDe={inicioDe} inicioAte={inicioAte} visualizacao={visualizacao}
           mudarVisualizacao={mudarVisualizacao} hoje={() => selecionarDia(hojeBarbearia())}
           mover={direcao => selecionarDia(moverPeriodo(data, visualizacao, direcao))} />

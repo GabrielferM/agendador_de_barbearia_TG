@@ -24,6 +24,7 @@ export * from './agendamentoControllerListarHistoricoParams';
 export * from './agendamentoControllerListarParams';
 export * from './agendamentoControllerListarStatus';
 export * from './agendamentoDashboardControllerObterParams';
+export * from './agendamentoDashboardControllerObterStatus';
 export * from './agendamentoRespostaDto';
 export * from './agendamentoRespostaDtoStatus';
 export * from './agendamentoResumoDashboardDto';

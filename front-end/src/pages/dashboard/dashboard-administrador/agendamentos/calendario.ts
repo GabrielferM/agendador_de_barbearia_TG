@@ -23,7 +23,10 @@ export function periodoAgenda(data: string, visualizacao: VisualizacaoAgenda) {
   }
   const inicioDe = `${data.slice(0, 7)}-01`;
   referencia.setUTCMonth(referencia.getUTCMonth() + 1, 0);
-  return { inicioDe, inicioAte: referencia.toISOString().slice(0, 10) };
+  const fimMes = referencia.toISOString().slice(0, 10);
+  const primeiro = new Date(`${inicioDe}T12:00:00Z`);
+  const inicioGrade = deslocarData(inicioDe, -((primeiro.getUTCDay() + 6) % 7));
+  return { inicioDe: inicioGrade, inicioAte: deslocarData(fimMes, 6 - ((referencia.getUTCDay() + 6) % 7)) };
 }
 
 export function moverPeriodo(data: string, visualizacao: VisualizacaoAgenda, direcao: number) {

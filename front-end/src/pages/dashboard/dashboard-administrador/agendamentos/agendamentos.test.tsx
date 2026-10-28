@@ -54,7 +54,7 @@ it("navega entre períodos e seleciona o resumo", async () => {
   await screen.findByText("31/10");
   await usuario.click(screen.getByRole("button", { name: "Próximo período" }));
   await screen.findByText("30/11");
-  expect(fetch).toHaveBeenCalledWith(expect.stringContaining("inicioDe=2026-11-01&inicioAte=2026-11-30"), expect.anything());
+  expect(fetch).toHaveBeenCalledWith(expect.stringContaining("inicioDe=2026-10-26&inicioAte=2026-12-06"), expect.anything());
   await usuario.click(screen.getByRole("button", { name: "Dia" }));
   await screen.findByRole("heading", { name: "Resumo do dia" });
   expect(fetch).toHaveBeenCalledWith(expect.stringContaining("inicioDe=2026-11-01&inicioAte=2026-11-01"), expect.anything());
@@ -86,4 +86,31 @@ it("não consulta a agenda sem permissão", async () => {
   permitido = false; abrir();
   expect(await screen.findByText("Você não possui permissão para consultar agendamentos.")).toBeInTheDocument();
   expect(vi.mocked(fetch).mock.calls.some(([entrada]) => String(entrada).includes("/dashboard/"))).toBe(false);
+});
+it('cria pela administração com cadastros reais e preserva escolhas no conflito', async () => {
+ const original = vi.mocked(fetch).getMockImplementation()!;
+ const paginada = (data: unknown[]) => json({ data, meta: { pagina: 1, limite: 100, total: data.length, totalPaginas: 1 } });
+ vi.mocked(fetch).mockImplementation(async (entrada, options) => {
+  const url = new URL(String(entrada));
+  if (url.pathname === '/clientes') return paginada([{ id: 33, usuario: { nome: 'Cliente selecionado' } }]);
+  if (url.pathname === '/publico/filiais') return paginada([{ id: 44, nome: 'Centro' }]);
+  if (url.pathname === '/publico/barbeiros') return paginada([{ id: 55, idFilial: 44, nomeProfissional: 'João' }]);
+  if (url.pathname === '/publico/servicos') return paginada([{ id: 66, nome: 'Corte' }]);
+  if (url.pathname === '/agendamentos' && options?.method === 'POST') return json({}, 409);
+  if (url.pathname === '/agendamentos/horarios-disponiveis') return json({ fuso: 'America/Sao_Paulo', valorTotal: '50.00', duracaoTotalMinutos: 30, horarios: [] });
+  return original(entrada, options);
+ });
+ abrir(); await userEvent.click(await screen.findByRole('button', { name: 'Novo agendamento' }));
+ await userEvent.selectOptions(await screen.findByLabelText('Cliente'), '33');
+ await userEvent.selectOptions(screen.getByLabelText('Filial'), '44');
+ await userEvent.selectOptions(screen.getByLabelText('Barbeiro'), '55');
+ await userEvent.selectOptions(screen.getByLabelText(/^Serviços/), '66');
+ const inicio = screen.getByLabelText('Início (São Paulo)');
+ // datetime-local não oferece digitação estável em jsdom.
+ const { fireEvent } = await import('@testing-library/react'); fireEvent.change(inicio, { target: { value: '2030-01-07T09:00' } });
+ await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+ expect(await screen.findByRole('alert')).toHaveTextContent('mudou');
+ expect(screen.getByLabelText('Cliente')).toHaveValue('33');
+ const chamada = vi.mocked(fetch).mock.calls.find(([, o]) => o?.method === 'POST')!;
+ expect(JSON.parse(String(chamada[1]?.body))).toMatchObject({ idCliente: 33, idBarbeiro: 55, idFilial: 44, origem: 'ADMINISTRADOR', servicoIds: [66], inicio: '2030-01-07T09:00:00-03:00' });
 });

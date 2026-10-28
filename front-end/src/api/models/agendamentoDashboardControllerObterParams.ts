@@ -5,8 +5,18 @@
  * Contrato OpenAPI da API REST do Agendador de Barbearia.
  * OpenAPI spec version: 1.0
  */
+import type { AgendamentoDashboardControllerObterStatus } from './agendamentoDashboardControllerObterStatus';
 
 export type AgendamentoDashboardControllerObterParams = {
+/**
+ * @minimum 1
+ */
+idCliente?: number;
+/**
+ * @minimum 1
+ */
+idBarbeiro?: number;
+status?: AgendamentoDashboardControllerObterStatus;
 /**
  * Primeiro dia do período.
  */

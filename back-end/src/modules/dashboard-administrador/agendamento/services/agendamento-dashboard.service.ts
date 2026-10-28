@@ -20,8 +20,13 @@ export class AgendamentoDashboardService {
     const agora = new Date();
     const { inicio, fimExclusivo } = validarPeriodoAgenda(query, agora);
     const agendamentos = await this.prisma.agendamento.findMany({
-      where: { inicioPrevisto: { gte: inicio, lt: fimExclusivo } },
-      orderBy: { inicioPrevisto: 'asc' },
+      where: {
+        inicioPrevisto: { gte: inicio, lt: fimExclusivo },
+        ...(query.idCliente ? { idCliente: query.idCliente } : {}),
+        ...(query.idBarbeiro ? { idBarbeiro: query.idBarbeiro } : {}),
+        ...(query.status ? { status: query.status } : {}),
+      },
+      orderBy: [{ inicioPrevisto: 'asc' }, { id: 'asc' }],
       include: {
         cliente: { include: { usuario: { select: { nome: true } } } },
         barbeiro: { include: { usuario: { select: { nome: true } } } },
