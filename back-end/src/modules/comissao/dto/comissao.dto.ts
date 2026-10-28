@@ -2,6 +2,7 @@ import { StatusComissao } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
+  Max,
   IsEnum,
   IsInt,
   IsNumber,
@@ -13,7 +14,11 @@ import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 export class CriarComissaoDto {
   @Type(() => Number) @IsInt() idAgendamentoServico!: number;
   @Type(() => Number) @IsInt() idBarbeiro!: number;
-  @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @IsPositive() percentualAplicado!: number;
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsPositive()
+  @Max(100)
+  percentualAplicado!: number;
   @IsOptional() @IsString() observacao?: string;
 }
 export class AtualizarComissaoDto {

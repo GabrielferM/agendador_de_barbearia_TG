@@ -10,4 +10,5 @@ export type FinanceiroDashboardRespostaDtoIndicadores = {
   receita: number;
   variacaoReceitaPercentual: number;
   comissoes: number;
+  comissoesAPagar: number;
 };

@@ -28,6 +28,18 @@ describe('FinanceiroDashboardService', () => {
             status: StatusComissao.LIBERADA,
             barbeiro: { nomeProfissional: 'Profissional', usuario: { nome: 'Usuário' } },
           },
+          {
+            idBarbeiro: 2,
+            valorComissao: '3.10',
+            status: StatusComissao.CANCELADA,
+            barbeiro: { nomeProfissional: 'Profissional', usuario: { nome: 'Usuário' } },
+          },
+          {
+            idBarbeiro: 2,
+            valorComissao: '2.20',
+            status: StatusComissao.ESTORNADA,
+            barbeiro: { nomeProfissional: 'Profissional', usuario: { nome: 'Usuário' } },
+          },
         ],
       ]),
     };
@@ -41,7 +53,8 @@ describe('FinanceiroDashboardService', () => {
     expect(resposta.indicadores).toEqual({
       receita: 55.5,
       variacaoReceitaPercentual: 11,
-      comissoes: 22.2,
+      comissoes: 27.5,
+      comissoesAPagar: 22.2,
     });
     expect(resposta.movimentacoesRecentes[0]).toMatchObject({
       descricao: 'Corte + Barba - Cliente Teste',
@@ -49,7 +62,7 @@ describe('FinanceiroDashboardService', () => {
     });
     expect(resposta.comissoesPorBarbeiro[0]).toMatchObject({
       barbeiro: 'Profissional',
-      total: 22.2,
+      total: 27.5,
       porStatus: { LIBERADA: 22.2 },
     });
   });

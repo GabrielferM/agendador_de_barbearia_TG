@@ -15,13 +15,14 @@ export function IndicadoresFinanceiros({
   dados: Resposta["indicadores"];
 }) {
   return (
-    <div className="my-5 grid gap-4 md:grid-cols-2">
+    <div className="my-5 grid gap-4 md:grid-cols-3">
       <IndicadorSimples
         titulo="Receita de serviços concluídos"
         valor={moeda.format(dados.receita)}
         detalhe={`${dados.variacaoReceitaPercentual}% em relação ao período anterior equivalente`}
         icone="financeiro"
       />
+      <IndicadorSimples titulo="Comissões a pagar" valor={moeda.format(dados.comissoesAPagar)} detalhe="Previstas + liberadas, geradas no período" icone="financeiro" />
       <IndicadorSimples
         titulo="Comissões registradas no período"
         valor={moeda.format(dados.comissoes)}
