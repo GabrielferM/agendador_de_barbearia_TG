@@ -19,10 +19,7 @@ import {
   numero,
 } from "../components/dashboard-formatadores";
 import { useSessaoDashboard } from "../components/use-sessao-dashboard";
-import {
-  dashboardAdministradorMock,
-  usarDadosMockados,
-} from "../mocks/dados-dashboard";
+import { useAutenticacao } from "../../../auth/contexto-autenticacao";
 import { MENU_ADMINISTRADOR } from "./constants/menu-administrador";
 
 function variacao(valor: number) {
@@ -31,12 +28,12 @@ function variacao(valor: number) {
 }
 
 export function DashboardAdministrador() {
-  const demonstracao = usarDadosMockados();
+  const { usuario } = useAutenticacao();
+  const permitido = !!usuario?.permissoes.includes("GERENCIAR_AGENDAMENTOS");
   const consulta = useQuery({
-    queryKey: ["dashboard", "administrador", demonstracao ? "mock" : "api"],
-    queryFn: obterDashboardAdministrador,
-    enabled: !demonstracao,
-    initialData: demonstracao ? dashboardAdministradorMock : undefined,
+    queryKey: ["dashboard", "administrador", usuario?.id],
+    queryFn: ({ signal }) => obterDashboardAdministrador(signal),
+    enabled: permitido,
     staleTime: 60_000,
   });
   useSessaoDashboard(consulta.error);
@@ -46,9 +43,12 @@ export function DashboardAdministrador() {
       titulo="Dashboard administrativo"
       subtitulo="Visão geral da barbearia em tempo real"
       itens={MENU_ADMINISTRADOR}
-      dadosDemonstrativos={demonstracao}
     >
-      {consulta.isPending ? (
+      {!permitido ? (
+        <p role="alert">
+          Você não possui permissão para visualizar este painel.
+        </p>
+      ) : consulta.isPending ? (
         <EstadoCarregamento />
       ) : consulta.isError ? (
         <EstadoErro

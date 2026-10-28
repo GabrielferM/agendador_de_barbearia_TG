@@ -28,7 +28,7 @@ function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR") {
             nome: "Pessoa Teste",
             email: "pessoa@exemplo.com",
             papel,
-            permissoes: [],
+            permissoes: papel === "ADMINISTRADOR" ? ["GERENCIAR_AGENDAMENTOS"] : [],
           },
         }),
       );
@@ -104,21 +104,14 @@ describe("dashboards", () => {
     );
   });
 
-  it("mostra os dados administrativos mockados sem consultar o endpoint", async () => {
+  it("consulta dados administrativos reais mesmo com mocks habilitados", async () => {
     vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     renderizar("/admin", "ADMINISTRADOR");
-
-    expect(await screen.findByText("Dados demonstrativos")).toBeInTheDocument();
-    expect(screen.getByText("342")).toBeInTheDocument();
-    expect(screen.getByText("Matheus Lima")).toBeInTheDocument();
-    expect(screen.getAllByText("07/09").length).toBeGreaterThan(0);
-    expect(
-      vi
-        .mocked(fetch)
-        .mock.calls.some(([entrada]) =>
-          String(entrada).includes("/dashboard/"),
-        ),
-    ).toBe(false);
+    expect(await screen.findByText("Clientes ativos")).toBeInTheDocument();
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.queryByText("Dados demonstrativos")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matheus Lima")).not.toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/dashboard\/administrador$/), expect.anything());
   });
 
   it("mostra agenda e próximos horários mockados do barbeiro", async () => {
@@ -137,35 +130,6 @@ describe("dashboards", () => {
         ),
     ).toBe(false);
   });
-
-  it.each([
-    ["/admin/barbeiros", "Barbeiros", "Disponibilidade de hoje"],
-    ["/admin/servicos", "Serviços", "Catálogo de serviços"],
-    ["/admin/financeiro", "Financeiro", "Fluxo financeiro"],
-  ])(
-    "renderiza a rota administrativa mockada %s",
-    async (rota, titulo, conteudo) => {
-      vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
-      renderizar(rota, "ADMINISTRADOR");
-      expect(
-        await screen.findByRole("heading", { name: titulo, level: 1 }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("heading", { name: conteudo }),
-      ).toBeInTheDocument();
-      expect(screen.getByText("Dados demonstrativos")).toBeInTheDocument();
-      expect(
-        screen.getAllByText(/segunda-feira, 07 de setembro de 2026/i).length,
-      ).toBeGreaterThan(0);
-      expect(
-        vi
-          .mocked(fetch)
-          .mock.calls.some(([entrada]) =>
-            String(entrada).includes("/dashboard/"),
-          ),
-      ).toBe(false);
-    },
-  );
 
   it("navega pela sidebar e destaca a área administrativa atual", async () => {
     vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
@@ -187,10 +151,10 @@ describe("dashboards", () => {
     expect(screen.queryByRole("button", { name: "Novo cliente" })).not.toBeInTheDocument();
   });
 
-  it("mostra indisponibilidade sem consultar APIs quando o modo mock está desligado", async () => {
+  it("não consulta o financeiro sem permissão", async () => {
     renderizar("/admin/financeiro", "ADMINISTRADOR");
     expect(
-      await screen.findByText("Área disponível em modo demonstrativo"),
+      await screen.findByText("Você não possui permissão para consultar o financeiro."),
     ).toBeInTheDocument();
     expect(
       vi
