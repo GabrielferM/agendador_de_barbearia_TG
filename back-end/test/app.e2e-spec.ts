@@ -27,6 +27,7 @@ describe('AppController (e2e)', () => {
     CSRF_SECRET: process.env.CSRF_SECRET,
   };
   const prisma = {
+    comissao: { findMany: jest.fn(), count: jest.fn() },
     filial: { findUnique: jest.fn() },
     barbeiro: { findUnique: jest.fn() },
     cliente: { findUnique: jest.fn() },
@@ -151,6 +152,35 @@ describe('AppController (e2e)', () => {
         process.env[key] = value;
       }
     }
+  });
+
+  it('protege comissões por sessão e permissão ativa, inclusive em acesso direto', async () => {
+    await request(app.getHttpServer()).get('/comissoes').expect(401);
+    const agente = request.agent(app.getHttpServer());
+    await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    await agente.get('/comissoes').expect(403);
+    const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: unknown[] } };
+    usuario.papel.codigo = 'ADMINISTRADOR';
+    await agente.get('/comissoes').expect(403);
+    usuario.papel.permissoes = [
+      { ativo: false, permissao: { ativo: true, codigo: 'GERENCIAR_COMISSOES' } },
+    ];
+    await agente.get('/comissoes').expect(403);
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: false, codigo: 'GERENCIAR_COMISSOES' } },
+    ];
+    await agente.get('/comissoes').expect(403);
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_COMISSOES' } },
+    ];
+    prisma.comissao.findMany.mockResolvedValue([]);
+    prisma.comissao.count.mockResolvedValue(0);
+    await agente.get('/comissoes').expect(200);
+    const me = await agente.get('/auth/me').expect(200);
+    expect(me.body as unknown).toMatchObject({ usuario: { permissoes: ['GERENCIAR_COMISSOES'] } });
   });
 
   it('/ (GET)', () => {
@@ -321,12 +351,36 @@ describe('AppController (e2e)', () => {
     expect(resultado.body as unknown).toMatchObject({ id: 10, servicos: [{ subtotal: '50.00' }] });
     for (const campo of ['senhaHash', 'cpf', 'cnpj', 'observacaoInterna', 'comissao', 'email'])
       expect(JSON.stringify(resultado.body)).not.toContain(campo);
-    const gravado = await prisma.agendamento.create.mock.results[0].value as Record<string, unknown>;
-    prisma.agendamento.findUnique.mockResolvedValue({ ...gravado, idCliente: 1, idBarbeiro: 2, idFilial: 1 });
-    prisma.agendamento.update.mockResolvedValue({ ...gravado, status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' });
-    await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO' }).expect(400);
-    await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso', inicio: dto.inicio }).expect(403);
-    const cancelado = await agente.patch('/agendamentos/10').set('X-CSRF-Token', csrf).send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' }).expect(200);
+    const gravado = (await prisma.agendamento.create.mock.results[0].value) as Record<
+      string,
+      unknown
+    >;
+    prisma.agendamento.findUnique.mockResolvedValue({
+      ...gravado,
+      idCliente: 1,
+      idBarbeiro: 2,
+      idFilial: 1,
+    });
+    prisma.agendamento.update.mockResolvedValue({
+      ...gravado,
+      status: 'CANCELADO',
+      motivoCancelamento: 'Outro compromisso',
+    });
+    await agente
+      .patch('/agendamentos/10')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'CANCELADO' })
+      .expect(400);
+    await agente
+      .patch('/agendamentos/10')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso', inicio: dto.inicio })
+      .expect(403);
+    const cancelado = await agente
+      .patch('/agendamentos/10')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'CANCELADO', motivoCancelamento: 'Outro compromisso' })
+      .expect(200);
     expect(cancelado.body as unknown).toMatchObject({ status: 'CANCELADO' });
     prisma.agendamento.findFirst.mockResolvedValue({ id: 10 });
     await agente.post('/agendamentos').set('X-CSRF-Token', csrf).send(dto).expect(409);

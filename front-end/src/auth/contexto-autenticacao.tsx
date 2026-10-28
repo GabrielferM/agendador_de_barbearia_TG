@@ -21,6 +21,7 @@ interface EstadoAutenticacao {
   definirUsuario: (usuario: UsuarioAutenticado) => Promise<void>;
   encerrarSessaoLocal: () => Promise<void>;
   sair: () => Promise<boolean>;
+  atualizarAcesso: () => Promise<void>;
 }
 
 const Contexto = createContext<EstadoAutenticacao>({
@@ -30,6 +31,7 @@ const Contexto = createContext<EstadoAutenticacao>({
   definirUsuario: async () => undefined,
   encerrarSessaoLocal: async () => undefined,
   sair: async () => false,
+  atualizarAcesso: async () => undefined,
 });
 
 function usuarioValido(valor: unknown): valor is UsuarioAutenticado {
@@ -99,6 +101,13 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
     [queryClient],
   );
 
+  const atualizarAcesso = useCallback(async () => {
+    const resposta = await autenticacaoControllerMe();
+    if (resposta.status !== 200 || !usuarioValido(resposta.data.usuario))
+      throw new Error("Não foi possível atualizar o acesso. Tente novamente.");
+    await definirUsuario(resposta.data.usuario as UsuarioAutenticado);
+  }, [definirUsuario]);
+
   const sair = useCallback(async (): Promise<boolean> => {
     window.dispatchEvent(new Event("agendador:logout"));
     let confirmado = false;
@@ -123,6 +132,7 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
         definirUsuario,
         encerrarSessaoLocal,
         sair,
+        atualizarAcesso,
       }}
     >
       {children}

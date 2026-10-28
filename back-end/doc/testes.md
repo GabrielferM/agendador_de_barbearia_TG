@@ -34,3 +34,9 @@ Execute e2e quando alterar controllers, guards, autenticação, validação HTTP
 ## Conclusão de uma tarefa
 
 Revise o diff, atualize os guias e informe os comandos executados com seus resultados. Registre falhas preexistentes ou impedimentos sem declarar sucesso. Para mudanças somente em Markdown, confira links, caminhos, exemplos e consistência; não regenere clientes nem rode migrations.
+
+O teste `psql "$DATABASE_URL_TESTE" -v ON_ERROR_STOP=1 -f test/reparo-permissoes.sql`
+usa somente tabelas temporárias com `search_path=pg_temp`, executa o reparo duas
+vezes e verifica idempotência, isolamento do administrador e preservação de usuários.
+O mesmo SQL foi exercitado com PostgreSQL embarcado (PGlite); isso não substitui
+validação do banco de destino nem teste de concorrência em PostgreSQL servidor.

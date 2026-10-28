@@ -61,3 +61,26 @@ Recuperação de senha e cadastro público ainda são telas em construção. MFA
 Fontes para orientar evolução, sem substituir a evidência de implementação acima: [OWASP Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html), [CSRF Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), [Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html) e [HTTP Headers](https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html).
 
 A lista e o detalhe da agenda do barbeiro também exigem explicitamente `GERENCIAR_PROPRIA_AGENDA`. A fachada impõe o ID profissional da sessão e projeta apenas o nome/ID do cliente junto ao resumo do atendimento, sem dados cadastrais privados, observações internas ou comissões. A permissão administrativa conserva seu contrato próprio.
+
+## Reparo direcionado do administrador
+
+O seed passa a cadastrar GERENCIAR_ACESSOS e GERENCIAR_COMISSOES em Permissao,
+com vínculo ao papel ADMINISTRADOR. Não use o seed completo em bancos existentes:
+ele também modifica dados de demonstração.
+
+Após backup e revisão do banco de destino, um operador pode executar
+`psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f back-end/scripts/reparar-permissoes-administrador.sql`.
+O reparo transacional usa chave única e upsert; repeti-lo preserva o mesmo estado.
+Exige ADMINISTRADOR ativo, sem reativar silenciosamente um papel desabilitado.
+Nenhum banco remoto é alterado como parte da implementação.
+
+O resultado contém apenas contagens de usuários e vínculos dos papéis incorretos.
+Audite esses vínculos antes de qualquer destinação: mantenha os papéis até que seus
+usuários sejam classificados individualmente; não lhes atribua privilégios nem
+exclua dependências automaticamente. Confirme o código do papel real do usuário,
+status da conta, papel, permissão e vínculo. O nome exibido não concede acesso.
+
+SessaoService resolve permissões no banco a cada requisição. Recarregar a página
+restaura `/auth/me`; “Atualizar acesso” no painel também atualiza o contexto e limpa
+caches privados. Falha de rede mantém a sessão, com mensagem de erro; 401 usa o fluxo
+de expiração existente. Guards e decorators permanecem obrigatórios.
