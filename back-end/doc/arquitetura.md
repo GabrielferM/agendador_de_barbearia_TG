@@ -73,3 +73,7 @@ O [configurador compartilhado do ValidationPipe](../src/config/validacao.ts), us
 - Ampliar testes com PostgreSQL isolado para comprovar transações, concorrência e restrições no banco real.
 
 Esses itens não autorizam refatorações ou migrations durante uma tarefa documental.
+
+## Indicadores administrativos de serviços
+
+`GET /dashboard/administrador/servicos` calcula realizações e ticket médio a partir dos atendimentos concluídos do início do mês até o fim do dia atual em America/Sao_Paulo (limite exclusivo à meia-noite seguinte). Não inclui parte do dia seguinte. Busca/status/paginação afetam a lista, preservando os indicadores globais.

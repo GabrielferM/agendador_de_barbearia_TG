@@ -1,35 +1,118 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAutenticacao } from "../../../../auth/contexto-autenticacao";
 import {
   DashboardLayout,
-  EstadoIntegracaoIndisponivel,
+  EstadoCarregamento,
+  EstadoErro,
 } from "../../components/dashboard-compartilhado";
-import { usarDadosMockados } from "../../mocks/dados-dashboard";
 import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
+import { estiloBotao, estiloCampo } from "../components/formulario-cadastro";
 import {
-  CartoesBarbeiros,
-  ControlesBarbeiros,
-  DisponibilidadeEquipe,
   IndicadoresBarbeiros,
+  CartoesBarbeiros,
 } from "./components/components";
-import { barbeirosMock } from "./mock/dados-mock";
+import { consultarBarbeiros } from "./services/barbeiros-api";
 
 export function BarbeirosAdministrador() {
-  const demonstracao = usarDadosMockados();
+  const { usuario } = useAutenticacao();
+  const permitido = !!usuario?.permissoes.includes("GERENCIAR_USUARIOS");
+  const [busca, setBusca] = useState("");
+  const [status, setStatus] = useState("");
+  const [pagina, setPagina] = useState(1);
+  const consulta = useQuery({
+    queryKey: ["admin", usuario?.id, "barbeiros", busca, status, pagina],
+    enabled: permitido,
+    queryFn: ({ signal }) => consultarBarbeiros(busca, status, pagina, signal),
+    staleTime: 60_000,
+  });
   return (
     <DashboardLayout
       titulo="Barbeiros"
-      subtitulo="Gerencie a equipe e acompanhe o desempenho"
+      subtitulo="Consulte a equipe e acompanhe o desempenho"
       itens={MENU_ADMINISTRADOR}
-      dadosDemonstrativos={demonstracao}
     >
-      {demonstracao ? (
-        <>
-          <ControlesBarbeiros />
-          <IndicadoresBarbeiros />
-          <CartoesBarbeiros barbeiros={barbeirosMock} />
-          <DisponibilidadeEquipe barbeiros={barbeirosMock} />
-        </>
+      {!permitido ? (
+        <p role="alert">Você não possui permissão para consultar barbeiros.</p>
       ) : (
-        <EstadoIntegracaoIndisponivel />
+        <>
+          <div className="mb-5 flex flex-wrap gap-3">
+            <label className="flex-1">
+              Buscar barbeiro
+              <input
+                className={estiloCampo}
+                value={busca}
+                onChange={(e) => {
+                  setBusca(e.target.value);
+                  setPagina(1);
+                }}
+              />
+            </label>
+            <label>
+              Status
+              <select
+                className={estiloCampo}
+                value={status}
+                onChange={(e) => {
+                  setStatus(e.target.value);
+                  setPagina(1);
+                }}
+              >
+                <option value="">Todos</option>
+                {[
+                  ["ATIVO", "Ativo"],
+                  ["INATIVO", "Inativo"],
+                  ["AFASTADO", "Afastado"],
+                ].map(([valor, rotulo]) => (
+                  <option key={valor} value={valor}>
+                    {rotulo}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {consulta.isPending ? (
+            <EstadoCarregamento />
+          ) : consulta.isError ? (
+            <EstadoErro
+              mensagem={consulta.error.message}
+              tentarNovamente={() => void consulta.refetch()}
+            />
+          ) : (
+            <>
+              <IndicadoresBarbeiros dados={consulta.data.indicadores} />
+              <CartoesBarbeiros barbeiros={consulta.data.data} />
+              <nav
+                aria-label="Paginação de barbeiros"
+                className="my-5 flex items-center gap-3"
+              >
+                <button
+                  className={estiloBotao}
+                  disabled={pagina <= 1}
+                  onClick={() => setPagina(pagina - 1)}
+                >
+                  Anterior
+                </button>
+                <span>
+                  Página {pagina} de{" "}
+                  {Math.max(1, consulta.data.meta.totalPaginas)} ·{" "}
+                  {consulta.data.meta.total} barbeiros
+                </span>
+                <button
+                  className={estiloBotao}
+                  disabled={pagina >= consulta.data.meta.totalPaginas}
+                  onClick={() => setPagina(pagina + 1)}
+                >
+                  Próxima
+                </button>
+              </nav>
+              <p className="text-sm text-muted">
+                Especialidades, jornada individual e percentual padrão de
+                comissão ainda não são cadastrados no sistema.
+              </p>
+            </>
+          )}
+        </>
       )}
     </DashboardLayout>
   );

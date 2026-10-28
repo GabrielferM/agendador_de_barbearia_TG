@@ -33,3 +33,19 @@ Cadastro e alteração administrativos de agendamentos permanecem pendentes; os 
 ## Dashboard integrado
 
 `/admin` sempre consulta `GET /dashboard/administrador`, inclusive com mocks habilitados. Exige `GERENCIAR_AGENDAMENTOS`, usa cache por usuário e cancelamento da consulta, valida a resposta e distingue falha e vazio. Indicadores e gráficos vêm do servidor. Receita representa o valor dos serviços concluídos, não confirmação de pagamento.
+
+## Barbeiros integrados
+
+`/admin/barbeiros` sempre consulta `GET /dashboard/administrador/barbeiros` com busca, status e paginação no servidor e `GERENCIAR_USUARIOS`. Indicadores são globais; cards correspondem à página filtrada. Cache inclui usuário e filtros; consultas são canceláveis, verificam status e validam dados. Não há fallback de mocks.
+
+Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita concluída e comissões registradas. O total global a pagar inclui todos os períodos; o valor no card inclui apenas comissões geradas no mês. Especialidades, jornada e percentual padrão não existem no schema; a tela informa essa ausência. Cadastro/edição e disponibilidade individual ficam fora desta consulta, sem controles fictícios.
+
+## Serviços integrados
+
+`/admin/servicos` consulta `GET /dashboard/administrador/servicos` com busca, status ativo/inativo e paginação no servidor, exigindo `GERENCIAR_SERVICOS`. Indicadores globais vêm do servidor, inclusive o ticket médio por atendimento concluído. A tabela mostra preço, duração, status e realizações/receita do mês. Validação, cancelamento, cache por usuário, carregamento, vazio e nova tentativa seguem o padrão administrativo. Mocks não são usados. Categoria e comissão padrão não existem no schema e são sinalizadas como indisponíveis. Esta entrega cobre consulta; não apresenta botões de gravação fictícios.
+
+## Financeiro integrado
+
+`/admin/financeiro` exige `GERENCIAR_COMISSOES` e consulta `GET /dashboard/administrador/financeiro`. Abre do início do mês até hoje em America/Sao_Paulo; formulário aplica um período válido. Cache inclui usuário e período, com cancelamento, validação da resposta, erro/nova tentativa e vazios independentes para atendimentos e comissões.
+
+Exibe receita de serviços concluídos, variação contra o intervalo anterior de mesma duração, série em intervalos de sete dias, dez últimos atendimentos concluídos e comissões por barbeiro separadas nos cinco status reais. Total registrado inclui canceladas/estornadas, sem rotulá-lo como valor devido. Receita não comprova recebimento. O banco não registra despesas nem formas de pagamento: não há números inventados de despesas/lucro, gráfico de pagamentos ou botões fictícios para lançamento/exportação. Persistência desses conceitos e respectivas ações exige evolução própria do domínio.
