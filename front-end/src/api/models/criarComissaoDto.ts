@@ -9,7 +9,10 @@
 export interface CriarComissaoDto {
   idAgendamentoServico: number;
   idBarbeiro: number;
-  /** @minimum 1 */
+  /**
+     * @minimum 1
+     * @maximum 100
+     */
   percentualAplicado: number;
   observacao?: string;
 }

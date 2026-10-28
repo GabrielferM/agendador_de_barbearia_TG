@@ -9,6 +9,10 @@ import { ValidarVinculosAgendamentoService } from '../validations/validar-vincul
 describe('transições administrativas de agenda', () => {
   function contexto(status = 'PENDENTE') {
     const tx = {
+      comissao: {
+        count: jest.fn().mockResolvedValue(0),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
       agendamento: {
         findUnique: jest.fn().mockResolvedValue({
           id: 1,
@@ -78,6 +82,23 @@ describe('transições administrativas de agenda', () => {
     await expect(contexto().service.execute(1, { status: 'CONCLUIDO' }, 77)).rejects.toBeInstanceOf(
       ConflictException,
     );
+  });
+  it('cancela comissões não pagas junto do atendimento e bloqueia comissão paga', async () => {
+    const c = contexto();
+    await c.service.execute(
+      1,
+      { status: 'CANCELADO', motivoCancelamento: 'Solicitado pelo cliente' },
+      77,
+    );
+    expect(c.tx.comissao.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: 'CANCELADA' } }),
+    );
+    const outro = contexto();
+    outro.tx.comissao.count.mockResolvedValue(1);
+    await expect(
+      outro.service.execute(1, { status: 'CANCELADO', motivoCancelamento: 'Solicitado' }, 77),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(outro.tx.agendamento.update).not.toHaveBeenCalled();
   });
   it('exige motivo no cancelamento e preserva comissões ao trocar vínculos', async () => {
     await expect(contexto().service.execute(1, { status: 'CANCELADO' }, 77)).rejects.toThrow(

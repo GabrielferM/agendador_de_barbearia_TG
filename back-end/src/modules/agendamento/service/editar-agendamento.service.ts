@@ -147,6 +147,26 @@ export class EditarAgendamentoService {
             ? { dataCancelamento: new Date(), motivoCancelamento: dto.motivoCancelamento?.trim() }
             : {}),
         };
+        if (
+          dto.status === StatusAgendamento.CANCELADO ||
+          dto.status === StatusAgendamento.NAO_COMPARECEU
+        ) {
+          if (
+            await transaction.comissao.count({
+              where: { agendamentoServico: { idAgendamento: id }, status: 'PAGA' },
+            })
+          )
+            throw new ConflictException(
+              'Atendimento possui comissão paga; revise a comissão antes de cancelar.',
+            );
+          await transaction.comissao.updateMany({
+            where: {
+              agendamentoServico: { idAgendamento: id },
+              status: { in: ['PREVISTA', 'LIBERADA'] },
+            },
+            data: { status: 'CANCELADA' },
+          });
+        }
         return transaction.agendamento.update({
           where: { id },
           data,

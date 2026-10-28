@@ -41,6 +41,7 @@ export async function consultarFinanceiro(
       receita: numero(indicadores.receita),
       variacaoReceitaPercentual: numero(indicadores.variacaoReceitaPercentual),
       comissoes: numero(indicadores.comissoes),
+      comissoesAPagar: numero(indicadores.comissoesAPagar),
     },
     fluxoSemanal: itens(obj.fluxoSemanal, (i) => ({
       inicio: data(i.inicio),

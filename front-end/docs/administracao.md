@@ -122,3 +122,35 @@ A grade mensal inclui semanas completas, até 42 dias, em America/Sao_Paulo.
 
 Checks usam HTTP/Prisma simulados; concorrência real e persistência com servidor
 PostgreSQL ainda precisam de homologação. Nenhuma operação em banco remoto ocorreu.
+
+### Gestão de comissões
+
+Nova comissão seleciona item de atendimento concluído sem comissão, usando IDs reais
+obtidos no servidor. A seleção percorre páginas de atendimentos; a legenda informa
+o conjunto e a página. POST usa percentual maior que zero e até 100%; base vem do
+subtotal aplicado e valor definitivo usa Decimal, duas casas, ROUND_HALF_UP.
+Leitura e criação são transacionais com isolamento Serializable e unicidade por item.
+
+A lista completa tem status, profissional e paginação próprios, sem depender do
+recorte de receitas recentes ou do período dos agregados. Detalhe inclui base,
+percentual, valor, datas e motivo. PATCH permite PREVISTA → LIBERADA/CANCELADA,
+LIBERADA → PAGA/CANCELADA, PAGA → ESTORNADA; cancelamento/estorno são finais.
+Liberação/pagamento exigem atendimento concluído. Datas são registradas pelo servidor
+ou validadas em ordem, sem futuro; motivo é obrigatório ao estornar. Datas avulsas
+não podem reescrever transições anteriores. Não existe DELETE físico.
+
+PAGA é anotação administrativa e não executa transferência. Receita é soma dos
+subtotais aplicados de atendimentos CONCLUIDO, pela data de início previsto em São
+Paulo; comparação usa intervalo anterior de mesma duração. Comissões do agregado
+usam dataGeracao, mesmo para estados pagos/estornados; não equivalem a pagamentos
+ocorridos no período. A pagar soma apenas PREVISTA e LIBERADA; CANCELADA e ESTORNADA
+não são devidas. As dez receitas recentes são rotuladas com esse limite.
+
+Testes unitários/HTTP simulados cobrem cálculo, estados, motivo, datas, unicidade e
+seleção de item real. Persistência/concorrência com PostgreSQL servidor continuam
+pendentes; não há gateway, caixa, despesas ou contabilidade adicionados.
+
+Cancelamento/não comparecimento do atendimento cancela comissões PREVISTA/LIBERADA
+na mesma transação. Comissão PAGA impede essa transição e exige revisão explícita;
+nenhuma comissão é apagada. Agregados financeiros somam com Decimal para evitar
+resíduos binários, e A pagar exclui canceladas, pagas e estornadas.

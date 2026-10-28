@@ -27,7 +27,8 @@ describe('AppController (e2e)', () => {
     CSRF_SECRET: process.env.CSRF_SECRET,
   };
   const prisma = {
-    comissao: { findMany: jest.fn(), count: jest.fn() },
+    comissao: { findMany: jest.fn(), count: jest.fn(), updateMany: jest.fn(), create: jest.fn() },
+    agendamentoServico: { findUnique: jest.fn() },
     filial: { findUnique: jest.fn() },
     barbeiro: { findUnique: jest.fn() },
     cliente: { findUnique: jest.fn() },
@@ -59,6 +60,8 @@ describe('AppController (e2e)', () => {
     process.env.CSRF_SECRET = 'segredo-de-testes-e2e-com-mais-de-32-caracteres';
     prisma.$queryRaw.mockReset().mockResolvedValue([{ result: 1 }]);
     sessaoAtual = null;
+    prisma.comissao.count.mockReset().mockResolvedValue(0);
+    prisma.comissao.updateMany.mockReset().mockResolvedValue({ count: 0 });
     prisma.filial.findUnique.mockReset().mockResolvedValue({ id: 1, status: 'ATIVA' });
     prisma.barbeiro.findUnique.mockReset().mockResolvedValue({
       id: 2,
@@ -214,6 +217,52 @@ describe('AppController (e2e)', () => {
       .send({ ativo: false })
       .expect(200);
     expect(resposta.body as unknown).toMatchObject({ ativo: false });
+  });
+
+  it('gerencia comissão com permissão e CSRF e rejeita percentual inválido e duplicidade', async () => {
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const usuario = sessaoAtual!.usuario as { papel: { permissoes: unknown[] } };
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_COMISSOES' } },
+    ];
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((c) => c.startsWith('csrf='))!
+      .split(';')[0]
+      .slice(5);
+    const dto = { idAgendamentoServico: 5, idBarbeiro: 9, percentualAplicado: 25 };
+    await agente.post('/comissoes').send(dto).expect(403);
+    await agente
+      .post('/comissoes')
+      .set('X-CSRF-Token', csrf)
+      .send({ ...dto, percentualAplicado: 101 })
+      .expect(400);
+    prisma.agendamentoServico.findUnique.mockResolvedValue({
+      id: 5,
+      subtotal: new Prisma.Decimal('50.00'),
+      agendamento: { idBarbeiro: 9, status: 'CONCLUIDO' },
+    });
+    prisma.comissao.create.mockResolvedValue({
+      id: 1,
+      status: 'PREVISTA',
+      valorComissao: new Prisma.Decimal('12.50'),
+    });
+    const resposta = await agente
+      .post('/comissoes')
+      .set('X-CSRF-Token', csrf)
+      .send(dto)
+      .expect(201);
+    expect(resposta.body as unknown).toMatchObject({ valorComissao: '12.50' });
+    prisma.comissao.create.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('duplicado', {
+        code: 'P2002',
+        clientVersion: 'teste',
+      }),
+    );
+    await agente.post('/comissoes').set('X-CSRF-Token', csrf).send(dto).expect(409);
   });
 
   it('/ (GET)', () => {

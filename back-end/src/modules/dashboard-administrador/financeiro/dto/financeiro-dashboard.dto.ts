@@ -33,8 +33,20 @@ export class FinanceiroDashboardRespostaDto {
   @ApiProperty() geradoEm!: string;
   @ApiProperty({ example: { inicioDe: '2026-09-01', inicioAte: '2026-09-30' } })
   periodo!: { inicioDe: string; inicioAte: string };
-  @ApiProperty({ example: { receita: 32480, variacaoReceitaPercentual: 12, comissoes: 6496 } })
-  indicadores!: { receita: number; variacaoReceitaPercentual: number; comissoes: number };
+  @ApiProperty({
+    example: {
+      receita: 32480,
+      variacaoReceitaPercentual: 12,
+      comissoes: 6496,
+      comissoesAPagar: 3000,
+    },
+  })
+  indicadores!: {
+    receita: number;
+    variacaoReceitaPercentual: number;
+    comissoes: number;
+    comissoesAPagar: number;
+  };
   @ApiProperty({ type: [SemanaFinanceiraDashboardDto] })
   fluxoSemanal!: SemanaFinanceiraDashboardDto[];
   @ApiProperty({ type: [MovimentacaoFinanceiraDashboardDto] })

@@ -8,6 +8,7 @@ import {
 } from "../../components/dashboard-compartilhado";
 import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
 import { estiloBotao, estiloCampo } from "../components/formulario-cadastro";
+import { GestaoComissoes } from "./components/gestao-comissoes";
 import { ControlesPeriodo } from "./components/controles-periodo";
 import {
   FluxoFinanceiro,
@@ -49,6 +50,7 @@ export function FinanceiroAdministrador() {
         </p>
       ) : (
         <>
+          <GestaoComissoes />
           <ControlesPeriodo
             inicial={periodo}
             aplicar={setPeriodo}
@@ -76,8 +78,7 @@ export function FinanceiroAdministrador() {
               </div>
               <p className="mt-4 text-sm text-muted">
                 Receita calculada pelos serviços concluídos; não representa
-                confirmação de pagamento. Despesas, lucro líquido e formas de
-                pagamento ainda não são registrados no sistema.
+                confirmação de pagamento.
               </p>
             </>
           )}

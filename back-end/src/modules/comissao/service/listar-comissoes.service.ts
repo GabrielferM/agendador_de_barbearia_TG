@@ -19,7 +19,7 @@ export class ListarComissoesService {
       this.prisma.comissao.findMany({
         where,
         include: includeComissao,
-        orderBy: { dataGeracao: 'desc' },
+        orderBy: [{ dataGeracao: 'desc' }, { id: 'desc' }],
         skip: (query.pagina - 1) * query.limite,
         take: query.limite,
       }),
