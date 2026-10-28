@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { CODIGOS_PAPEL } from '../../../common/constants/papeis';
 import { SenhaService } from '../../../common/security/senha.service';
 import { normalizarCpf, normalizarEmail } from '../../../common/utils/documentos';
@@ -27,23 +28,29 @@ export class CriarClienteService {
       throw new ConflictException('CPF já cadastrado.');
     const papel = await this.prisma.papel.findUnique({ where: { codigo: CODIGOS_PAPEL.CLIENTE } });
     if (!papel) throw new ConflictException('Papel CLIENTE não configurado.');
-    const usuario = await this.prisma.usuario.create({
-      data: {
-        nome: input.nome.trim(),
-        email,
-        senhaHash: await this.senhas.gerarHash(input.senha),
-        telefone: input.telefone?.trim(),
-        idPapel: papel.id,
-        cliente: {
-          create: {
-            cpf,
-            dataNascimento: input.dataNascimento ? new Date(input.dataNascimento) : null,
-            observacao: input.observacao?.trim(),
+    try {
+      const usuario = await this.prisma.usuario.create({
+        data: {
+          nome: input.nome.trim(),
+          email,
+          senhaHash: await this.senhas.gerarHash(input.senha),
+          telefone: input.telefone?.trim(),
+          idPapel: papel.id,
+          cliente: {
+            create: {
+              cpf,
+              dataNascimento: input.dataNascimento ? new Date(input.dataNascimento) : null,
+              observacao: input.observacao?.trim(),
+            },
           },
         },
-      },
-      include: { cliente: true },
-    });
-    return { ...usuario.cliente!, usuario: semSenha(usuario) };
+        include: { cliente: true },
+      });
+      return { ...usuario.cliente!, usuario: semSenha(usuario) };
+    } catch (erro) {
+      if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === 'P2002')
+        throw new ConflictException('CPF ou e-mail já cadastrado.');
+      throw erro;
+    }
   }
 }

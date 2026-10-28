@@ -62,3 +62,16 @@ atividade usam estado vazio, sem barras mínimas sugerindo receita inexistente.
 Validação nesta etapa: lint/build/testes de frontend e inspeção do CSS compilado.
 Não houve inspeção visual em navegador: o download do Chromium falhou no ambiente.
 Ajustes finos de responsividade e capturas antes/depois permanecem pendentes de QA.
+
+### Auditoria de clientes
+
+A edição pode ser aberta diretamente na linha ou após visualizar. Criação continua
+exigindo CPF real e senha de 15–128 caracteres; edição omite senha vazia e detalhe
+não contém hash. CPF é normalizado/validado pelo domínio. Conflitos de unicidade na
+criação e de FK na exclusão são traduzidos mesmo quando surgem após a pré-consulta.
+Mutações invalidam o prefixo privado do administrador atual e exclusão retorna à
+primeira página. Busca/status/paginação continuam no servidor.
+
+Testes de interface usam HTTP simulado. Não comprovam persistência após recarregar
+em banco real; duplicidade/inexistência e vínculos devem ser verificados no ambiente
+de homologação antes de retirar o Draft.
