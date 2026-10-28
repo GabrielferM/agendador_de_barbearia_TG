@@ -122,7 +122,7 @@ it("envia paginação e filtros ao servidor", async () => {
     expect.anything(),
   );
   await userEvent.type(
-    screen.getByRole("textbox", { name: "Buscar servico" }),
+    screen.getByRole("textbox", { name: "Buscar serviço" }),
     "API",
   );
   expect(fetch).toHaveBeenLastCalledWith(
@@ -133,4 +133,19 @@ it("envia paginação e filtros ao servidor", async () => {
     expect.stringContaining("pagina=1"),
     expect.anything(),
   );
+});
+it('edita situação enviando ativo false ao domínio', async () => {
+ const original = vi.mocked(fetch).getMockImplementation()!;
+ vi.mocked(fetch).mockImplementation(async (entrada, options) => {
+  if (String(entrada).endsWith('/servicos/9')) return json(options?.method === 'PATCH' ? {} : { id: 8, nome: 'Corte real', descricao: '', precoBase: '45.00', duracaoMinutos: 30, ativo: true });
+  return original(entrada, options);
+ });
+ abrir();
+ const botao = await screen.findByRole('button', { name: /Editar/ });
+ await userEvent.click(botao);
+ await userEvent.selectOptions(await screen.findByLabelText('Situação'), 'false');
+ await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+ await screen.findByText('Cadastro salvo.');
+ const chamada = vi.mocked(fetch).mock.calls.find(([, opts]) => opts?.method === 'PATCH')!;
+ expect(JSON.parse(String(chamada[1]?.body))).toMatchObject({ ativo: false, precoBase: 45 });
 });

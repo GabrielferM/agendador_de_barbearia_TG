@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Cartao } from "../../../components/dashboard-compartilhado";
 import { moeda } from "../../../components/dashboard-formatadores";
 import {
@@ -32,7 +33,7 @@ export function IndicadoresServicos({
   );
 }
 
-export function CatalogoServicos({ servicos }: { servicos: Resposta["data"] }) {
+export function CatalogoServicos({ servicos, acoes }: { servicos: Resposta["data"]; acoes?: (servico: Resposta["data"][number]) => ReactNode }) {
   return (
     <Cartao titulo="Catálogo de serviços">
       {!servicos.length ? (
@@ -49,6 +50,7 @@ export function CatalogoServicos({ servicos }: { servicos: Resposta["data"] }) {
                   "Realizados no mês",
                   "Receita no mês",
                   "Status",
+                  "Ações",
                 ].map((c) => (
                   <th
                     key={c}
@@ -65,14 +67,15 @@ export function CatalogoServicos({ servicos }: { servicos: Resposta["data"] }) {
                 <tr key={s.id} className="border-t border-border">
                   <td className="py-4 font-semibold">{s.nome}</td>
                   <td>{s.duracaoMinutos} min</td>
-                  <td>{moeda.format(s.preco)}</td>
+                  <td className="text-right">{moeda.format(s.preco)}</td>
                   <td>{s.realizadosMes}</td>
-                  <td>{moeda.format(s.receitaMes)}</td>
+                  <td className="text-right">{moeda.format(s.receitaMes)}</td>
                   <td>
                     <BadgeStatus alerta={!s.ativo}>
                       {s.ativo ? "Ativo" : "Inativo"}
                     </BadgeStatus>
                   </td>
+                  <td>{acoes?.(s)}</td>
                 </tr>
               ))}
             </tbody>

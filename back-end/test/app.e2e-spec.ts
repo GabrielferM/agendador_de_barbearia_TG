@@ -31,7 +31,7 @@ describe('AppController (e2e)', () => {
     filial: { findUnique: jest.fn() },
     barbeiro: { findUnique: jest.fn() },
     cliente: { findUnique: jest.fn() },
-    servico: { findMany: jest.fn() },
+    servico: { findMany: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
     agendamento: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
@@ -181,6 +181,39 @@ describe('AppController (e2e)', () => {
     await agente.get('/comissoes').expect(200);
     const me = await agente.get('/auth/me').expect(200);
     expect(me.body as unknown).toMatchObject({ usuario: { permissoes: ['GERENCIAR_COMISSOES'] } });
+  });
+
+  it('aceita inativação booleana de serviço e rejeita texto no contrato HTTP', async () => {
+    const agente = request.agent(app.getHttpServer());
+    await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const usuario = sessaoAtual!.usuario as { papel: { permissoes: unknown[] } };
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_SERVICOS' } },
+    ];
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((c) => c.startsWith('csrf='))!
+      .split(';')[0]
+      .slice(5);
+    prisma.servico.findUnique.mockResolvedValue({ id: 7, ativo: true });
+    prisma.servico.update.mockResolvedValue({ id: 7, ativo: false });
+    await agente
+      .patch('/servicos/7')
+      .set('X-CSRF-Token', csrf)
+      .send({ ativo: 'false' })
+      .expect(400);
+    const resposta = await agente
+      .patch('/servicos/7')
+      .set('X-CSRF-Token', csrf)
+      .send({ ativo: false })
+      .expect(200);
+    expect(resposta.body as unknown).toMatchObject({ ativo: false });
   });
 
   it('/ (GET)', () => {
