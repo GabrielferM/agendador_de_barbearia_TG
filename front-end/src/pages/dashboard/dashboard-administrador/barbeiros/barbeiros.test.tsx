@@ -137,3 +137,20 @@ it("envia paginação e filtros ao servidor", async () => {
     expect.anything(),
   );
 });
+it('cadastra usando a filial real e mantém o formulário após conflito', async () => {
+ const original = vi.mocked(fetch).getMockImplementation()!;
+ vi.mocked(fetch).mockImplementation(async (entrada, options) => {
+  const url = new URL(String(entrada));
+  if (url.pathname === '/filiais') return json({ data: [{ id: 47, nome: 'Filial cadastrada', status: 'ATIVA' }], meta: { pagina: 1, limite: 100, total: 1, totalPaginas: 1 } });
+  if (url.pathname === '/barbeiros' && options?.method === 'POST') return json({}, 409);
+  return original(entrada, options);
+ });
+ abrir(); await userEvent.click(await screen.findByRole('button', { name: 'Novo barbeiro' }));
+ for (const [rotulo, valor] of [['Nome', 'João'], ['E-mail', 'joao@example.com'], ['Senha', 'uma senha longa de teste']]) await userEvent.type(await screen.findByLabelText(rotulo), valor);
+ await userEvent.selectOptions(screen.getByLabelText('Filial'), '47');
+ await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+ expect(await screen.findByRole('alert')).toHaveTextContent('já existe');
+ expect(screen.getByLabelText('Nome')).toHaveValue('João');
+ const chamada = vi.mocked(fetch).mock.calls.find(([url, opts]) => String(url).endsWith('/barbeiros') && opts?.method === 'POST')!;
+ expect(JSON.parse(String(chamada[1]?.body))).toMatchObject({ idFilial: 47, nome: 'João' });
+});

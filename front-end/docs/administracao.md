@@ -75,3 +75,15 @@ primeira página. Busca/status/paginação continuam no servidor.
 Testes de interface usam HTTP simulado. Não comprovam persistência após recarregar
 em banco real; duplicidade/inexistência e vínculos devem ser verificados no ambiente
 de homologação antes de retirar o Draft.
+
+### Gestão de barbeiros
+
+A interface usa POST/GET/PATCH/DELETE de `/barbeiros`, sem domínio duplicado.
+Filiais vêm de `/filiais`, paginadas até o total, exigindo GERENCIAR_FILIAIS;
+falha/ausência bloqueia o formulário com explicação. Não usa ID fixo. Foto usa URL,
+nome profissional, descrição, admissão e status seguem o contrato. Telefone não é
+editável porque os DTOs atuais de barbeiro não o aceitam. O status profissional é
+independente da conta. Exclusão confirma e preserva conflitos de agenda/comissões.
+A gestão invalida consultas administrativas, catálogo público e disponibilidade.
+Validação de interface usa HTTP simulado; persistência e inspeção visual reais
+permanecem pendentes em homologação.
