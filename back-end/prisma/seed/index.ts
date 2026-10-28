@@ -10,16 +10,6 @@ const senhaSeed = obterSenhaSeed(process.env.SEED_DEFAULT_PASSWORD);
 
 const dadosPapeis = [
   {
-    codigo: 'GERENCIAR_ACESSOS',
-    nome: 'Gerenciar acessos',
-    descricao: 'Administrar papeis e permissoes.',
-  },
-  {
-    codigo: 'GERENCIAR_COMISSOES',
-    nome: 'Gerenciar comissoes',
-    descricao: 'Visualizar e administrar comissoes.',
-  },
-  {
     codigo: CODIGOS_PAPEL.ADMINISTRADOR,
     nome: 'Administrador',
     descricao: 'Gerencia as configuracoes e a operacao da barbearia.',
@@ -37,6 +27,16 @@ const dadosPapeis = [
 ] as const;
 
 const dadosPermissoes = [
+  {
+    codigo: 'GERENCIAR_ACESSOS',
+    nome: 'Gerenciar acessos',
+    descricao: 'Administrar papeis e permissoes.',
+  },
+  {
+    codigo: 'GERENCIAR_COMISSOES',
+    nome: 'Gerenciar comissoes',
+    descricao: 'Visualizar e administrar comissoes.',
+  },
   {
     codigo: 'GERENCIAR_USUARIOS',
     nome: 'Gerenciar usuarios',

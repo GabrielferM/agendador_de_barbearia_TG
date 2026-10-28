@@ -17,7 +17,7 @@ function resposta(data: unknown) {
   });
 }
 
-function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR") {
+function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR", gerenciarUsuarios = false) {
   vi.mocked(fetch).mockImplementation((entrada) => {
     const url = String(entrada);
     if (url.endsWith("/auth/me"))
@@ -28,7 +28,7 @@ function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR") {
             nome: "Pessoa Teste",
             email: "pessoa@exemplo.com",
             papel,
-            permissoes: papel === "ADMINISTRADOR" ? ["GERENCIAR_AGENDAMENTOS"] : [],
+            permissoes: papel === "ADMINISTRADOR" ? ["GERENCIAR_AGENDAMENTOS", ...(gerenciarUsuarios ? ["GERENCIAR_USUARIOS"] : [])] : [],
           },
         }),
       );
@@ -133,7 +133,7 @@ describe("dashboards", () => {
 
   it("navega pela sidebar e destaca a área administrativa atual", async () => {
     vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
-    renderizar("/admin", "ADMINISTRADOR");
+    renderizar("/admin", "ADMINISTRADOR", true);
     const link = await screen.findByRole("link", { name: "Clientes" });
     await userEvent.click(link);
     expect(

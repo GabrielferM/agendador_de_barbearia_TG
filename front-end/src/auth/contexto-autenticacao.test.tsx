@@ -48,6 +48,19 @@ describe("sessão e rotas protegidas", () => {
     );
   });
 
+  it("atualiza permissões da sessão e a visibilidade do menu sem novo login", async () => {
+    const usuario = { id: 1, nome: "Admin", email: "admin@teste.local", papel: "ADMINISTRADOR", permissoes: [] as string[] };
+    vi.mocked(fetch).mockImplementation(async () => new Response(JSON.stringify({ usuario }), { status: 200 }));
+    const { queryClient } = renderizar("/admin");
+    await screen.findByRole("heading", { name: "Dashboard administrativo" });
+    expect(screen.queryByRole("link", { name: "Financeiro" })).not.toBeInTheDocument();
+    queryClient.setQueryData(["privado"], { antigo: true });
+    usuario.permissoes = ["GERENCIAR_COMISSOES"];
+    await userEvent.click(screen.getByRole("button", { name: "Atualizar acesso" }));
+    expect(await screen.findByRole("link", { name: "Financeiro" })).toHaveAttribute("href", "/admin/financeiro");
+    expect(queryClient.getQueryData(["privado"])).toBeUndefined();
+  });
+
   it("redireciona um papel autenticado para sua própria área", async () => {
     vi.mocked(fetch).mockResolvedValue(
       new Response(
