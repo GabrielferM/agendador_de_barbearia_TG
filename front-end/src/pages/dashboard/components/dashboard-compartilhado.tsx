@@ -94,10 +94,11 @@ export function DashboardLayout({
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: "America/Sao_Paulo",
   }).format(dataCabecalho);
 
   return (
-    <main className="min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[230px_minmax(0,1fr)]">
+    <main className={`${itens.some(item => item.destino?.startsWith("/admin")) ? "painel-administrador" : ""} min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[230px_minmax(0,1fr)]`}>
       <aside className="bg-primary px-4 py-5 text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
         <div className="flex items-center gap-3 border-b border-white/15 pb-5">
           <span
@@ -110,7 +111,7 @@ export function DashboardLayout({
             <p className="font-serif text-lg font-bold tracking-wide">
               CORTE CERTO
             </p>
-            <p className="text-[10px] tracking-[0.28em] text-secondary">
+            <p className="text-[10px] tracking-[0.28em] text-white/85">
               BARBEARIA
             </p>
           </div>
@@ -126,7 +127,7 @@ export function DashboardLayout({
                 end={item.destino === "/admin" || item.destino === "/barbeiro"}
                 to={item.destino}
                 className={({ isActive }) =>
-                  `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${isActive ? "bg-secondary/30 font-semibold" : "hover:bg-white/10"}`
+                  `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${isActive ? "bg-secondary text-foreground font-semibold" : "hover:bg-white/10"}`
                 }
               >
                 <Icone nome={item.icone} />
@@ -140,7 +141,7 @@ export function DashboardLayout({
                 title={
                   (item.desabilitado ?? !item.ativo) ? "Em breve" : undefined
                 }
-                className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${item.ativo ? "bg-secondary/30 font-semibold" : "cursor-not-allowed opacity-55"}`}
+                className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${item.ativo ? "bg-secondary text-foreground font-semibold" : "cursor-not-allowed opacity-55"}`}
               >
                 <Icone nome={item.icone} />
                 {item.rotulo}
@@ -165,7 +166,7 @@ export function DashboardLayout({
           <Icone nome="sair" />
           Sair
         </button>
-        <p className="mt-5 hidden border-t border-white/15 pt-5 text-xs leading-5 text-secondary lg:block">
+        <p className="mt-5 hidden border-t border-white/15 pt-5 text-xs leading-5 text-white/85 lg:block">
           Mais que um corte.
           <br />É confiança.
         </p>
@@ -306,9 +307,9 @@ export function Barras({
   moedaValores?: boolean;
 }) {
   const maximo = Math.max(...pontos.map((item) => item.valor), 1);
-  if (!pontos.length)
+  if (!pontos.length || pontos.every(item => item.valor === 0))
     return (
-      <p className="py-12 text-center text-sm text-muted">
+      <p className="py-6 text-center text-sm text-muted">
         Nenhum dado no período.
       </p>
     );
@@ -328,7 +329,7 @@ export function Barras({
           <div
             className="w-full rounded-t bg-secondary"
             style={{
-              height: `${Math.max((item.valor / maximo) * 120, item.valor ? 8 : 2)}px`,
+              height: `${Math.max((item.valor / maximo) * 120, item.valor ? 8 : 0)}px`,
             }}
           />
           <span className="text-[10px] text-muted">{dataCurta(item.data)}</span>

@@ -36,7 +36,7 @@ export function BarbeirosAdministrador() {
         <p role="alert">Você não possui permissão para consultar barbeiros.</p>
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap gap-3">
+          <div className="admin-toolbar">
             <label className="flex-1">
               Buscar barbeiro
               <input
@@ -106,10 +106,7 @@ export function BarbeirosAdministrador() {
                   Próxima
                 </button>
               </nav>
-              <p className="text-sm text-muted">
-                Especialidades, jornada individual e percentual padrão de
-                comissão ainda não são cadastrados no sistema.
-              </p>
+
             </>
           )}
         </>

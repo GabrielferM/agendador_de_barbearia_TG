@@ -11,12 +11,13 @@ O produto usa uma identidade inspirada em café e barbearia: marrom escuro como 
 | Token | Valor | Uso semântico |
 | --- | --- | --- |
 | `background` | `#F7F3EE` | Fundo principal da aplicação. |
+| `support` | `#EEE4D8` | Filtros e cabeçalhos de apoio. |
 | `surface` | `#FFFFFF` | Superfícies elevadas, como cards, campos e painéis. |
 | `primary` | `#5C3A21` | Ação principal, links e destaque de marca. |
 | `primary-hover` | `#472C19` | Estado hover da ação primária. |
 | `secondary` | `#C89B6D` | Apoio visual e ações secundárias. |
 | `foreground` | `#2B2118` | Texto e ícones de maior contraste. |
-| `muted` | `#8B7B6B` | Texto auxiliar, descrições e placeholders. |
+| `muted` | `#716151` | Texto auxiliar, descrições e placeholders. |
 | `border` | `#E7DDD3` | Contornos e separadores. |
 | `success` | `#4F7A55` | Estados e mensagens de sucesso. |
 | `danger` | `#B84A4A` | Estados destrutivos, erros e alertas críticos. |
@@ -65,3 +66,7 @@ Ao criar um componente, escolha a intenção visual antes da cor: página (`back
 O modo escuro deve sobrescrever esses mesmos tokens em `.dark` ou `[data-theme="dark"]` dentro de `src/index.css`; os componentes não devem mudar suas classes. Ao implementá-lo, mantenha os mapeamentos HeroUI (`accent`, campos e estados) alinhados aos tokens semânticos e atualize este documento.
 
 Na página inicial, preserve o dourado (`secondary`) para ornamentos e títulos grandes sobre marrom. Para textos pequenos sobre `primary`, use branco: o contraste entre `secondary` e `primary` é aproximadamente 4,02:1, abaixo de 4,5:1 para texto normal. Descrições dos cards usam `foreground` sobre superfícies claras. A paleta permanece inalterada.
+
+Todos os tokens oficiais são mapeados explicitamente em `@theme inline`, incluindo
+`support`. O texto auxiliar foi escurecido para contraste em fundos creme/bege.
+O seletor `.painel-administrador` limita a composição de tabelas e toolbars a esse perfil.
