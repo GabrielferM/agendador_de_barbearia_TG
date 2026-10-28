@@ -7,6 +7,8 @@
  */
 
 export interface AtualizarServicoDto {
+  /** Disponibilidade para novos agendamentos. */
+  ativo?: boolean;
   /** @minLength 2 */
   nome?: string;
   descricao?: string;

@@ -87,3 +87,13 @@ independente da conta. Exclusão confirma e preserva conflitos de agenda/comiss�
 A gestão invalida consultas administrativas, catálogo público e disponibilidade.
 Validação de interface usa HTTP simulado; persistência e inspeção visual reais
 permanecem pendentes em homologação.
+
+### Gestão de serviços
+
+Cadastro, detalhe, edição, situação e exclusão usam `/servicos`. O PATCH valida e
+persiste `ativo` booleano, inclusive false. O catálogo administrativo expõe `preco`;
+o formulário de domínio carrega `precoBase` do detalhe e envia esse campo explicitamente.
+Inativação impede novas seleções; editar catálogo não reescreve AgendamentoServico.
+Preço deve ser positivo com até duas casas e duração inteira positiva. Exclusão
+preserva conflito com vínculos. Cliente Orval regenerado a partir do OpenAPI atual.
+Testes cobrem false persistido e rejeição HTTP de string no lugar de booleano.

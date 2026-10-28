@@ -7,9 +7,14 @@ import {
   EstadoErro,
 } from "../../components/dashboard-compartilhado";
 import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
-import { estiloBotao, estiloCampo } from "../components/formulario-cadastro";
+import { estiloBotao, estiloCampo, estiloPrimario } from "../components/formulario-cadastro";
 import { IndicadoresServicos, CatalogoServicos } from "./components/components";
 import { consultarServicos } from "./services/servicos-api";
+
+import { useGestaoCadastro } from '../components/gestao-cadastro';
+import { EditorCadastro, AcoesCadastro } from '../components/editor-cadastro';
+import type { CampoCadastro } from '../components/formulario-cadastro';
+import { buscarServico, salvarServico, excluirServico } from './services/gestao-servicos-api';
 
 export function ServicosAdministrador() {
   const { usuario } = useAutenticacao();
@@ -17,6 +22,13 @@ export function ServicosAdministrador() {
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
   const [pagina, setPagina] = useState(1);
+  const gestao = useGestaoCadastro({ buscar: buscarServico, salvar: salvarServico, excluir: excluirServico }, () => setPagina(1));
+  const campos: CampoCadastro[] = [
+    { nome: 'nome', rotulo: 'Nome', obrigatorio: true, tamanhoMinimo: 2 }, { nome: 'descricao', rotulo: 'Descrição' },
+    { nome: 'precoBase', rotulo: 'Preço base (R$)', tipo: 'number', obrigatorio: true, minimo: 0.01, passo: '0.01' },
+    { nome: 'duracaoMinutos', rotulo: 'Duração (minutos)', tipo: 'number', obrigatorio: true, minimo: 1, passo: '1' },
+    ...(gestao.editor?.id ? [{ nome: 'ativo', rotulo: 'Situação', obrigatorio: true, opcoes: [{ valor: 'true', rotulo: 'Ativo' }, { valor: 'false', rotulo: 'Inativo' }] }] : []),
+  ];
   const consulta = useQuery({
     queryKey: ["admin", usuario?.id, "servicos", busca, status, pagina],
     enabled: permitido,
@@ -25,7 +37,7 @@ export function ServicosAdministrador() {
   });
   return (
     <DashboardLayout
-      titulo="Servicos"
+      titulo="Serviços"
       subtitulo="Consulte os serviços oferecidos pela barbearia"
       itens={MENU_ADMINISTRADOR}
     >
@@ -35,7 +47,7 @@ export function ServicosAdministrador() {
         <>
           <div className="admin-toolbar">
             <label className="flex-1">
-              Buscar servico
+              Buscar serviço
               <input
                 className={estiloCampo}
                 value={busca}
@@ -67,6 +79,8 @@ export function ServicosAdministrador() {
               </select>
             </label>
           </div>
+          <button className={estiloPrimario} disabled={gestao.gravar.isPending || gestao.abrir.isPending} onClick={gestao.novo}>Novo serviço</button>
+          <EditorCadastro gestao={gestao} campos={campos} />
           {consulta.isPending ? (
             <EstadoCarregamento />
           ) : consulta.isError ? (
@@ -77,7 +91,7 @@ export function ServicosAdministrador() {
           ) : (
             <>
               <IndicadoresServicos dados={consulta.data.indicadores} />
-              <CatalogoServicos servicos={consulta.data.data} />
+              <CatalogoServicos servicos={consulta.data.data} acoes={s => <AcoesCadastro gestao={gestao} id={s.id} nome={s.nome} />} />
               <nav
                 aria-label="Paginação de servicos"
                 className="my-5 flex items-center gap-3"
