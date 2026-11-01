@@ -1,0 +1,21 @@
+.painel-catalogo .filtros-catalogo { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 16px; }
+.painel-catalogo .filtros-catalogo label { display: grid; gap: 6px; font-size: 14px; }
+.painel-catalogo .filtros-catalogo label:first-child { flex: 1; min-width: 180px; max-width: 480px; }
+.painel-catalogo .filtros-catalogo input, .painel-catalogo .filtros-catalogo select { width: 100%; height: 40px; background: var(--surface); }
+.painel-catalogo .filtros-catalogo select { min-width: 150px; }
+.painel-catalogo table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.painel-catalogo th { background: var(--background); font-weight: 600; }
+.painel-catalogo th, .painel-catalogo td { padding: 12px; vertical-align: middle; }
+.painel-catalogo td { border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.painel-catalogo table caption { text-align: left; padding: 0 0 12px; font-weight: 600; }
+.painel-catalogo .numero { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.painel-catalogo button { min-height: 36px; }
+.painel-catalogo form input, .painel-catalogo form select { min-width: 0; width: 100%; }
+@media (max-width: 639px) { .painel-catalogo .filtros-catalogo { align-items: stretch; flex-direction: column; } .painel-catalogo .filtros-catalogo label:first-child { max-width: none; } }
+
+.painel-catalogo form > div:last-child { border-top: 1px solid var(--border); padding-top: 12px; }
+.painel-catalogo form button[type="submit"] { background: var(--primary); color: var(--surface); }
+.painel-catalogo form input:disabled, .painel-catalogo form select:disabled { opacity: 1; color: var(--foreground); }
+.painel-catalogo > [role="status"], .painel-catalogo > p[role="alert"] { padding: 12px 16px; }
+.painel-catalogo th, .painel-catalogo button, .painel-catalogo td > span { white-space: nowrap; }
+.painel-catalogo td { overflow-wrap: normal; }

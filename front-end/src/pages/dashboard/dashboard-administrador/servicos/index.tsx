@@ -7,9 +7,11 @@ import {
   EstadoErro,
 } from "../../components/dashboard-compartilhado";
 import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
-import { estiloBotao, estiloCampo } from "../components/formulario-cadastro";
+import { estiloCampo } from "../components/formulario-cadastro";
 import { IndicadoresServicos, CatalogoServicos } from "./components/components";
 import { consultarServicos } from "./services/servicos-api";
+
+import { PainelCatalogo, PaginacaoCatalogo } from "../components/painel-catalogo";
 
 export function ServicosAdministrador() {
   const { usuario } = useAutenticacao();
@@ -25,17 +27,18 @@ export function ServicosAdministrador() {
   });
   return (
     <DashboardLayout
-      titulo="Servicos"
+      titulo="Serviços"
       subtitulo="Consulte os serviços oferecidos pela barbearia"
       itens={MENU_ADMINISTRADOR}
     >
       {!permitido ? (
-        <p role="alert">Você não possui permissão para consultar servicos.</p>
+        <p role="alert">Você não possui permissão para consultar serviços.</p>
       ) : (
-        <>
-          <div className="mb-5 flex flex-wrap gap-3">
-            <label className="flex-1">
-              Buscar servico
+        <PainelCatalogo>
+          {consulta.data && !consulta.isError && <IndicadoresServicos dados={consulta.data.indicadores} />}
+          <div className="filtros-catalogo">
+            <label >
+              Buscar serviço
               <input
                 className={estiloCampo}
                 value={busca}
@@ -76,39 +79,11 @@ export function ServicosAdministrador() {
             />
           ) : (
             <>
-              <IndicadoresServicos dados={consulta.data.indicadores} />
-              <CatalogoServicos servicos={consulta.data.data} />
-              <nav
-                aria-label="Paginação de servicos"
-                className="my-5 flex items-center gap-3"
-              >
-                <button
-                  className={estiloBotao}
-                  disabled={pagina <= 1}
-                  onClick={() => setPagina(pagina - 1)}
-                >
-                  Anterior
-                </button>
-                <span>
-                  Página {pagina} de{" "}
-                  {Math.max(1, consulta.data.meta.totalPaginas)} ·{" "}
-                  {consulta.data.meta.total} servicos
-                </span>
-                <button
-                  className={estiloBotao}
-                  disabled={pagina >= consulta.data.meta.totalPaginas}
-                  onClick={() => setPagina(pagina + 1)}
-                >
-                  Próxima
-                </button>
-              </nav>
-              <p className="text-sm text-muted">
-                Categorias e percentuais padrão de comissão ainda não são
-                cadastrados no sistema.
-              </p>
+              <div className="min-w-0 p-4 pt-0"><CatalogoServicos servicos={consulta.data.data} /><p className="mt-4 text-sm text-foreground">Categorias e percentuais padrão de comissão ainda não são cadastrados no sistema.</p></div>
+              <PaginacaoCatalogo pagina={pagina} totalPaginas={consulta.data.meta.totalPaginas} total={consulta.data.meta.total} entidade="serviços" mudar={setPagina} />
             </>
           )}
-        </>
+        </PainelCatalogo>
       )}
     </DashboardLayout>
   );

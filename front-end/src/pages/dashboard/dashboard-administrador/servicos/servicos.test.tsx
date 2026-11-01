@@ -122,7 +122,7 @@ it("envia paginação e filtros ao servidor", async () => {
     expect.anything(),
   );
   await userEvent.type(
-    screen.getByRole("textbox", { name: "Buscar servico" }),
+    screen.getByRole("textbox", { name: "Buscar serviço" }),
     "API",
   );
   expect(fetch).toHaveBeenLastCalledWith(
