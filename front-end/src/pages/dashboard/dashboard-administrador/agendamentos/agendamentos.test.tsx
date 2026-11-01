@@ -1,12 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import type { DiaAgenda } from "./types";
 import App from "../../../../App";
 
+let todosStatus = false, duplicado = false, diaErrado = false, negado = false;
 let permitido = true, falha = false, invalida = false, vazio = false, falhaRede = false;
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 beforeEach(() => {
+  todosStatus = false; duplicado = false; diaErrado = false; negado = false;
   permitido = true; falha = false; invalida = false; vazio = false; falhaRede = false;
   vi.setSystemTime(new Date("2026-10-26T15:00:00Z"));
   vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
@@ -16,11 +19,12 @@ beforeEach(() => {
       id: 1, nome: "Administrador", email: "admin@exemplo.com", papel: "ADMINISTRADOR",
       permissoes: permitido ? ["GERENCIAR_AGENDAMENTOS"] : [],
     } });
+    if (negado) return json({}, 403);
     if (falhaRede) throw new TypeError("Failed to fetch");
     if (falha) return json({}, 503);
     if (invalida) return json({ dias: [] });
     const inicio = url.searchParams.get("inicioDe")!, fim = url.searchParams.get("inicioAte")!;
-    const dias = [];
+    const dias: DiaAgenda[] = [];
     for (let data = inicio; data <= fim;) {
       dias.push({ data, rotulo: "Dia", agendamentos: vazio || data !== inicio ? [] : [{
         id: 25, inicio: `${data}T09:00:00-03:00`, fim: `${data}T10:00:00-03:00`,
@@ -28,7 +32,14 @@ beforeEach(() => {
       }] });
       data = new Date(Date.parse(data) + 86_400_000).toISOString().slice(0, 10);
     }
-    return json({ dias });
+    if (todosStatus && dias[0].agendamentos.length) {
+      dias[0].agendamentos = (["CONFIRMADO", "PENDENTE", "EM_ATENDIMENTO", "CONCLUIDO", "CANCELADO", "NAO_COMPARECEU"] as const).map((status, i) => ({
+        ...dias[0].agendamentos[0], id: 30 + i, status, inicio: `${inicio}T${String(15 - i).padStart(2, "0")}:00:00-03:00`,
+      }));
+    }
+    if (duplicado) dias[0].agendamentos.push(dias[0].agendamentos[0]);
+    if (diaErrado) dias[0].agendamentos[0].inicio = `${inicio}T02:59:00Z`;
+    return json({ dias, totaisPorStatus: { CONCLUIDO: 999 } });
   }));
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.useRealTimers(); });
@@ -86,4 +97,40 @@ it("não consulta a agenda sem permissão", async () => {
   permitido = false; abrir();
   expect(await screen.findByText("Você não possui permissão para consultar agendamentos.")).toBeInTheDocument();
   expect(vi.mocked(fetch).mock.calls.some(([entrada]) => String(entrada).includes("/dashboard/"))).toBe(false);
+});
+
+it("conta cada atendimento uma vez nos seis status e sincroniza lista, seleção e total", async () => {
+  todosStatus = true; abrir(); await screen.findAllByText("Cliente da API");
+  const resumo = within(screen.getByRole("complementary", { name: "Resumo do dia selecionado" }));
+  for (const rotulo of ["Confirmados", "Pendentes", "Em atendimento", "Concluídos", "Cancelados", "Não compareceram"])
+    expect(resumo.getByText(rotulo, { selector: "dt" }).nextElementSibling).toHaveTextContent("1");
+  expect(resumo.getAllByRole("listitem")).toHaveLength(6);
+  expect(resumo.getAllByRole("listitem")[0]).toHaveTextContent("10:00");
+  expect(screen.getByText("6 agendamentos na semana")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: /27 de outubro/ }));
+  expect(resumo.getAllByRole("definition").every(item => item.textContent === "0")).toBe(true);
+  expect(resumo.queryAllByRole("listitem")).toHaveLength(0);
+  expect(resumo.getByText(/27 de outubro/)).toBeInTheDocument();
+  expect(screen.getByText("6 agendamentos na semana")).toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Hoje" }));
+  expect(resumo.getAllByRole("listitem")).toHaveLength(6);
+});
+it.each(["duplicado", "diaErrado"])("rejeita %s em vez de apresentar contagens incorretas", async caso => {
+  duplicado = caso === "duplicado"; diaErrado = caso === "diaErrado"; abrir();
+  expect(await screen.findByText("A API retornou uma agenda inválida. Tente novamente.")).toBeInTheDocument();
+  expect(screen.queryByText("Resumo do dia")).not.toBeInTheDocument();
+});
+it("mostra 403 do servidor sem resumo zerado nem estado vazio", async () => {
+  negado = true; abrir();
+  expect(await screen.findByRole("alert")).toHaveTextContent("Você não possui permissão");
+  expect(screen.queryByText("Resumo do dia")).not.toBeInTheDocument();
+  expect(screen.queryByText("Nenhum agendamento neste período.")).not.toBeInTheDocument();
+});
+it("mantém seleção acessível no período totalmente vazio", async () => {
+  vazio = true; abrir(); await screen.findByText("Nenhum agendamento neste período.");
+  expect(screen.queryByText("Sem agendamentos")).not.toBeInTheDocument();
+  const dia = screen.getByRole("button", { name: /28 de outubro/ });
+  await userEvent.click(dia);
+  expect(dia).toHaveAttribute("aria-pressed", "true");
+  expect(within(screen.getByRole("complementary", { name: "Resumo do dia selecionado" })).getByText(/28 de outubro/)).toBeInTheDocument();
 });

@@ -1,11 +1,15 @@
 import type { VisualizacaoAgenda } from "./types";
 
-export function hojeBarbearia() {
+export function chaveDiaBarbearia(data: Date) {
   const partes = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit",
-  }).formatToParts(new Date());
+  }).formatToParts(data);
   const valor = (tipo: string) => partes.find(parte => parte.type === tipo)!.value;
   return `${valor("year")}-${valor("month")}-${valor("day")}`;
+}
+
+export function hojeBarbearia() {
+  return chaveDiaBarbearia(new Date());
 }
 
 export function deslocarData(data: string, dias: number) {
@@ -38,4 +42,26 @@ export function formatarDia(data: string, completa = false) {
     timeZone: "America/Sao_Paulo",
     ...(completa ? { dateStyle: "full" as const } : { day: "2-digit" as const, month: "2-digit" as const }),
   }).format(new Date(`${data}T12:00:00-03:00`));
+}
+
+export function formatarPeriodo(inicio: string, fim: string) {
+  const formatar = (data: string, opcoes: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", ...opcoes })
+      .format(new Date(`${data}T12:00:00Z`)).replaceAll(" de ", " ").replaceAll(".", "");
+  const diaMes = { day: "numeric", month: "short" } as const;
+  if (inicio === fim) return formatar(inicio, { ...diaMes, year: "numeric" });
+  if (inicio.slice(0, 4) !== fim.slice(0, 4))
+    return `${formatar(inicio, { ...diaMes, year: "numeric" })} – ${formatar(fim, { ...diaMes, year: "numeric" })}`;
+  const primeiro = inicio.slice(0, 7) === fim.slice(0, 7)
+    ? String(Number(inicio.slice(8))) : formatar(inicio, diaMes);
+  return `${primeiro} – ${formatar(fim, diaMes)}, ${fim.slice(0, 4)}`;
+}
+
+/** Espaços antes/depois do mês mantêm segunda-feira na primeira coluna. */
+export function celulasMes<T extends { data: string }>(dias: T[]): (T | null)[] {
+  if (!dias.length) return [];
+  const deslocamento = (new Date(`${dias[0].data}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const celulas: (T | null)[] = [...Array<null>(deslocamento).fill(null), ...dias];
+  while (celulas.length % 7) celulas.push(null);
+  return celulas;
 }

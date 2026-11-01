@@ -41,3 +41,18 @@ Os testes em `pages/inicio/inicio.test.tsx` cobrem ordem das seções, destinos,
 Essas verificações usam jsdom e respostas simuladas: não substituem inspeção visual em navegador nem comprovam dados de uma API ativa.
 
 A seção Sobre é verificada por região nomeada, três destaques, duas imagens com texto alternativo e dimensões reservadas, ausência do antigo selo demonstrativo e link para `/agendar`. Contato mantém seu aviso demonstrativo. A ação do Sobre preserva o rascunho existente.
+
+## Agenda administrativa
+
+`agendamentos.test.tsx` usa o transporte HTTP real com respostas simuladas para
+verificar os seis status (um atendimento com vários serviços continua valendo um),
+ordenação, seleção e retorno para Hoje, totais diários versus período, HTTP 403/503,
+rede, resposta inválida, IDs duplicados e agrupamento no dia incorreto. A demonstração
+habilitada não substitui a API. `calendario.test.ts` cobre a meia-noite de São Paulo,
+semana atravessando o ano, fevereiro bissexto e alinhamento dos doze meses.
+
+A inspeção visual desta alteração foi executada em Chromium headless a 1440 × 1000 e
+390 × 844, com sessão e HTTP simulados, nos cenários vazio, preenchido, 18 atendimentos
+por dia e Dia/Semana/Mês. Conferiu seleção, contagem diária, ausência de overflow da
+página no celular, destaque marrom ativo e ausência de sobreposição do aviso mensal
+com os cabeçalhos das datas. As capturas não representam uma API ou banco ativo.
