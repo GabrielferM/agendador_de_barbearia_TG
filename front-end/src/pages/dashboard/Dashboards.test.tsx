@@ -17,7 +17,11 @@ function resposta(data: unknown) {
   });
 }
 
-function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR", gerenciarUsuarios = false) {
+function renderizar(
+  caminho: string,
+  papel: "BARBEIRO" | "ADMINISTRADOR",
+  gerenciarUsuarios = false,
+) {
   vi.mocked(fetch).mockImplementation((entrada) => {
     const url = String(entrada);
     if (url.endsWith("/auth/me"))
@@ -28,7 +32,13 @@ function renderizar(caminho: string, papel: "BARBEIRO" | "ADMINISTRADOR", gerenc
             nome: "Pessoa Teste",
             email: "pessoa@exemplo.com",
             papel,
-            permissoes: papel === "ADMINISTRADOR" ? ["GERENCIAR_AGENDAMENTOS", ...(gerenciarUsuarios ? ["GERENCIAR_USUARIOS"] : [])] : [],
+            permissoes:
+              papel === "ADMINISTRADOR"
+                ? [
+                    "GERENCIAR_AGENDAMENTOS",
+                    ...(gerenciarUsuarios ? ["GERENCIAR_USUARIOS"] : []),
+                  ]
+                : ["GERENCIAR_PROPRIA_AGENDA"],
           },
         }),
       );
@@ -94,7 +104,9 @@ describe("dashboards", () => {
 
   it("carrega apenas a agenda vinculada ao endpoint do barbeiro", async () => {
     renderizar("/barbeiro", "BARBEIRO");
-    expect(await screen.findByText("Clientes na semana")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Clientes nos últimos 7 dias"),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Minha agenda de hoje" }),
     ).toBeInTheDocument();
@@ -111,24 +123,23 @@ describe("dashboards", () => {
     expect(screen.getByText("12")).toBeInTheDocument();
     expect(screen.queryByText("Dados demonstrativos")).not.toBeInTheDocument();
     expect(screen.queryByText("Matheus Lima")).not.toBeInTheDocument();
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/dashboard\/administrador$/), expect.anything());
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/dashboard\/administrador$/),
+      expect.anything(),
+    );
   });
 
-  it("mostra agenda e próximos horários mockados do barbeiro", async () => {
+  it("consulta o painel real do barbeiro mesmo com mocks habilitados", async () => {
     vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     renderizar("/barbeiro", "BARBEIRO");
-
-    expect(await screen.findByText("Dados demonstrativos")).toBeInTheDocument();
-    expect(screen.getByText("João Oliveira")).toBeInTheDocument();
-    expect(screen.getByText("Vinicius Almeida")).toBeInTheDocument();
-    expect(screen.getAllByText("08/09").length).toBeGreaterThan(0);
     expect(
-      vi
-        .mocked(fetch)
-        .mock.calls.some(([entrada]) =>
-          String(entrada).includes("/dashboard/"),
-        ),
-    ).toBe(false);
+      await screen.findByText("Clientes nos últimos 7 dias"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Dados demonstrativos")).not.toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/dashboard\/barbeiro$/),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
   });
 
   it("navega pela sidebar e destaca a área administrativa atual", async () => {
@@ -147,14 +158,22 @@ describe("dashboards", () => {
 
   it("impede operações de clientes sem a permissão administrativa", async () => {
     renderizar("/admin/clientes", "ADMINISTRADOR");
-    expect(await screen.findByText("Você não possui permissão para gerenciar clientes.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Novo cliente" })).not.toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Você não possui permissão para gerenciar clientes.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Novo cliente" }),
+    ).not.toBeInTheDocument();
   });
 
   it("não consulta o financeiro sem permissão", async () => {
     renderizar("/admin/financeiro", "ADMINISTRADOR");
     expect(
-      await screen.findByText("Você não possui permissão para consultar o financeiro."),
+      await screen.findByText(
+        "Você não possui permissão para consultar o financeiro.",
+      ),
     ).toBeInTheDocument();
     expect(
       vi
@@ -168,7 +187,7 @@ describe("dashboards", () => {
   it("impede que barbeiro acesse uma rota administrativa complementar", async () => {
     renderizar("/admin/clientes", "BARBEIRO");
     expect(
-      await screen.findByRole("heading", { name: "Olá! 👋" }),
+      await screen.findByRole("heading", { name: "Olá!" }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe("/barbeiro");
   });

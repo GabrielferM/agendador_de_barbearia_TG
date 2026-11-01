@@ -37,8 +37,69 @@ export const obterDashboardAdministrador = async (signal?: AbortSignal) => {
   validarDashboardAdministrador(dados);
   return dados;
 };
-export const obterDashboardBarbeiro = () =>
-  obter<DashboardBarbeiroResposta>("/dashboard/barbeiro");
+export const obterDashboardBarbeiro = async (signal?: AbortSignal) => {
+  const dados = await obter<DashboardBarbeiroResposta>(
+    "/dashboard/barbeiro",
+    signal,
+  );
+  const numero = (v: unknown) =>
+    typeof v === "number" && Number.isFinite(v) && v >= 0;
+  const data = (v: unknown) =>
+    typeof v === "string" && Number.isFinite(Date.parse(v));
+  const indicador = (v: DashboardBarbeiroResposta["receitaHoje"]) =>
+    v &&
+    numero(v.valor) &&
+    (v.variacaoPercentual === null ||
+      (typeof v.variacaoPercentual === "number" &&
+        Number.isFinite(v.variacaoPercentual)));
+  const resumo = (v: DashboardBarbeiroResposta["agendaHoje"][number]) =>
+    v &&
+    Number.isSafeInteger(v.id) &&
+    v.id > 0 &&
+    data(v.inicio) &&
+    typeof v.cliente === "string" &&
+    typeof v.barbeiro === "string" &&
+    [
+      "PENDENTE",
+      "CONFIRMADO",
+      "EM_ATENDIMENTO",
+      "CONCLUIDO",
+      "CANCELADO",
+      "NAO_COMPARECEU",
+    ].includes(v.status) &&
+    numero(v.total) &&
+    Array.isArray(v.servicos) &&
+    v.servicos.every((s) => typeof s === "string");
+  if (
+    !dados ||
+    !data(dados.geradoEm) ||
+    ![dados.atendimentosHoje, dados.receitaHoje, dados.clientesNaSemana].every(
+      indicador,
+    ) ||
+    !Array.isArray(dados.agendaHoje) ||
+    !dados.agendaHoje.every(resumo) ||
+    !Array.isArray(dados.proximosAgendamentos) ||
+    !dados.proximosAgendamentos.every(
+      (v) => resumo(v) && ["PENDENTE", "CONFIRMADO"].includes(v.status),
+    ) ||
+    !Array.isArray(dados.servicosNoMes) ||
+    !dados.servicosNoMes.every(
+      (v) =>
+        v &&
+        typeof v.nome === "string" &&
+        Number.isSafeInteger(v.quantidade) &&
+        numero(v.quantidade) &&
+        numero(v.percentual) &&
+        v.percentual <= 100,
+    ) ||
+    !Array.isArray(dados.atendimentosUltimosSeteDias) ||
+    !dados.atendimentosUltimosSeteDias.every(
+      (v) => v && data(v.data) && numero(v.valor),
+    )
+  )
+    throw new Error("Resposta inválida do painel.");
+  return dados;
+};
 
 function validarDashboardAdministrador(dados: DashboardAdministradorResposta) {
   const numero = (valor: unknown) =>

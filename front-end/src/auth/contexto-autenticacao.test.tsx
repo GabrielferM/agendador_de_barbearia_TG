@@ -65,7 +65,7 @@ describe("sessão e rotas protegidas", () => {
     );
     renderizar("/admin");
     expect(
-      await screen.findByRole("heading", { name: "Olá! 👋" }),
+      await screen.findByRole("heading", { name: "Olá!" }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe("/barbeiro");
   });

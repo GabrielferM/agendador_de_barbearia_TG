@@ -25,9 +25,15 @@ import {
 } from '../client';
 
 import type {
+  ClientesBarbeiroRespostaDto,
+  DashboardBarbeiroControllerClientesParams,
+  DashboardBarbeiroControllerHistoricoParams,
+  DashboardBarbeiroControllerServicosParams,
   DashboardBarbeiroRespostaDto,
   ErroRespostaDto,
-  LimiteRequisicoesRespostaDto
+  HistoricoBarbeiroRespostaDto,
+  LimiteRequisicoesRespostaDto,
+  ServicosBarbeiroRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -51,6 +57,396 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export type dashboardBarbeiroControllerServicosResponse200 = {
+  data: ServicosBarbeiroRespostaDto
+  status: 200
+}
+
+export type dashboardBarbeiroControllerServicosResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type dashboardBarbeiroControllerServicosResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type dashboardBarbeiroControllerServicosResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type dashboardBarbeiroControllerServicosResponseSuccess = (dashboardBarbeiroControllerServicosResponse200) & {
+  headers: Headers;
+};
+export type dashboardBarbeiroControllerServicosResponseError = (dashboardBarbeiroControllerServicosResponse401 | dashboardBarbeiroControllerServicosResponse403 | dashboardBarbeiroControllerServicosResponse429) & {
+  headers: Headers;
+};
+
+export type dashboardBarbeiroControllerServicosResponse = (dashboardBarbeiroControllerServicosResponseSuccess | dashboardBarbeiroControllerServicosResponseError)
+
+export const getDashboardBarbeiroControllerServicosUrl = (params?: DashboardBarbeiroControllerServicosParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/dashboard/barbeiro/servicos?${stringifiedParams}` : `${apiBaseUrl}/dashboard/barbeiro/servicos`
+}
+
+export const dashboardBarbeiroControllerServicos = async (params?: DashboardBarbeiroControllerServicosParams, options?: Parameters<typeof httpClient>[1]): Promise<dashboardBarbeiroControllerServicosResponse> => {
+
+  return httpClient<dashboardBarbeiroControllerServicosResponse>(getDashboardBarbeiroControllerServicosUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDashboardBarbeiroControllerServicosQueryKey = (params?: DashboardBarbeiroControllerServicosParams,) => {
+    return [
+    `${apiBaseUrl}/dashboard/barbeiro/servicos`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getDashboardBarbeiroControllerServicosQueryOptions = <TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: DashboardBarbeiroControllerServicosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDashboardBarbeiroControllerServicosQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>> = ({ signal }) => dashboardBarbeiroControllerServicos(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DashboardBarbeiroControllerServicosQueryResult = NonNullable<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>>
+export type DashboardBarbeiroControllerServicosQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+
+
+export function useDashboardBarbeiroControllerServicos<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: undefined |  DashboardBarbeiroControllerServicosParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>,
+          TError,
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDashboardBarbeiroControllerServicos<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerServicosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>,
+          TError,
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDashboardBarbeiroControllerServicos<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerServicosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useDashboardBarbeiroControllerServicos<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerServicosParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerServicos>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDashboardBarbeiroControllerServicosQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type dashboardBarbeiroControllerClientesResponse200 = {
+  data: ClientesBarbeiroRespostaDto
+  status: 200
+}
+
+export type dashboardBarbeiroControllerClientesResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type dashboardBarbeiroControllerClientesResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type dashboardBarbeiroControllerClientesResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type dashboardBarbeiroControllerClientesResponseSuccess = (dashboardBarbeiroControllerClientesResponse200) & {
+  headers: Headers;
+};
+export type dashboardBarbeiroControllerClientesResponseError = (dashboardBarbeiroControllerClientesResponse401 | dashboardBarbeiroControllerClientesResponse403 | dashboardBarbeiroControllerClientesResponse429) & {
+  headers: Headers;
+};
+
+export type dashboardBarbeiroControllerClientesResponse = (dashboardBarbeiroControllerClientesResponseSuccess | dashboardBarbeiroControllerClientesResponseError)
+
+export const getDashboardBarbeiroControllerClientesUrl = (params?: DashboardBarbeiroControllerClientesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/dashboard/barbeiro/clientes?${stringifiedParams}` : `${apiBaseUrl}/dashboard/barbeiro/clientes`
+}
+
+export const dashboardBarbeiroControllerClientes = async (params?: DashboardBarbeiroControllerClientesParams, options?: Parameters<typeof httpClient>[1]): Promise<dashboardBarbeiroControllerClientesResponse> => {
+
+  return httpClient<dashboardBarbeiroControllerClientesResponse>(getDashboardBarbeiroControllerClientesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDashboardBarbeiroControllerClientesQueryKey = (params?: DashboardBarbeiroControllerClientesParams,) => {
+    return [
+    `${apiBaseUrl}/dashboard/barbeiro/clientes`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getDashboardBarbeiroControllerClientesQueryOptions = <TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: DashboardBarbeiroControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDashboardBarbeiroControllerClientesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>> = ({ signal }) => dashboardBarbeiroControllerClientes(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DashboardBarbeiroControllerClientesQueryResult = NonNullable<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>>
+export type DashboardBarbeiroControllerClientesQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+
+
+export function useDashboardBarbeiroControllerClientes<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: undefined |  DashboardBarbeiroControllerClientesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>,
+          TError,
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDashboardBarbeiroControllerClientes<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>,
+          TError,
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDashboardBarbeiroControllerClientes<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useDashboardBarbeiroControllerClientes<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerClientesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerClientes>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDashboardBarbeiroControllerClientesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+export type dashboardBarbeiroControllerHistoricoResponse200 = {
+  data: HistoricoBarbeiroRespostaDto
+  status: 200
+}
+
+export type dashboardBarbeiroControllerHistoricoResponse401 = {
+  data: ErroRespostaDto
+  status: 401
+}
+
+export type dashboardBarbeiroControllerHistoricoResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type dashboardBarbeiroControllerHistoricoResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type dashboardBarbeiroControllerHistoricoResponseSuccess = (dashboardBarbeiroControllerHistoricoResponse200) & {
+  headers: Headers;
+};
+export type dashboardBarbeiroControllerHistoricoResponseError = (dashboardBarbeiroControllerHistoricoResponse401 | dashboardBarbeiroControllerHistoricoResponse403 | dashboardBarbeiroControllerHistoricoResponse429) & {
+  headers: Headers;
+};
+
+export type dashboardBarbeiroControllerHistoricoResponse = (dashboardBarbeiroControllerHistoricoResponseSuccess | dashboardBarbeiroControllerHistoricoResponseError)
+
+export const getDashboardBarbeiroControllerHistoricoUrl = (params?: DashboardBarbeiroControllerHistoricoParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `${apiBaseUrl}/dashboard/barbeiro/historico?${stringifiedParams}` : `${apiBaseUrl}/dashboard/barbeiro/historico`
+}
+
+export const dashboardBarbeiroControllerHistorico = async (params?: DashboardBarbeiroControllerHistoricoParams, options?: Parameters<typeof httpClient>[1]): Promise<dashboardBarbeiroControllerHistoricoResponse> => {
+
+  return httpClient<dashboardBarbeiroControllerHistoricoResponse>(getDashboardBarbeiroControllerHistoricoUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDashboardBarbeiroControllerHistoricoQueryKey = (params?: DashboardBarbeiroControllerHistoricoParams,) => {
+    return [
+    `${apiBaseUrl}/dashboard/barbeiro/historico`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getDashboardBarbeiroControllerHistoricoQueryOptions = <TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(params?: DashboardBarbeiroControllerHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDashboardBarbeiroControllerHistoricoQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>> = ({ signal }) => dashboardBarbeiroControllerHistorico(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DashboardBarbeiroControllerHistoricoQueryResult = NonNullable<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>>
+export type DashboardBarbeiroControllerHistoricoQueryError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+
+
+export function useDashboardBarbeiroControllerHistorico<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params: undefined |  DashboardBarbeiroControllerHistoricoParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>,
+          TError,
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDashboardBarbeiroControllerHistorico<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>,
+          TError,
+          Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDashboardBarbeiroControllerHistorico<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useDashboardBarbeiroControllerHistorico<TData = Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError = ErroRespostaDto | LimiteRequisicoesRespostaDto>(
+ params?: DashboardBarbeiroControllerHistoricoParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof dashboardBarbeiroControllerHistorico>>, TError, TData>>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDashboardBarbeiroControllerHistoricoQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
 
 export type dashboardBarbeiroControllerObterResponse200 = {
   data: DashboardBarbeiroRespostaDto
