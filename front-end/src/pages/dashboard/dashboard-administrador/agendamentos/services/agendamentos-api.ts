@@ -3,14 +3,35 @@ import { chaveDiaBarbearia } from "../calendario";
 import type { DiaAgenda } from "../types";
 import { ItemAgendaDashboardDtoStatus } from "../../../../../api/models/itemAgendaDashboardDtoStatus";
 
+export class ErroAgenda extends Error {
+  readonly status: number;
+  readonly esperarAte?: number;
+
+  constructor(status: number, headers: Headers) {
+    super(status === 429
+      ? "Limite de requisições atingido. Aguarde antes de tentar novamente."
+      : status === 403
+        ? "Você não possui permissão para consultar agendamentos."
+        : "Não foi possível carregar os agendamentos. Tente novamente.");
+    this.name = "ErroAgenda";
+    this.status = status;
+    if (status === 429) {
+      const valor = headers.get("Retry-After");
+      const segundos = valor?.trim() ? Number(valor) : NaN;
+      const prazo = Number.isFinite(segundos) && segundos >= 0
+        ? Date.now() + segundos * 1000
+        : valor && !Number.isFinite(segundos) ? Date.parse(valor) : NaN;
+      this.esperarAte = Number.isFinite(prazo) ? prazo : Date.now() + 60_000;
+    }
+  }
+}
+
 export async function consultarAgenda(inicioDe: string, inicioAte: string, signal?: AbortSignal): Promise<DiaAgenda[]> {
   const resposta = await agendamentoDashboardControllerObter({ inicioDe, inicioAte }, { signal }).catch(() => {
     throw new Error("Não foi possível carregar os agendamentos. Tente novamente.");
   });
   if (resposta.status !== 200) {
-    throw new Error(resposta.status === 403
-      ? "Você não possui permissão para consultar agendamentos."
-      : "Não foi possível carregar os agendamentos. Tente novamente.");
+    throw new ErroAgenda(resposta.status, resposta.headers);
   }
   const dados = resposta.data;
   const diasEsperados = Math.round((Date.parse(inicioAte) - Date.parse(inicioDe)) / 86_400_000) + 1;

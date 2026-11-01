@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAutenticacao } from "../../../auth/contexto-autenticacao";
 import { dataCurta, moeda } from "./dashboard-formatadores";
@@ -251,10 +251,19 @@ export function EstadoCarregamento() {
 export function EstadoErro({
   mensagem,
   tentarNovamente,
+  esperarAte,
 }: {
   mensagem: string;
   tentarNovamente: () => void;
+  esperarAte?: number;
 }) {
+  const [agora, setAgora] = useState(Date.now);
+  const segundos = Math.max(0, Math.ceil(((esperarAte ?? agora) - agora) / 1000));
+  useEffect(() => {
+    if (!esperarAte) return;
+    const timer = window.setInterval(() => setAgora(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [esperarAte]);
   return (
     <div
       className="rounded-2xl border border-danger bg-surface p-8 text-center"
@@ -264,9 +273,10 @@ export function EstadoErro({
       <button
         className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
         onClick={tentarNovamente}
+        disabled={segundos > 0}
         type="button"
       >
-        Tentar novamente
+        {segundos > 0 ? `Aguarde ${segundos} ${segundos === 1 ? "segundo" : "segundos"}` : "Tentar novamente"}
       </button>
     </div>
   );

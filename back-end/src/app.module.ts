@@ -28,10 +28,7 @@ import { DashboardBarbeiroModule } from './modules/dashboard-barbeiro/dashboard-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
-    ThrottlerModule.forRoot([
-      { name: 'global', ttl: 60_000, limit: 120 },
-      { name: 'login', ttl: 60_000, limit: 10 },
-    ]),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
     CommonModule,
     PrismaModule,
     AutenticacaoModule,

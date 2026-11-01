@@ -26,7 +26,11 @@ async function bootstrap() {
     CSRF_SECRET: configService.getOrThrow('CSRF_SECRET'),
   };
 
-  app.enableCors({ origin: corsOriginFor(environment), credentials: true });
+  app.enableCors({
+    origin: corsOriginFor(environment),
+    credentials: true,
+    exposedHeaders: ['Retry-After'],
+  });
   app.enableShutdownHooks();
   configurarSwagger(app, environment);
   await app.listen(environment.PORT);

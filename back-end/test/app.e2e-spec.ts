@@ -154,6 +154,24 @@ describe('AppController (e2e)', () => {
     }
   });
 
+  it('permite 120 consultas por rota e IP e bloqueia a próxima com Retry-After', async () => {
+    for (let i = 0; i < 120; i++) {
+      await request(app.getHttpServer()).get('/').expect(200);
+    }
+    const resposta = await request(app.getHttpServer()).get('/').expect(429);
+    expect(Number(resposta.headers['retry-after'])).toBeGreaterThan(0);
+    await request(app.getHttpServer()).get('/health').expect(200);
+  });
+
+  it('mantém o limite de dez tentativas exclusivamente no login', async () => {
+    for (let i = 0; i < 10; i++) {
+      await request(app.getHttpServer()).post('/auth/login').send({}).expect(400);
+    }
+    const resposta = await request(app.getHttpServer()).post('/auth/login').send({}).expect(429);
+    expect(Number(resposta.headers['retry-after'])).toBeGreaterThan(0);
+    await request(app.getHttpServer()).get('/').expect(200);
+  });
+
   it('protege comissões por sessão e permissão ativa, inclusive em acesso direto', async () => {
     await request(app.getHttpServer()).get('/comissoes').expect(401);
     const agente = request.agent(app.getHttpServer());

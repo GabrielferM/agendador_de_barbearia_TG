@@ -54,7 +54,7 @@ export class AutenticacaoController {
   @HttpCode(HttpStatus.OK)
   @Publico()
   @CsrfIsento()
-  @Throttle({ login: { limit: 10, ttl: 60_000 } })
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiBody({ type: LoginDto })
   @ApiOkResponse({ type: AutenticacaoRespostaDto })
   @ApiBadRequestResponse({ type: ErroRespostaDto, description: 'Dados de entrada inválidos.' })

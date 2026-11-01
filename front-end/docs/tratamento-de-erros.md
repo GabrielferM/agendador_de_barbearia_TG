@@ -27,3 +27,5 @@ O mutator rejeita corpo não JSON em respostas de sucesso. Em 4xx/5xx com corpo 
 No logout solicitado pelo usuário, o contexto verifica o status da resposta e sempre encerra o estado local. Quando não recebe sucesso 2xx, a tela de login informa que a sessão local foi encerrada, mas a revogação no servidor não pôde ser confirmada.
 
 Veja [segurança](seguranca-autenticacao.md) e [cenários de teste](testes.md). Mudanças no formato de erro exigem alinhamento com o [backend](../../back-end/doc/tratamento-de-erros.md).
+
+Na agenda administrativa, o adapter preserva o status em `ErroAgenda`. HTTP 429 mostra uma mensagem própria e desabilita a tentativa manual até o prazo de `Retry-After` (segundos ou data HTTP); na ausência de um valor válido, aguarda 60 segundos. Não há repetição automática de 4xx. O componente compartilhado de erro aceita esse prazo opcional; outros consumidores continuam com seu tratamento atual.

@@ -47,6 +47,8 @@ Para outra origem OpenAPI, defina `ORVAL_SWAGGER_URL` antes de gerar. A geraçã
 
 O QueryClient global usa `staleTime` de cinco minutos e `retry: 1` para queries; páginas podem sobrescrever essas opções. Respostas HTTP resolvidas não acionam retry como uma promise rejeitada. Para erros veja [tratamento de erros](tratamento-de-erros.md).
 
+A agenda administrativa usa chave por usuário e período, `staleTime: 60_000` e no máximo uma repetição para rede/5xx; erros HTTP 4xx, inclusive 429, não são repetidos automaticamente. Voltar a um período ainda válido reutiliza o cache. Após erro, foco da janela, reconexão e remontagem não repetem a consulta nessa tela. Consultas bem-sucedidas podem atualizar ao recuperar foco ou conexão depois de um minuto. A seleção de um dia na mesma semana não muda a chave. Não há polling. Um período novo exige uma consulta; navegar por vários períodos pode consumir o limite mesmo com cache correto.
+
 Referência: [mutator personalizado do Orval](https://orval.dev/docs/guides/custom-client/).
 
 ## Catálogo da página inicial

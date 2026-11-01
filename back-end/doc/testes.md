@@ -21,6 +21,7 @@ Geração e build não substituem testes. Não execute `prisma:migrate` como val
 - A suíte HTTP atual substitui PrismaService por mocks e define variáveis de teste. Não exige PostgreSQL ativo nem migrations; exige dependências e cliente Prisma gerado. Supertest pode precisar de permissão para abrir socket local.
 - Esses testes verificam raiz, saúde simulada, acesso anônimo, fluxo de login/sessão/CSRF/logout, rejeição segura de campos extras e contratos OpenAPI. Não comprovam integridade ou concorrência no banco real.
 - O e2e e `main.ts` usam o mesmo [configurador do ValidationPipe](../src/config/validacao.ts).
+- O e2e verifica 120 consultas permitidas na mesma rota/IP, bloqueio da 121ª, independência entre rotas e dez tentativas de login, com bloqueio da 11ª e header `Retry-After`. Usa o guard e o armazenamento de throttling reais, com aplicação nova por teste.
 - Os testes unitários de agendamento verificam uso do mesmo cliente transacional, repetição de `P2034`, conflito após três tentativas, sobreposição e validação de acesso. A concorrência real ainda exige PostgreSQL isolado.
 
 A suíte de disponibilidade cobre fuso, expediente, domingo, fechamento, soma dos serviços, horários adjacentes/sobrepostos e vínculos inativos. Os testes HTTP cobrem disponibilidade anônima, parâmetros, CSRF, criação, conflito e sanitização da resposta do cliente.

@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { DiaAgenda } from "./types";
 import App from "../../../../App";
+import { consultarAgenda } from "./services/agendamentos-api";
 
 let todosStatus = false, duplicado = false, diaErrado = false, negado = false;
 let permitido = true, falha = false, invalida = false, vazio = false, falhaRede = false;
@@ -45,7 +46,7 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.useRealTimers(); });
 function abrir() {
   window.history.pushState({}, "", "/admin/agendamentos");
-  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><App /></QueryClientProvider>);
+  render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, retryDelay: 0 } } })}><App /></QueryClientProvider>);
 }
 it("consulta a API mesmo com demonstração habilitada e mostra datas e contagens reais", async () => {
   abrir();
@@ -133,4 +134,52 @@ it("mantém seleção acessível no período totalmente vazio", async () => {
   await userEvent.click(dia);
   expect(dia).toHaveAttribute("aria-pressed", "true");
   expect(within(screen.getByRole("complementary", { name: "Resumo do dia selecionado" })).getByText(/28 de outubro/)).toBeInTheDocument();
+});
+
+it("reutiliza o período em cache ao navegar de volta", async () => {
+  abrir(); await screen.findAllByText("Cliente da API");
+  const usuario = userEvent.setup();
+  const consultas = () => vi.mocked(fetch).mock.calls.filter(([url]) => String(url).includes("/dashboard/administrador/agendamentos"));
+  expect(consultas()).toHaveLength(1);
+  await usuario.click(screen.getByRole("button", { name: "Próximo período" }));
+  await screen.findByText("08/11");
+  expect(consultas()).toHaveLength(2);
+  await usuario.click(screen.getByRole("button", { name: "Período anterior" }));
+  await screen.findByText("01/11");
+  expect(consultas()).toHaveLength(2);
+});
+
+it("não repete 429 e bloqueia nova tentativa até o Retry-After", async () => {
+  const original = vi.mocked(fetch).getMockImplementation()!;
+  vi.mocked(fetch).mockImplementation(async (entrada, opcoes) => {
+    if (String(entrada).includes("/dashboard/")) return new Response("{}", { status: 429, headers: { "Retry-After": "1" } });
+    return original(entrada, opcoes);
+  });
+  abrir();
+  expect(await screen.findByRole("alert")).toHaveTextContent("Limite de requisições atingido");
+  expect(screen.getByRole("button", { name: "Aguarde 1 segundo" })).toBeDisabled();
+  vi.setSystemTime(new Date("2026-10-26T15:00:02Z"));
+  expect(await screen.findByRole("button", { name: "Tentar novamente" }, { timeout: 2500 })).toBeEnabled();
+  expect(vi.mocked(fetch).mock.calls.filter(([url]) => String(url).includes("/dashboard/"))).toHaveLength(1);
+  vi.mocked(fetch).mockImplementation(original);
+  await userEvent.click(screen.getByRole("button", { name: "Tentar novamente" }));
+  await screen.findAllByText("Cliente da API");
+});
+
+it.each([
+  ["2", 2],
+  ["Mon, 26 Oct 2026 15:00:02 GMT", 2],
+  [undefined, 60],
+  ["inválido", 60],
+  ["-1", 60],
+  ["0", 0],
+] as const)("interpreta Retry-After %s na resposta 429", async (valor, espera) => {
+  vi.mocked(fetch).mockResolvedValue(new Response("{}", {
+    status: 429,
+    headers: valor === undefined ? {} : { "Retry-After": valor },
+  }));
+  await expect(consultarAgenda("2026-10-26", "2026-11-01")).rejects.toMatchObject({
+    status: 429,
+    esperarAte: Date.now() + espera * 1000,
+  });
 });

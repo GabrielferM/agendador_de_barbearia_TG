@@ -51,6 +51,8 @@ rede, resposta inválida, IDs duplicados e agrupamento no dia incorreto. A demon
 habilitada não substitui a API. `calendario.test.ts` cobre a meia-noite de São Paulo,
 semana atravessando o ano, fevereiro bissexto e alinhamento dos doze meses.
 
+A suíte também verifica reutilização do cache ao voltar ao período anterior e HTTP 429 sem repetição automática, com botão bloqueado durante `Retry-After` e recuperação por tentativa manual. Essas verificações usam HTTP simulado e não medem o volume de uma sessão real no navegador.
+
 A inspeção visual desta alteração foi executada em Chromium headless a 1440 × 1000 e
 390 × 844, com sessão e HTTP simulados, nos cenários vazio, preenchido, 18 atendimentos
 por dia e Dia/Semana/Mês. Conferiu seleção, contagem diária, ausência de overflow da

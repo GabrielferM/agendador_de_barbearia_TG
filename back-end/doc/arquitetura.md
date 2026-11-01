@@ -65,6 +65,8 @@ Use como referência [criar serviço](../src/modules/servico/service/criar-servi
 
 Guards globais executam throttling, autenticação, CSRF e permissões. Rotas públicas são explícitas; permissões e propriedade dos recursos devem ser verificadas no servidor. O [guia de segurança](../../front-end/docs/seguranca-autenticacao.md) detalha implementação e pendências.
 
+O throttling registra somente a política `default`: 120 requisições por minuto por handler e IP. O login sobrescreve essa mesma política para dez; políticas nomeadas adicionais seriam aplicadas globalmente se não fossem explicitamente excluídas. O teto das consultas permanece em 120. O header padrão `Retry-After` é exposto pelo CORS; medir tráfego real antes de aumentar o teto continua pendente.
+
 O [configurador compartilhado do ValidationPipe](../src/config/validacao.ts), usado por `main.ts` e pelos testes e2e, transforma entradas, rejeita campos não permitidos e oculta valor/objeto nos erros de validação. Swagger descreve contratos fora de produção. Veja [erros](tratamento-de-erros.md) e [testes](testes.md).
 
 ## Melhorias pendentes

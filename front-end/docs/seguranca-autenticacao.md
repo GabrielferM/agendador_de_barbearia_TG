@@ -35,7 +35,9 @@ A verificação explícita de Origin está no login. O guard CSRF atual não val
 
 Novos hashes usam Argon2id, 19 MiB, duas iterações e paralelismo 1. Bcrypt com prefixos `$2a$`/`$2b$` é aceito e migrado após login correto. DTOs de cliente, barbeiro e administrador usam mínimo de 15 e máximo de 128 caracteres para novas senhas. Não há lista de senhas comprometidas implementada nesse fluxo.
 
-O [LoginService](../../back-end/src/modules/autenticacao/service/login.service.ts) usa hash fictício para usuário inexistente, mensagem genérica e limite por e-mail de cinco falhas na janela de quinze minutos, armazenado em memória do processo. Há também throttling Nest global e de login. Isso não equivale a um controle distribuído entre várias instâncias.
+O [LoginService](../../back-end/src/modules/autenticacao/service/login.service.ts) usa hash fictício para usuário inexistente, mensagem genérica e limite por e-mail de cinco falhas na janela de quinze minutos, armazenado em memória do processo. O throttling Nest usa uma política padrão de 120 requisições por minuto, por rota (handler) e IP; somente `POST /auth/login` sobrescreve essa política para dez tentativas por minuto. Não há uma segunda política de login aplicada às consultas comuns. O bloqueio envia `Retry-After`, exposto pelo CORS para leitura no frontend. Isso não equivale a um controle distribuído entre várias instâncias.
+
+Aumentar o teto exige medir requisições e respostas 429 por rota/IP em uso real. O ajuste atual corrige a incidência indevida do limite de dez em todas as rotas e preserva os 120 das consultas. A medição de capacidade e um eventual ajuste para usuários que compartilham IP permanecem pendentes.
 
 Guards globais verificam sessão e permissões; a fachada de agendamentos aplica regras de propriedade. Dashboards exigem as permissões correspondentes; o painel do barbeiro obtém a identidade da sessão. Endpoints de autenticação e dashboards definem Cache-Control: no-store; não há aqui garantia universal para toda resposta privada.
 
