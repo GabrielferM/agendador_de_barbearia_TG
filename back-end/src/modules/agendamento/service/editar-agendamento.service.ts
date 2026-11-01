@@ -1,8 +1,10 @@
+import type { UsuarioAutenticado } from '../../../common/auth/auth.types';
 import { ValidarVinculosAgendamentoService } from '../validations/validar-vinculos-agendamento.service';
 import { duracaoItens, validarExpediente } from '../constants/expediente';
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -26,7 +28,7 @@ export class EditarAgendamentoService {
     private readonly verificarConflito: VerificarConflitoAgendamentoService,
     private readonly validarVinculos: ValidarVinculosAgendamentoService,
   ) {}
-  async execute(id: number, dto: AtualizarAgendamentoDto) {
+  async execute(id: number, dto: AtualizarAgendamentoDto, usuario?: UsuarioAutenticado) {
     try {
       const resultado = await executarTransacaoSerializavel(this.prisma, async (transaction) => {
         const atual = await transaction.agendamento.findUnique({
@@ -34,6 +36,16 @@ export class EditarAgendamentoService {
           include: includeAgendamento,
         });
         if (!atual) throw new NotFoundException('Agendamento não encontrado.');
+        if (usuario && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) {
+          if (usuario.barbeiroId) {
+            if (usuario.papel !== 'BARBEIRO' || !usuario.permissoes.includes('GERENCIAR_PROPRIA_AGENDA') || atual.idBarbeiro !== usuario.barbeiroId)
+              throw new ForbiddenException('Você não pode alterar este agendamento.');
+            if (!dto.status || Object.entries(dto).some(([chave, valor]) => valor !== undefined && !['status', 'motivoCancelamento'].includes(chave)))
+              throw new ForbiddenException('Campos não permitidos ao barbeiro.');
+          } else if (!usuario.clienteId || atual.idCliente !== usuario.clienteId) {
+            throw new ForbiddenException('Você não pode alterar este agendamento.');
+          }
+        }
         const estadosFinais: StatusAgendamento[] = [
           StatusAgendamento.CONCLUIDO,
           StatusAgendamento.CANCELADO,
@@ -110,11 +122,21 @@ export class EditarAgendamentoService {
             ? { dataCancelamento: new Date(), motivoCancelamento: dto.motivoCancelamento?.trim() }
             : {}),
         };
-        return transaction.agendamento.update({
+        if (dto.status === StatusAgendamento.EM_ATENDIMENTO && !atual.inicioReal) data.inicioReal = new Date();
+        if (dto.status === StatusAgendamento.CONCLUIDO && !atual.fimReal) data.fimReal = new Date();
+        const atualizado = await transaction.agendamento.update({
           where: { id },
           data,
           include: includeAgendamento,
         });
+        if (dto.status && usuario) {
+          await transaction.historicoStatusAgendamento.create({ data: {
+            idAgendamento: id, idUsuarioResponsavel: usuario.id,
+            statusAnterior: atual.status, statusNovo: dto.status,
+            motivo: dto.status === StatusAgendamento.CANCELADO ? dto.motivoCancelamento?.trim() : undefined,
+          } });
+        }
+        return atualizado;
       });
       return serializarResposta(resultado);
     } catch (erro) {

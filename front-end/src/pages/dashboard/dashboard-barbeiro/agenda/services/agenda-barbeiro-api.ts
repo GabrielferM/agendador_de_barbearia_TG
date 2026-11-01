@@ -1,4 +1,4 @@
-import { agendamentoControllerBuscar, agendamentoControllerListar } from '../../../../../api/agendamentos/agendamentos';
+import { agendamentoControllerAtualizar, agendamentoControllerBuscar, agendamentoControllerListar } from '../../../../../api/agendamentos/agendamentos';
 import type { AgendamentoRespostaDto, AgendamentoControllerListarParams, MetaPaginacaoDto } from '../../../../../api/models';
 import { ErroAgendamento } from '../../../../agendamento/services/agendamento-api';
 export type AgendamentoBarbeiro = AgendamentoRespostaDto & { cliente: { id: number; nome: string } };
@@ -30,6 +30,12 @@ export async function listarAgenda(filtros: AgendamentoControllerListarParams, s
 }
 export async function buscarAtendimento(id: number, signal?: AbortSignal) {
   const valor = conferir(await agendamentoControllerBuscar(id, { signal }));
+  if (!validar(valor)) throw new Error('Resposta inválida do atendimento.');
+  return valor;
+}
+
+export async function alterarStatus(id: number, status: NonNullable<AgendamentoControllerListarParams['status']>, motivoCancelamento?: string) {
+  const valor = conferir(await agendamentoControllerAtualizar(id, { status, ...(motivoCancelamento ? { motivoCancelamento } : {}) }));
   if (!validar(valor)) throw new Error('Resposta inválida do atendimento.');
   return valor;
 }

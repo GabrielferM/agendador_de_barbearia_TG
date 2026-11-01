@@ -86,3 +86,14 @@ SessaoService resolve permissões no banco a cada requisição. Recarregar a pá
 restaura a sessão por `/auth/me` e carrega as permissões atuais no contexto.
 O painel não oferece uma ação de atualização manual das permissões. Respostas 401
 usam o fluxo de expiração existente. Guards e decorators permanecem obrigatórios.
+
+## Transições do atendimento do barbeiro
+
+O PATCH de agendamento aceita do barbeiro somente `status` e `motivoCancelamento`.
+A operação serializável relê propriedade e estado, grava a mudança e o histórico
+na mesma transação e deriva o responsável da sessão. Início/fim reais são preenchidos
+nas transições correspondentes quando ausentes. A resposta usa a mesma projeção
+restrita do GET. O barbeiro não pode criar ou consultar a auditoria administrativa
+independente (`historico-status`); o histórico de atendimentos é outra consulta.
+Não há geração de comissões nessa operação. Conflitos P2034 repetem a transação e
+revalidam o estado. Testes simulados não comprovam concorrência no PostgreSQL.

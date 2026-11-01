@@ -101,14 +101,14 @@ export class AgendamentoService {
         throw new ForbiddenException('Clientes só podem cancelar os próprios agendamentos.');
       }
     }
-    if (
-      usuario?.barbeiroId &&
-      dto.observacaoInterna !== undefined &&
-      !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')
-    ) {
-      throw new ForbiddenException('Campo reservado à administração.');
+    if (usuario?.barbeiroId && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) {
+      const chaves = Object.entries(dto).filter(([, valor]) => valor !== undefined).map(([chave]) => chave);
+      if (!dto.status || chaves.some((chave) => !['status', 'motivoCancelamento'].includes(chave)))
+        throw new ForbiddenException('Barbeiros só podem alterar o status do próprio atendimento.');
     }
-    const resultado = await this.editarService.execute(id, dto);
+    const resultado = await this.editarService.execute(id, dto, usuario);
+    if (usuario?.permissoes.includes('GERENCIAR_AGENDAMENTOS')) return resultado;
+    if (usuario?.barbeiroId) return this.respostaBarbeiro(resultado);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
 
@@ -119,12 +119,13 @@ export class AgendamentoService {
   }
   async listarHistorico(id: number, query: ListarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
+    if (usuario?.barbeiroId && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) throw new ForbiddenException();
     const resultado = await this.historicoService.listar(id, query);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
-    if (usuario?.clienteId) throw new ForbiddenException();
+    if (usuario && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) throw new ForbiddenException();
     return this.historicoService.criar(id, {
       ...dto,
       idUsuarioResponsavel: usuario?.id ?? dto.idUsuarioResponsavel,
