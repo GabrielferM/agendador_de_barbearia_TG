@@ -7,12 +7,14 @@ import {
   EstadoErro,
 } from "../../components/dashboard-compartilhado";
 import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
-import { estiloBotao, estiloCampo } from "../components/formulario-cadastro";
+import { estiloCampo } from "../components/formulario-cadastro";
 import {
   IndicadoresBarbeiros,
   CartoesBarbeiros,
 } from "./components/components";
 import { consultarBarbeiros } from "./services/barbeiros-api";
+
+import { PainelCatalogo, PaginacaoCatalogo } from "../components/painel-catalogo";
 
 export function BarbeirosAdministrador() {
   const { usuario } = useAutenticacao();
@@ -35,9 +37,10 @@ export function BarbeirosAdministrador() {
       {!permitido ? (
         <p role="alert">Você não possui permissão para consultar barbeiros.</p>
       ) : (
-        <>
-          <div className="mb-5 flex flex-wrap gap-3">
-            <label className="flex-1">
+        <PainelCatalogo>
+          {consulta.data && !consulta.isError && <IndicadoresBarbeiros dados={consulta.data.indicadores} />}
+          <div className="filtros-catalogo">
+            <label >
               Buscar barbeiro
               <input
                 className={estiloCampo}
@@ -80,39 +83,11 @@ export function BarbeirosAdministrador() {
             />
           ) : (
             <>
-              <IndicadoresBarbeiros dados={consulta.data.indicadores} />
-              <CartoesBarbeiros barbeiros={consulta.data.data} />
-              <nav
-                aria-label="Paginação de barbeiros"
-                className="my-5 flex items-center gap-3"
-              >
-                <button
-                  className={estiloBotao}
-                  disabled={pagina <= 1}
-                  onClick={() => setPagina(pagina - 1)}
-                >
-                  Anterior
-                </button>
-                <span>
-                  Página {pagina} de{" "}
-                  {Math.max(1, consulta.data.meta.totalPaginas)} ·{" "}
-                  {consulta.data.meta.total} barbeiros
-                </span>
-                <button
-                  className={estiloBotao}
-                  disabled={pagina >= consulta.data.meta.totalPaginas}
-                  onClick={() => setPagina(pagina + 1)}
-                >
-                  Próxima
-                </button>
-              </nav>
-              <p className="text-sm text-muted">
-                Especialidades, jornada individual e percentual padrão de
-                comissão ainda não são cadastrados no sistema.
-              </p>
+              <div className="min-w-0 p-4 pt-0"><CartoesBarbeiros barbeiros={consulta.data.data} /><p className="mt-4 text-sm text-foreground">Especialidades, jornada individual e percentual padrão de comissão ainda não são cadastrados no sistema.</p></div>
+              <PaginacaoCatalogo pagina={pagina} totalPaginas={consulta.data.meta.totalPaginas} total={consulta.data.meta.total} entidade="barbeiros" mudar={setPagina} />
             </>
           )}
-        </>
+        </PainelCatalogo>
       )}
     </DashboardLayout>
   );

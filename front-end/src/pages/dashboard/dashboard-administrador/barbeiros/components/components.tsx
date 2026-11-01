@@ -1,8 +1,7 @@
-import { Cartao } from "../../../components/dashboard-compartilhado";
+import { FaixaIndicadores } from "../../components/painel-catalogo";
 import { moeda } from "../../../components/dashboard-formatadores";
 import {
   BadgeStatus,
-  IndicadorSimples,
 } from "../../components/componentes-administrativos";
 import type { consultarBarbeiros } from "../services/barbeiros-api";
 type Resposta = Awaited<ReturnType<typeof consultarBarbeiros>>;
@@ -12,25 +11,11 @@ export function IndicadoresBarbeiros({
 }: {
   dados: Resposta["indicadores"];
 }) {
-  return (
-    <div className="my-5 grid gap-4 md:grid-cols-3">
-      <IndicadorSimples
-        titulo="Barbeiros ativos"
-        valor={String(dados.ativos)}
-        icone="usuarios"
-      />
-      <IndicadorSimples
-        titulo="Atendimentos concluídos no mês"
-        valor={String(dados.atendimentosMes)}
-        icone="agenda"
-      />
-      <IndicadorSimples
-        titulo="Comissões a pagar"
-        valor={moeda.format(dados.comissoesAPagar)}
-        icone="financeiro"
-      />
-    </div>
-  );
+  return <FaixaIndicadores itens={[
+    { titulo: 'Barbeiros ativos', valor: String(dados.ativos) },
+    { titulo: 'Atendimentos concluídos no mês', valor: String(dados.atendimentosMes) },
+    { titulo: 'Comissões a pagar', valor: moeda.format(dados.comissoesAPagar), detalhe: 'Todos os períodos' },
+  ]} />;
 }
 
 export function CartoesBarbeiros({
@@ -41,13 +26,13 @@ export function CartoesBarbeiros({
   if (!barbeiros.length)
     return <p className="py-8 text-center">Nenhum barbeiro encontrado.</p>;
   return (
-    <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+    <div className="grid gap-3 xl:grid-cols-2">
       {barbeiros.map((b) => (
-        <Cartao key={b.id}>
-          <header className="flex items-center gap-3">
+        <article key={b.id} className="min-w-0 rounded-xl border border-border p-4">
+          <header className="flex flex-wrap items-center gap-3">
             <span
               aria-hidden="true"
-              className="grid size-12 shrink-0 place-items-center rounded-full bg-secondary font-semibold"
+              className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary font-semibold"
             >
               {b.nome
                 .split(" ")
@@ -56,7 +41,7 @@ export function CartoesBarbeiros({
                 .map((n) => n[0])
                 .join("")}
             </span>
-            <h2 className="font-semibold">{b.nome}</h2>
+            <div className="min-w-0 flex-1 break-words"><h2 className="break-words font-semibold tabular-nums">{b.nome}</h2><p className="text-sm">{b.filial || "—"}</p></div>
             <BadgeStatus alerta={b.status !== "ATIVO"}>
               {b.status === "ATIVO"
                 ? "Ativo"
@@ -65,9 +50,8 @@ export function CartoesBarbeiros({
                   : "Afastado"}
             </BadgeStatus>
           </header>
-          <dl className="mt-4 divide-y divide-border text-sm">
+          <dl className="mt-4 grid gap-x-4 gap-y-3 border-t border-border pt-3 text-sm sm:grid-cols-2">
             {[
-              ["Filial", b.filial],
               [
                 "Agendamentos hoje (exceto cancelados)",
                 String(b.atendimentosHoje),
@@ -85,13 +69,13 @@ export function CartoesBarbeiros({
                 moeda.format(b.comissoesAPagar),
               ],
             ].map(([rotulo, valor]) => (
-              <div key={rotulo} className="py-3">
-                <dt className="text-muted">{rotulo}</dt>
-                <dd className="font-semibold">{valor}</dd>
+              <div key={rotulo} className="min-w-0">
+                <dt className="text-foreground">{rotulo}</dt>
+                <dd className="break-words font-semibold tabular-nums">{valor}</dd>
               </div>
             ))}
           </dl>
-        </Cartao>
+        </article>
       ))}
     </div>
   );

@@ -77,3 +77,31 @@ sob `GERENCIAR_AGENDAMENTOS`; nenhum escopo ou contrato público foi ampliado.
 Não foi constatado uso indevido dos totais do período no resumo anterior. As correções
 tratam apresentação, alinhamento mensal, cache e validação defensiva. Validações com
 HTTP simulado não confirmam dados de produção ou persistência em PostgreSQL.
+
+## Painéis compactos de clientes, barbeiros e serviços
+
+As três consultas usam um painel com faixa de três indicadores globais, filtros,
+conteúdo e paginação no rodapé. Controles têm 36–40 px; filtros e indicadores
+empilham no celular. Estilos ficam limitados a `PainelCatalogo`, sem alterar o menu
+ou os tokens globais. As tabelas possuem rolagem horizontal interna acessível pelo
+teclado e os nomes longos podem aumentar a altura das linhas.
+
+Clientes agrupa telefone/e-mail e usa ações curtas com o nome completo no rótulo
+acessível. A exclusão abre um diálogo modal nativo com foco inicial em Cancelar,
+Escape e retorno de foco; nenhum DELETE ocorre antes da confirmação. Em conflito,
+o diálogo permanece aberto com a mensagem e a orientação para editar o status.
+Cadastro, detalhes e edição mantêm os campos e erros existentes, com ações no
+rodapé do formulário. Barbeiros exibe filial no cabeçalho e quatro métricas por
+profissional, em até duas colunas; o total global a pagar informa “Todos os
+períodos”, enquanto o card identifica os valores gerados no mês. Serviços alinha
+preços, quantidades e receitas à direita e preserva “Sem atendimentos”.
+
+Contratos, permissões, busca/paginação no servidor, retorno à primeira página e
+invalidações após gravações permanecem existentes. Não foram acrescentados CRUDs,
+endpoints, indicadores ou campos persistidos. As limitações de cadastro de
+barbeiros/serviços continuam visíveis junto ao conteúdo.
+
+Ao abrir detalhes de Clientes, o ID vem do argumento da mutação concluída, evitando
+uma corrida com a atualização de `mutation.variables` quando a resposta é imediata.
+Isso conserva o ID no editor e permite editar status e enviar PATCH ao registro
+correto. O teste de edição com resposta imediata cobre essa correção funcional.

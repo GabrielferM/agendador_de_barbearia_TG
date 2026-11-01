@@ -56,3 +56,21 @@ A inspeção visual desta alteração foi executada em Chromium headless a 1440 
 por dia e Dia/Semana/Mês. Conferiu seleção, contagem diária, ausência de overflow da
 página no celular, destaque marrom ativo e ausência de sobreposição do aviso mensal
 com os cabeçalhos das datas. As capturas não representam uma API ou banco ativo.
+
+## Catálogos administrativos compactos
+
+A suíte de Clientes cobre também abertura/cancelamento da confirmação sem DELETE,
+conflito HTTP 409 mantendo o diálogo e edição com erro preservando nome e status.
+Os testes de Barbeiros/Serviços preservam cobertura de filtros/paginação, vazio,
+erro com nova tentativa, resposta malformada e ausência de permissão.
+
+A inspeção em Chromium headless usa HTTP e sessão simulados, em 1440 × 1000 e
+390 × 844: zero, um e vinte registros (páginas de até doze itens), nomes longos e
+telefone/datas ausentes. São 18 composições, com verificação de ausência de overflow
+da página; a rolagem fica nas tabelas. Também foram percorridos busca, status com
+retorno à página 1, paginação, cadastro, detalhes, edição, cancelamento e bloqueio
+de exclusão de Clientes. O teste de conflito não exclui nenhum registro real.
+
+Capturas finais estão em [capturas-catalogos](capturas-catalogos/README.md). São
+respostas de teste, sem comprovação de sessão, autorização ou persistência em API
+ou PostgreSQL reais. Nenhuma API/banco real estava configurado neste ambiente.
