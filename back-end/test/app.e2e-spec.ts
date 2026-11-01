@@ -27,6 +27,7 @@ describe('AppController (e2e)', () => {
     CSRF_SECRET: process.env.CSRF_SECRET,
   };
   const prisma = {
+    historicoStatusAgendamento: { create: jest.fn().mockResolvedValue({}) },
     comissao: { findMany: jest.fn(), count: jest.fn() },
     filial: { findUnique: jest.fn() },
     barbeiro: { findUnique: jest.fn() },
