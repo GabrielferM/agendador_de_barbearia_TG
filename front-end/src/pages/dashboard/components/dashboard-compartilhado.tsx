@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAutenticacao } from "../../../auth/contexto-autenticacao";
 import { dataCurta, moeda } from "./dashboard-formatadores";
@@ -82,9 +82,7 @@ export function DashboardLayout({
   dadosDemonstrativos?: boolean;
   children: ReactNode;
 }) {
-  const { usuario, sair, atualizarAcesso } = useAutenticacao();
-  const [atualizando, setAtualizando] = useState(false);
-  const [erroAcesso, setErroAcesso] = useState("");
+  const { usuario, sair } = useAutenticacao();
   const navigate = useNavigate();
   const dataCabecalho = dadosDemonstrativos
     ? new Date("2026-09-07T12:00:00-03:00")
@@ -190,14 +188,6 @@ export function DashboardLayout({
             <p className="mt-1 text-sm font-semibold">{usuario?.nome}</p>
           </div>
         </header>
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <button type="button" disabled={atualizando} className="text-sm text-primary underline disabled:opacity-50" onClick={async () => {
-            setAtualizando(true); setErroAcesso("");
-            try { await atualizarAcesso(); } catch { setErroAcesso("Não foi possível atualizar o acesso. Tente novamente."); }
-            finally { setAtualizando(false); }
-          }}>{atualizando ? "Atualizando acesso…" : "Atualizar acesso"}</button>
-          {erroAcesso && <p role="alert">{erroAcesso}</p>}
-        </div>
         {children}
       </section>
     </main>

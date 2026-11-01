@@ -81,6 +81,6 @@ exclua dependências automaticamente. Confirme o código do papel real do usuár
 status da conta, papel, permissão e vínculo. O nome exibido não concede acesso.
 
 SessaoService resolve permissões no banco a cada requisição. Recarregar a página
-restaura `/auth/me`; “Atualizar acesso” no painel também atualiza o contexto e limpa
-caches privados. Falha de rede mantém a sessão, com mensagem de erro; 401 usa o fluxo
-de expiração existente. Guards e decorators permanecem obrigatórios.
+restaura a sessão por `/auth/me` e carrega as permissões atuais no contexto.
+O painel não oferece uma ação de atualização manual das permissões. Respostas 401
+usam o fluxo de expiração existente. Guards e decorators permanecem obrigatórios.
