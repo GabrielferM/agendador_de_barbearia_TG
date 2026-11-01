@@ -161,6 +161,9 @@ export function useAgendamento() {
     onSuccess: async () => {
       alterar({ tipo: "limpar" });
       await queryClient.invalidateQueries({ queryKey: ["meus-agendamentos"] });
+      await queryClient.invalidateQueries({
+        predicate: query => query.queryKey[0] === "admin" && query.queryKey[2] === "agendamentos",
+      });
     },
     onError: (erro) => {
       if (erro instanceof ErroAgendamento && erro.status === 409) {

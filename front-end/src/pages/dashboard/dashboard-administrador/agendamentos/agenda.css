@@ -1,0 +1,41 @@
+@reference "../../../../index.css";
+
+.agenda-painel { @apply overflow-hidden rounded-2xl border border-border bg-surface text-foreground shadow-sm; }
+.agenda-conteudo { @apply grid min-w-0; }
+.agenda-botao { @apply inline-flex h-9 min-w-9 items-center justify-center rounded-md border border-border bg-surface px-3 text-xs font-medium hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary; }
+.agenda-botao[aria-pressed="true"] { @apply bg-primary text-white hover:bg-primary-hover; }
+.agenda-botao[aria-pressed="false"] { @apply border-transparent bg-transparent; }
+.agenda-calendario { @apply relative min-h-0 min-w-0; height: clamp(30rem, 65vh, 56rem); }
+.agenda-rolagem { @apply h-full overflow-auto focus-visible:outline-2 focus-visible:outline-primary; }
+.agenda-grade { @apply grid h-full; min-height: 100%; }
+.agenda-grade-semana { grid-template-columns: repeat(7, minmax(124px, 1fr)); }
+.agenda-grade-dia { grid-template-columns: minmax(0, 1fr); }
+.agenda-grade-mes { grid-template-columns: repeat(7, minmax(80px, 1fr)); grid-template-rows: 32px; grid-auto-rows: minmax(180px, 1fr); }
+.agenda-dia { @apply flex min-h-0 min-w-0 flex-col border-b border-r border-border; }
+.agenda-dia-selecionado { @apply bg-background; }
+.agenda-dia > header { @apply shrink-0; }
+.agenda-dia > div { @apply min-h-0 overflow-y-auto; }
+.agenda-selecionar { @apply flex w-full flex-col items-center gap-1 border-b border-border px-1 py-2 text-foreground hover:bg-background focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary; }
+.agenda-selecionar[aria-pressed="true"] { @apply bg-primary/10 font-bold; box-shadow: inset 0 -2px var(--primary); }
+.agenda-data { @apply grid size-7 place-items-center rounded-full text-sm; }
+.agenda-hoje { @apply bg-primary font-bold text-white; }
+.agenda-dia-semana { @apply border-b border-r border-border py-2 text-center text-xs font-medium; }
+.agenda-espaco { @apply border-b border-r border-border bg-background; }
+.agenda-agendamento { @apply break-words rounded-md border border-border border-l-2 border-l-secondary bg-surface p-2 text-xs leading-relaxed; }
+.agenda-resumo { @apply min-w-0 overflow-y-auto border-t border-border bg-background/50 p-4 text-foreground; max-height: 36rem; }
+.agenda-vazio { @apply pointer-events-none absolute inset-x-4 top-1/2 mx-auto max-w-72 -translate-y-1/2; }
+/* Uma linha própria preserva a leitura de todas as datas no mês vazio. */
+.agenda-vazio-mensal { @apply flex items-center justify-center border-b border-border p-3; grid-column: 1 / -1; grid-row: 4; min-height: 160px; }
+.agenda-vazio-mensal > div { @apply max-w-96; }
+.agenda-grade-semana .agenda-dia, .agenda-grade-dia .agenda-dia {
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 63px, var(--border) 64px);
+}
+@media (min-width: 1280px) {
+  .agenda-conteudo { grid-template-columns: minmax(0, 1fr) 260px; height: clamp(34rem, 70vh, 56rem); }
+  .agenda-calendario { height: 100%; }
+  .agenda-resumo { @apply border-l border-t-0; max-height: none; }
+}
+.agenda-grade-mes:has(.agenda-vazio-mensal) {
+  grid-template-rows: 32px repeat(2, minmax(90px, 1fr)) 160px;
+  grid-auto-rows: minmax(90px, 1fr);
+}

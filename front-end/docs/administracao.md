@@ -49,3 +49,31 @@ Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita c
 `/admin/financeiro` exige `GERENCIAR_COMISSOES` e consulta `GET /dashboard/administrador/financeiro`. Abre do início do mês até hoje em America/Sao_Paulo; formulário aplica um período válido. Cache inclui usuário e período, com cancelamento, validação da resposta, erro/nova tentativa e vazios independentes para atendimentos e comissões.
 
 Exibe receita de serviços concluídos, variação contra o intervalo anterior de mesma duração, série em intervalos de sete dias, dez últimos atendimentos concluídos e comissões por barbeiro separadas nos cinco status reais. Total registrado inclui canceladas/estornadas, sem rotulá-lo como valor devido. Receita não comprova recebimento. O banco não registra despesas nem formas de pagamento: não há números inventados de despesas/lucro, gráfico de pagamentos ou botões fictícios para lançamento/exportação. Persistência desses conceitos e respectivas ações exige evolução própria do domínio.
+
+
+### Painel compacto da agenda administrativa
+
+Controles, calendário, resumo e total do período compartilham um painel. Semana e dia
+preenchem a altura disponível; o mês usa segunda-feira como primeira coluna e espaços
+antes/depois das datas do mês. A rolagem horizontal em telas estreitas fica contida na
+grade, e o resumo passa para baixo. Dias, cards e lista lateral preservam áreas de
+leitura; no desktop, listas extensas rolam dentro do painel.
+
+O período consultado permanece o dia, a semana completa ou o mês civil. Trocar a
+visualização conserva o dia selecionado; anterior/próximo deslocam um dia, sete dias
+ou o primeiro dia do mês adjacente. Hoje usa America/Sao_Paulo. O resumo deriva apenas
+do dia selecionado em `dados.dias`; `totaisPorStatus` do servidor é do período e não
+é usado como resumo diário. O rodapé soma os agendamentos de todos os dias carregados.
+Cada ID aparece uma única vez, independentemente dos serviços. O adapter rejeita IDs
+duplicados e início agrupado no dia incorreto em São Paulo, e ordena por início/ID.
+
+A consulta administrativa tem `staleTime: 0` para revalidar ao montar/voltar ao foco.
+Criação e cancelamento existentes invalidam também as consultas administrativas de
+agenda. Alterações feitas por outras sessões aparecem na próxima consulta; não há
+atualização em tempo real. Não existem filtros de filial/status nessa tela: calendário,
+resumo e total usam a mesma resposta. O endpoint mantém o escopo administrativo global
+sob `GERENCIAR_AGENDAMENTOS`; nenhum escopo ou contrato público foi ampliado.
+
+Não foi constatado uso indevido dos totais do período no resumo anterior. As correções
+tratam apresentação, alinhamento mensal, cache e validação defensiva. Validações com
+HTTP simulado não confirmam dados de produção ou persistência em PostgreSQL.

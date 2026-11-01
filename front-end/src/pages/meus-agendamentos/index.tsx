@@ -41,6 +41,9 @@ export function MeusAgendamentos() {
       definirAviso("Agendamento cancelado.");
       await queryClient.invalidateQueries({ queryKey: ["meus-agendamentos"] });
       await queryClient.invalidateQueries({
+        predicate: query => query.queryKey[0] === "admin" && query.queryKey[2] === "agendamentos",
+      });
+      await queryClient.invalidateQueries({
         queryKey: ["agendar", "horarios"],
       });
     },
