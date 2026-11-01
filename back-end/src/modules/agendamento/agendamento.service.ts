@@ -1,6 +1,6 @@
 import { HorariosDisponiveisDto } from './dto/horarios-disponiveis.dto';
 import { ListarHorariosDisponiveisAgendamentoService } from './service/listar-horarios-disponiveis-agendamento.service';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { OrigemAgendamento, StatusAgendamento } from '@prisma/client';
 import { UsuarioAutenticado } from '../../common/auth/auth.types';
 import { CriarAgendamentoService } from './service/criar-agendamento.service';
@@ -69,6 +69,18 @@ export class AgendamentoService {
     }
     if (usuario.barbeiroId) {
       if (!usuario.permissoes.includes('GERENCIAR_PROPRIA_AGENDA')) throw new ForbiddenException();
+      if (query.inicioDe && query.inicioAte) {
+        for (const valor of [query.inicioDe, query.inicioAte]) {
+          const dia = valor.slice(0, 10);
+          const data = new Date(`${dia}T12:00:00Z`);
+          if (!Number.isFinite(data.getTime()) || data.toISOString().slice(0, 10) !== dia)
+            throw new BadRequestException('Data inválida.');
+        }
+        const de = Date.parse(query.inicioDe);
+        const ate = Date.parse(query.inicioAte);
+        if (!Number.isFinite(de) || !Number.isFinite(ate) || ate < de || ate - de >= 366 * 86400000)
+          throw new BadRequestException('Período inválido ou superior a 366 dias.');
+      }
       return this.respostaBarbeiro(
         await this.listarService.execute({
           ...query,
@@ -102,7 +114,9 @@ export class AgendamentoService {
       }
     }
     if (usuario?.barbeiroId && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) {
-      const chaves = Object.entries(dto).filter(([, valor]) => valor !== undefined).map(([chave]) => chave);
+      const chaves = Object.entries(dto)
+        .filter(([, valor]) => valor !== undefined)
+        .map(([chave]) => chave);
       if (!dto.status || chaves.some((chave) => !['status', 'motivoCancelamento'].includes(chave)))
         throw new ForbiddenException('Barbeiros só podem alterar o status do próprio atendimento.');
     }
@@ -119,13 +133,15 @@ export class AgendamentoService {
   }
   async listarHistorico(id: number, query: ListarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
-    if (usuario?.barbeiroId && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) throw new ForbiddenException();
+    if (usuario?.barbeiroId && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
+      throw new ForbiddenException();
     const resultado = await this.historicoService.listar(id, query);
     return usuario?.clienteId ? this.semCamposInternos(resultado) : resultado;
   }
   async criarHistorico(id: number, dto: CriarHistoricoStatusDto, usuario?: UsuarioAutenticado) {
     await this.validarAcesso.execute(id, usuario);
-    if (usuario && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS')) throw new ForbiddenException();
+    if (usuario && !usuario.permissoes.includes('GERENCIAR_AGENDAMENTOS'))
+      throw new ForbiddenException();
     return this.historicoService.criar(id, {
       ...dto,
       idUsuarioResponsavel: usuario?.id ?? dto.idUsuarioResponsavel,

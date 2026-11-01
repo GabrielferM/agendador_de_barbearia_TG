@@ -6,15 +6,15 @@
  * OpenAPI spec version: 1.0
  */
 import type { AgendamentoResumoDashboardDto } from './agendamentoResumoDashboardDto';
-import type { IndicadorDashboardDto } from './indicadorDashboardDto';
+import type { IndicadorBarbeiroDto } from './indicadorBarbeiroDto';
 import type { PontoSerieDashboardDto } from './pontoSerieDashboardDto';
 import type { ServicoDashboardDto } from './servicoDashboardDto';
 
 export interface DashboardBarbeiroRespostaDto {
   geradoEm: string;
-  atendimentosHoje: IndicadorDashboardDto;
-  receitaHoje: IndicadorDashboardDto;
-  clientesNaSemana: IndicadorDashboardDto;
+  atendimentosHoje: IndicadorBarbeiroDto;
+  receitaHoje: IndicadorBarbeiroDto;
+  clientesNaSemana: IndicadorBarbeiroDto;
   atendimentosUltimosSeteDias: PontoSerieDashboardDto[];
   servicosNoMes: ServicoDashboardDto[];
   agendaHoje: AgendamentoResumoDashboardDto[];

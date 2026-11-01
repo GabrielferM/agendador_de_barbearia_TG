@@ -1,3 +1,4 @@
+import { ConsultasBarbeiro } from "../pages/dashboard/dashboard-barbeiro/consultas-barbeiro";
 import { AgendaBarbeiro } from "../pages/dashboard/dashboard-barbeiro/agenda";
 import { DetalheAtendimento } from "../pages/dashboard/dashboard-barbeiro/agenda/detalhe-atendimento";
 import { AgendamentoCliente } from "../pages/agendamento";
@@ -86,8 +87,46 @@ export function AppRouter() {
           }
           path="/barbeiro"
         />
-        <Route path="/barbeiro/agenda" element={<RotaProtegida papel="BARBEIRO"><AgendaBarbeiro /></RotaProtegida>} />
-        <Route path="/barbeiro/agenda/:id" element={<RotaProtegida papel="BARBEIRO"><DetalheAtendimento /></RotaProtegida>} />
+        <Route
+          path="/barbeiro/clientes"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <ConsultasBarbeiro tela="clientes" />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/servicos"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <ConsultasBarbeiro tela="servicos" />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/historico"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <ConsultasBarbeiro tela="historico" />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/agenda"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <AgendaBarbeiro />
+            </RotaProtegida>
+          }
+        />
+        <Route
+          path="/barbeiro/agenda/:id"
+          element={
+            <RotaProtegida papel="BARBEIRO">
+              <DetalheAtendimento />
+            </RotaProtegida>
+          }
+        />
         <Route
           element={
             <RotaProtegida papel="ADMINISTRADOR">

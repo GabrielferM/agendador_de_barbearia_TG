@@ -19,7 +19,7 @@ describe('segurança dos dashboards', () => {
 
   it('recusa usuário sem perfil de barbeiro antes de consultar dados', async () => {
     const prisma = { $transaction: jest.fn() };
-    const service = new DashboardBarbeiroService(prisma as never);
+    const service = new DashboardBarbeiroService(prisma as never, {} as never);
     const usuario = {
       id: 1,
       nome: 'Administrador',

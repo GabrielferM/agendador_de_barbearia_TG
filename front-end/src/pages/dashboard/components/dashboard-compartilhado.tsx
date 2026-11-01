@@ -74,12 +74,14 @@ export function DashboardLayout({
   subtitulo,
   itens,
   dadosDemonstrativos = false,
+  fusoHorario,
   children,
 }: {
   titulo: string;
   subtitulo: string;
   itens: ItemMenu[];
   dadosDemonstrativos?: boolean;
+  fusoHorario?: string;
   children: ReactNode;
 }) {
   const { usuario, sair } = useAutenticacao();
@@ -88,6 +90,7 @@ export function DashboardLayout({
     ? new Date("2026-09-07T12:00:00-03:00")
     : new Date();
   const hoje = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: fusoHorario,
     weekday: "long",
     day: "2-digit",
     month: "long",
@@ -117,37 +120,44 @@ export function DashboardLayout({
           aria-label="Navegação principal"
           className="mt-4 flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible"
         >
-          {itens.filter(item => !item.permissao || usuario?.permissoes.includes(item.permissao)).map((item) =>
-            item.destino && !item.desabilitado ? (
-              <NavLink
-                key={item.rotulo}
-                end={item.destino === "/admin" || item.destino === "/barbeiro"}
-                to={item.destino}
-                className={({ isActive }) =>
-                  `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${isActive ? "bg-secondary/30 font-semibold" : "hover:bg-white/10"}`
-                }
-              >
-                <Icone nome={item.icone} />
-                {item.rotulo}
-              </NavLink>
-            ) : (
-              <button
-                key={item.rotulo}
-                type="button"
-                disabled={item.desabilitado ?? !item.ativo}
-                title={
-                  (item.desabilitado ?? !item.ativo) ? "Em breve" : undefined
-                }
-                className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${item.ativo ? "bg-secondary/30 font-semibold" : "cursor-not-allowed opacity-55"}`}
-              >
-                <Icone nome={item.icone} />
-                {item.rotulo}
-                {(item.desabilitado ?? !item.ativo) && (
-                  <span className="sr-only"> — Em breve</span>
-                )}
-              </button>
-            ),
-          )}
+          {itens
+            .filter(
+              (item) =>
+                !item.permissao || usuario?.permissoes.includes(item.permissao),
+            )
+            .map((item) =>
+              item.destino && !item.desabilitado ? (
+                <NavLink
+                  key={item.rotulo}
+                  end={
+                    item.destino === "/admin" || item.destino === "/barbeiro"
+                  }
+                  to={item.destino}
+                  className={({ isActive }) =>
+                    `flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${isActive ? "bg-secondary/30 font-semibold" : "hover:bg-white/10"}`
+                  }
+                >
+                  <Icone nome={item.icone} />
+                  {item.rotulo}
+                </NavLink>
+              ) : (
+                <button
+                  key={item.rotulo}
+                  type="button"
+                  disabled={item.desabilitado ?? !item.ativo}
+                  title={
+                    (item.desabilitado ?? !item.ativo) ? "Em breve" : undefined
+                  }
+                  className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${item.ativo ? "bg-secondary/30 font-semibold" : "cursor-not-allowed opacity-55"}`}
+                >
+                  <Icone nome={item.icone} />
+                  {item.rotulo}
+                  {(item.desabilitado ?? !item.ativo) && (
+                    <span className="sr-only"> — Em breve</span>
+                  )}
+                </button>
+              ),
+            )}
         </nav>
         <button
           className="mt-4 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-white/10 lg:mt-auto"
@@ -258,7 +268,10 @@ export function EstadoErro({
   esperarAte?: number;
 }) {
   const [agora, setAgora] = useState(Date.now);
-  const segundos = Math.max(0, Math.ceil(((esperarAte ?? agora) - agora) / 1000));
+  const segundos = Math.max(
+    0,
+    Math.ceil(((esperarAte ?? agora) - agora) / 1000),
+  );
   useEffect(() => {
     if (!esperarAte) return;
     const timer = window.setInterval(() => setAgora(Date.now()), 1000);
@@ -276,7 +289,9 @@ export function EstadoErro({
         disabled={segundos > 0}
         type="button"
       >
-        {segundos > 0 ? `Aguarde ${segundos} ${segundos === 1 ? "segundo" : "segundos"}` : "Tentar novamente"}
+        {segundos > 0
+          ? `Aguarde ${segundos} ${segundos === 1 ? "segundo" : "segundos"}`
+          : "Tentar novamente"}
       </button>
     </div>
   );
@@ -301,9 +316,11 @@ export function EstadoIntegracaoIndisponivel() {
 export function Barras({
   pontos,
   moedaValores = false,
+  formatarData = dataCurta,
 }: {
   pontos: { data: string; valor: number }[];
   moedaValores?: boolean;
+  formatarData?: (valor: string) => string;
 }) {
   const maximo = Math.max(...pontos.map((item) => item.valor), 1);
   if (!pontos.length)
@@ -331,7 +348,9 @@ export function Barras({
               height: `${Math.max((item.valor / maximo) * 120, item.valor ? 8 : 2)}px`,
             }}
           />
-          <span className="text-[10px] text-muted">{dataCurta(item.data)}</span>
+          <span className="text-[10px] text-muted">
+            {formatarData(item.data)}
+          </span>
         </div>
       ))}
     </div>

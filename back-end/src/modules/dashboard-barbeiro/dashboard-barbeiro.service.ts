@@ -1,5 +1,13 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { StatusAgendamento } from '@prisma/client';
+import type {
+  ConsultarBarbeiroDto,
+  ConsultarHistoricoBarbeiroDto,
+} from './dto/consultas-barbeiro.dto';
+import {
+  ConsultarAreaBarbeiroService,
+  barbeiroDaSessao,
+} from './service/consultar-area-barbeiro.service';
+import { Injectable } from '@nestjs/common';
+import { Prisma, StatusAgendamento } from '@prisma/client';
 import type { UsuarioAutenticado } from '../../common/auth/auth.types';
 import { serializarResposta } from '../../common/utils/resposta';
 import {
@@ -11,7 +19,6 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import type {
   AgendamentoResumoDashboardDto,
-  IndicadorDashboardDto,
   PontoSerieDashboardDto,
   ServicoDashboardDto,
 } from '../../common/dto/dashboard-resposta.dto';
@@ -19,19 +26,28 @@ import type {
 const STATUS_VALIDOS = { not: StatusAgendamento.CANCELADO } as const;
 
 function variacao(atual: number, anterior: number) {
-  if (anterior === 0) return atual === 0 ? 0 : 100;
+  if (anterior === 0) return atual === 0 ? 0 : null;
   return Math.round(((atual - anterior) / anterior) * 100);
 }
 
 @Injectable()
 export class DashboardBarbeiroService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly consultas: ConsultarAreaBarbeiroService,
+  ) {}
+  servicos(query: ConsultarBarbeiroDto, usuario: UsuarioAutenticado) {
+    return this.consultas.servicos(query, usuario);
+  }
+  clientes(query: ConsultarBarbeiroDto, usuario: UsuarioAutenticado) {
+    return this.consultas.clientes(query, usuario);
+  }
+  historico(query: ConsultarHistoricoBarbeiroDto, usuario: UsuarioAutenticado) {
+    return this.consultas.historico(query, usuario);
+  }
 
   async obter(usuario: UsuarioAutenticado) {
-    if (!usuario.barbeiroId)
-      throw new ForbiddenException('O usuário não possui perfil de barbeiro.');
-
-    const idBarbeiro = usuario.barbeiroId;
+    const idBarbeiro = barbeiroDaSessao(usuario);
     const agora = new Date();
     const hoje = inicioDiaBarbearia(agora);
     const amanha = adicionarDias(hoje, 1);
@@ -39,10 +55,13 @@ export class DashboardBarbeiroService {
     const inicioSerie = adicionarDias(hoje, -6);
     const inicioSemanaAnterior = adicionarDias(hoje, -13);
     const inicioMes = inicioMesBarbearia(agora);
-    const includeResumo = {
-      cliente: { include: { usuario: { select: { nome: true } } } },
-      barbeiro: { include: { usuario: { select: { nome: true } } } },
-      servicos: { include: { servico: { select: { id: true, nome: true } } } },
+    const selectResumo = {
+      id: true,
+      inicioPrevisto: true,
+      status: true,
+      cliente: { select: { usuario: { select: { nome: true } } } },
+      barbeiro: { select: { nomeProfissional: true, usuario: { select: { nome: true } } } },
+      servicos: { select: { subtotal: true, servico: { select: { id: true, nome: true } } } },
     } as const;
 
     const [
@@ -73,13 +92,17 @@ export class DashboardBarbeiroService {
       this.prisma.agendamento.findMany({
         where: { idBarbeiro, inicioPrevisto: { gte: hoje, lt: amanha }, status: STATUS_VALIDOS },
         orderBy: { inicioPrevisto: 'asc' },
-        include: includeResumo,
+        select: selectResumo,
       }),
       this.prisma.agendamento.findMany({
-        where: { idBarbeiro, inicioPrevisto: { gte: agora }, status: STATUS_VALIDOS },
+        where: {
+          idBarbeiro,
+          inicioPrevisto: { gte: agora },
+          status: { in: [StatusAgendamento.PENDENTE, StatusAgendamento.CONFIRMADO] },
+        },
         orderBy: { inicioPrevisto: 'asc' },
         take: 4,
-        include: includeResumo,
+        select: selectResumo,
       }),
       this.prisma.agendamento.findMany({
         where: {
@@ -87,7 +110,9 @@ export class DashboardBarbeiroService {
           status: StatusAgendamento.CONCLUIDO,
           inicioPrevisto: { gte: inicioMes, lt: amanha },
         },
-        select: { servicos: { select: { servico: { select: { id: true, nome: true } } } } },
+        select: {
+          servicos: { select: { quantidade: true, servico: { select: { id: true, nome: true } } } },
+        },
       }),
       this.prisma.agendamento.findMany({
         where: {
@@ -99,16 +124,19 @@ export class DashboardBarbeiroService {
       }),
     ]);
 
-    const receitaPorDia = new Map<string, number>();
+    const receitaPorDia = new Map<string, Prisma.Decimal>();
     const atendimentosPorDia = new Map<string, number>();
     for (let indice = 0; indice < 7; indice += 1) {
       const chave = adicionarDias(inicioSerie, indice).toISOString().slice(0, 10);
-      receitaPorDia.set(chave, 0);
+      receitaPorDia.set(chave, new Prisma.Decimal(0));
       atendimentosPorDia.set(chave, 0);
     }
     for (const item of itensConcluidos) {
       const chave = chaveDiaBarbearia(item.agendamento.inicioPrevisto);
-      receitaPorDia.set(chave, (receitaPorDia.get(chave) ?? 0) + Number(item.subtotal));
+      receitaPorDia.set(
+        chave,
+        (receitaPorDia.get(chave) ?? new Prisma.Decimal(0)).plus(item.subtotal),
+      );
     }
     for (const item of clientesPeriodo) {
       const chave = chaveDiaBarbearia(item.inicioPrevisto);
@@ -132,7 +160,7 @@ export class DashboardBarbeiroService {
     for (const atendimento of atendimentosDoMes) {
       for (const item of atendimento.servicos) {
         const atual = servicos.get(item.servico.id) ?? { nome: item.servico.nome, quantidade: 0 };
-        atual.quantidade += 1;
+        atual.quantidade += item.quantidade;
         servicos.set(item.servico.id, atual);
       }
     }
@@ -147,7 +175,12 @@ export class DashboardBarbeiroService {
       barbeiro: item.barbeiro.nomeProfissional || item.barbeiro.usuario.nome,
       servicos: item.servicos.map((servico) => servico.servico.nome),
       status: item.status,
-      total: item.servicos.reduce((total, servico) => total + Number(servico.subtotal), 0),
+      total: Number(
+        item.servicos.reduce(
+          (total, servico) => total.plus(servico.subtotal),
+          new Prisma.Decimal(0),
+        ),
+      ),
     });
 
     return serializarResposta({
@@ -155,18 +188,18 @@ export class DashboardBarbeiroService {
       atendimentosHoje: {
         valor: agendamentosHoje,
         variacaoPercentual: variacao(agendamentosHoje, agendamentosOntem),
-      } satisfies IndicadorDashboardDto,
+      },
       receitaHoje: {
-        valor: receitaPorDia.get(chaveHoje) ?? 0,
+        valor: Number(receitaPorDia.get(chaveHoje) ?? 0),
         variacaoPercentual: variacao(
-          receitaPorDia.get(chaveHoje) ?? 0,
-          receitaPorDia.get(chaveOntem) ?? 0,
+          Number(receitaPorDia.get(chaveHoje) ?? 0),
+          Number(receitaPorDia.get(chaveOntem) ?? 0),
         ),
-      } satisfies IndicadorDashboardDto,
+      },
       clientesNaSemana: {
         valor: clientesAtuais,
         variacaoPercentual: variacao(clientesAtuais, clientesAnteriores),
-      } satisfies IndicadorDashboardDto,
+      },
       atendimentosUltimosSeteDias: [...atendimentosPorDia].map(([data, valor]) => ({
         data,
         valor,
