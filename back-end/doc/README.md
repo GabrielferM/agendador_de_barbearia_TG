@@ -4,6 +4,7 @@
 
 | Tarefa | Documento |
 | --- | --- |
+| Área do barbeiro | [Escopo, endpoints e regras](../../front-end/docs/area-barbeiro.md) |
 | Administração | [Fluxos administrativos](../../front-end/docs/administracao.md) |
 | Jornada do cliente e disponibilidade | [Agendamento do cliente](agendamento-cliente.md) |
 | Entender domínio, camadas e persistência | [Arquitetura](arquitetura.md) |

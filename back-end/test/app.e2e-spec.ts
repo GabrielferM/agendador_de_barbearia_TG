@@ -31,8 +31,13 @@ describe('AppController (e2e)', () => {
     comissao: { findMany: jest.fn(), count: jest.fn() },
     filial: { findUnique: jest.fn() },
     barbeiro: { findUnique: jest.fn() },
-    cliente: { findUnique: jest.fn() },
-    servico: { findMany: jest.fn() },
+    cliente: {
+      findUnique: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+      count: jest.fn().mockResolvedValue(0),
+    },
+    servico: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
+    agendamentoServico: { groupBy: jest.fn().mockResolvedValue([]) },
     agendamento: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
@@ -405,6 +410,94 @@ describe('AppController (e2e)', () => {
     await agente.post('/agendamentos').set('X-CSRF-Token', csrf).send(dto).expect(409);
   });
 
+  it('protege as consultas do barbeiro e valida filtros e payloads pelo HTTP', async () => {
+    for (const caminho of ['clientes', 'servicos', 'historico'])
+      await request(app.getHttpServer()).get(`/dashboard/barbeiro/${caminho}`).expect(401);
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((c) => c.startsWith('csrf='))!
+      .split(';')[0]
+      .slice(5);
+    await agente.get('/dashboard/barbeiro/clientes').expect(403);
+    const usuario = sessaoAtual!.usuario as {
+      barbeiro: unknown;
+      cliente: unknown;
+      papel: { codigo: string; permissoes: unknown[] };
+    };
+    usuario.cliente = null;
+    usuario.barbeiro = { id: 2 };
+    usuario.papel.codigo = 'BARBEIRO';
+    await agente.get('/dashboard/barbeiro/clientes').expect(403);
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_PROPRIA_AGENDA' } },
+    ];
+    const clientes = await agente
+      .get('/dashboard/barbeiro/clientes?pagina=2&limite=10')
+      .expect(200);
+    expect(clientes.body as unknown).toMatchObject({ data: [], meta: { pagina: 2, total: 0 } });
+    await agente.get('/dashboard/barbeiro/historico?status=PENDENTE').expect(400);
+    await agente.get('/dashboard/barbeiro/servicos?inicioDe=2026-02-30').expect(400);
+    await agente.get('/dashboard/barbeiro/servicos?idBarbeiro=9').expect(400);
+    await agente
+      .get('/dashboard/barbeiro/historico?inicioDe=2026-10-20&inicioAte=2026-10-01')
+      .expect(400);
+    await agente.get('/dashboard/barbeiro/historico?pagina=-1').expect(400);
+    await agente
+      .patch('/agendamentos/99')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'EM_ATENDIMENTO', inicio: '2030-01-01T12:00:00Z' })
+      .expect(403);
+    await agente
+      .post('/agendamentos/99/historico-status')
+      .set('X-CSRF-Token', csrf)
+      .send({ idUsuarioResponsavel: 2, statusNovo: 'CONCLUIDO' })
+      .expect(403);
+    const registro = {
+      id: 99,
+      idCliente: 7,
+      idBarbeiro: 2,
+      inicioPrevisto: new Date('2030-01-07T12:00:00Z'),
+      fimPrevisto: new Date('2030-01-07T13:00:00Z'),
+      status: 'CONFIRMADO',
+      servicos: [],
+      cliente: { id: 7, cpf: 'privado', usuario: { nome: 'Cliente próprio', email: 'privado' } },
+      barbeiro: { id: 2, nomeProfissional: 'Profissional', usuario: { email: 'privado' } },
+      filial: { id: 1, nome: 'Centro', endereco: {} },
+      observacaoInterna: 'privado',
+    };
+    prisma.agendamento.findUnique.mockResolvedValue(registro);
+    prisma.agendamento.update.mockResolvedValue({ ...registro, status: 'EM_ATENDIMENTO' });
+    const atualizado = await agente
+      .patch('/agendamentos/99')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'EM_ATENDIMENTO' })
+      .expect(200);
+    expect(atualizado.body as unknown).toMatchObject({
+      cliente: { id: 7, nome: 'Cliente próprio' },
+      status: 'EM_ATENDIMENTO',
+    });
+    for (const campo of ['cpf', 'email', 'observacaoInterna', 'senhaHash', 'comissao'])
+      expect(JSON.stringify(atualizado.body)).not.toContain(campo);
+    expect(prisma.historicoStatusAgendamento.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        statusAnterior: 'CONFIRMADO',
+        statusNovo: 'EM_ATENDIMENTO',
+        idUsuarioResponsavel: 1,
+      }),
+    });
+    usuario.barbeiro = { id: 3 };
+    await agente.get('/agendamentos/99').expect(403);
+    await agente
+      .patch('/agendamentos/99')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'EM_ATENDIMENTO' })
+      .expect(403);
+  });
+
   it('/api-json (GET) exposes the OpenAPI contract', async () => {
     const response = await request(app.getHttpServer()).get('/api-json').expect(200);
     const document = response.body as OpenApiDocument;
@@ -422,6 +515,9 @@ describe('AppController (e2e)', () => {
         '/auth/csrf',
         '/auth/logout',
         '/publico/servicos',
+        '/dashboard/barbeiro/clientes',
+        '/dashboard/barbeiro/servicos',
+        '/dashboard/barbeiro/historico',
       ]),
     );
     expect(document.tags.map((tag) => tag.name)).toEqual(expect.arrayContaining(['Serviços']));

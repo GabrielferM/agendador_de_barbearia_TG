@@ -1,3 +1,7 @@
+import {
+  dataCurtaBarbeiro as dataCurta,
+  horaBarbeiro as hora,
+} from "./periodo-barbeiro";
 import { useAutenticacao } from "../../../auth/contexto-autenticacao";
 import { Link } from "react-router-dom";
 import { MENU_BARBEIRO } from "./menu-barbeiro";
@@ -15,48 +19,41 @@ import {
   Kpi,
 } from "../components/dashboard-compartilhado";
 import {
-  dataCurta,
-  hora,
   moeda,
   nomeStatus,
   numero,
 } from "../components/dashboard-formatadores";
 import { useSessaoDashboard } from "../components/use-sessao-dashboard";
-import {
-  dashboardBarbeiroMock,
-  usarDadosMockados,
-} from "../mocks/dados-dashboard";
 
-function variacao(valor: number, periodo = "ontem") {
+function variacao(valor: number | null, periodo = "ontem") {
+  if (valor === null) return "Sem base de comparação no período anterior";
   const prefixo = valor > 0 ? "+" : "";
   return `${prefixo}${valor}% em relação a ${periodo}`;
 }
 
 export function DashboardBarbeiro() {
   const { usuario } = useAutenticacao();
-  const demonstracao = usarDadosMockados();
   const consulta = useQuery({
-    queryKey: [
-      "dashboard",
-      "barbeiro",
-      usuario?.id,
-      demonstracao ? "mock" : "api",
-    ],
-    queryFn: obterDashboardBarbeiro,
-    enabled: !demonstracao,
-    initialData: demonstracao ? dashboardBarbeiroMock : undefined,
+    queryKey: ["dashboard", "barbeiro", usuario?.id],
+    queryFn: ({ signal }) => obterDashboardBarbeiro(signal),
+    enabled: !!usuario?.permissoes.includes("GERENCIAR_PROPRIA_AGENDA"),
+    retry: false,
     staleTime: 60_000,
   });
   useSessaoDashboard(consulta.error);
 
   return (
     <DashboardLayout
-      titulo="Olá! 👋"
+      fusoHorario="America/Sao_Paulo"
+      titulo="Olá!"
       subtitulo="Tenha um ótimo dia e bons cortes"
       itens={MENU_BARBEIRO}
-      dadosDemonstrativos={demonstracao}
     >
-      {consulta.isPending ? (
+      {!usuario?.permissoes.includes("GERENCIAR_PROPRIA_AGENDA") ? (
+        <p role="alert">
+          Você não possui permissão para consultar a própria agenda.
+        </p>
+      ) : consulta.isPending ? (
         <EstadoCarregamento />
       ) : consulta.isError ? (
         <EstadoErro
@@ -71,25 +68,23 @@ export function DashboardBarbeiro() {
         <>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Kpi
-              rotulo="Atendimentos hoje"
+              rotulo="Agendamentos hoje"
               valor={numero.format(consulta.data.atendimentosHoje.valor)}
-              detalhe={variacao(
-                consulta.data.atendimentosHoje.variacaoPercentual,
-              )}
+              detalhe={`Cancelados excluídos · ${variacao(consulta.data.atendimentosHoje.variacaoPercentual)}`}
               icone="servicos"
             />
             <Kpi
-              rotulo="Faturamento hoje"
+              rotulo="Receita de serviços concluídos hoje"
               valor={moeda.format(consulta.data.receitaHoje.valor)}
               detalhe={variacao(consulta.data.receitaHoje.variacaoPercentual)}
               icone="financeiro"
             />
             <Kpi
-              rotulo="Clientes na semana"
+              rotulo="Clientes nos últimos 7 dias"
               valor={numero.format(consulta.data.clientesNaSemana.valor)}
               detalhe={variacao(
                 consulta.data.clientesNaSemana.variacaoPercentual,
-                "semana anterior",
+                "sete dias anteriores",
               )}
               icone="usuarios"
             />
@@ -101,13 +96,19 @@ export function DashboardBarbeiro() {
                   0,
                 ),
               )}
-              detalhe="Atendimentos concluídos"
+              detalhe="Unidades de serviços em atendimentos concluídos"
               icone="agenda"
             />
           </div>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
             <Cartao titulo="Minha agenda de hoje">
+              <Link
+                to="/barbeiro/agenda"
+                className="mb-2 inline-block text-sm text-primary underline"
+              >
+                Ver agenda completa
+              </Link>
               {consulta.data.agendaHoje.length ? (
                 <ul className="divide-y divide-border">
                   {consulta.data.agendaHoje.map((item) => (
@@ -127,11 +128,17 @@ export function DashboardBarbeiro() {
                           {item.servicos.join(" + ") || "Sem serviço"}
                         </p>
                       </div>
-                      <span className="rounded-full bg-background px-2 py-1 text-xs">
-                        <Link to={`/barbeiro/agenda/${item.id}`}>
-                          {nomeStatus(item.status)} · Visualizar
+                      <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
+                        <span className="rounded-full bg-background px-2 py-1 text-xs">
+                          {nomeStatus(item.status)}
+                        </span>
+                        <Link
+                          className="text-xs text-primary underline"
+                          to={`/barbeiro/agenda/${item.id}`}
+                        >
+                          Visualizar
                         </Link>
-                      </span>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -177,11 +184,20 @@ export function DashboardBarbeiro() {
             </Cartao>
           </div>
 
-          <div className="mt-4 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
             <Cartao titulo="Atendimentos nos últimos sete dias">
-              <Barras pontos={consulta.data.atendimentosUltimosSeteDias} />
+              <Barras
+                formatarData={dataCurta}
+                pontos={consulta.data.atendimentosUltimosSeteDias}
+              />
             </Cartao>
             <Cartao titulo="Serviços mais realizados">
+              <Link
+                to="/barbeiro/historico"
+                className="mb-3 inline-block text-sm text-primary underline"
+              >
+                Histórico de atendimentos
+              </Link>
               {consulta.data.servicosNoMes.length ? (
                 <ul className="space-y-4">
                   {consulta.data.servicosNoMes.slice(0, 5).map((item) => (

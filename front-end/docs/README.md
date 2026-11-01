@@ -2,6 +2,7 @@
 
 | Tarefa | Leitura |
 | --- | --- |
+| Área do barbeiro | [Escopo, endpoints e regras](area-barbeiro.md) |
 | Administração | [CRUD administrativo](administracao.md) |
 | Jornada do cliente e disponibilidade | [Agendamento do cliente](../../back-end/doc/agendamento-cliente.md) |
 | Entender páginas, componentes e estado | [Arquitetura](arquitetura.md) |
