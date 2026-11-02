@@ -36,7 +36,12 @@ describe('AppController (e2e)', () => {
       findMany: jest.fn().mockResolvedValue([]),
       count: jest.fn().mockResolvedValue(0),
     },
-    servico: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
+    servico: {
+      findMany: jest.fn(),
+      count: jest.fn().mockResolvedValue(0),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
     agendamentoServico: { groupBy: jest.fn().mockResolvedValue([]) },
     agendamento: {
       findMany: jest.fn(),
@@ -73,6 +78,8 @@ describe('AppController (e2e)', () => {
       usuario: { status: 'ATIVO' },
     });
     prisma.cliente.findUnique.mockReset().mockResolvedValue({ id: 1 });
+    prisma.servico.findUnique.mockReset();
+    prisma.servico.update.mockReset();
     prisma.servico.findMany
       .mockReset()
       .mockResolvedValue([
@@ -205,6 +212,97 @@ describe('AppController (e2e)', () => {
     await agente.get('/comissoes').expect(200);
     const me = await agente.get('/auth/me').expect(200);
     expect(me.body as unknown).toMatchObject({ usuario: { permissoes: ['GERENCIAR_COMISSOES'] } });
+  });
+
+  it('altera apenas a ativação do serviço com sessão, permissão e CSRF e preserva os agendamentos', async () => {
+    await request(app.getHttpServer()).patch('/servicos/3').send({ ativo: false }).expect(401);
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((cookie) => cookie.startsWith('csrf='))!
+      .split(';')[0]
+      .slice('csrf='.length);
+    await agente.patch('/servicos/3').set('X-CSRF-Token', csrf).send({ ativo: false }).expect(403);
+    const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: unknown[] } };
+    usuario.papel.codigo = 'ADMINISTRADOR';
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_SERVICOS' } },
+    ];
+    await agente.patch('/servicos/3').send({ ativo: false }).expect(403);
+    for (const ativo of ['false', 0, null]) {
+      await agente.patch('/servicos/3').set('X-CSRF-Token', csrf).send({ ativo }).expect(400);
+    }
+    await agente
+      .patch('/servicos/3')
+      .set('X-CSRF-Token', csrf)
+      .send({ ativo: false, extra: true })
+      .expect(400);
+    expect(prisma.servico.update).not.toHaveBeenCalled();
+    const servico = {
+      id: 3,
+      nome: 'Corte',
+      descricao: null,
+      precoBase: new Prisma.Decimal('50'),
+      duracaoMinutos: 30,
+      ativo: true,
+    };
+    prisma.servico.findUnique.mockResolvedValue(servico);
+    prisma.servico.update.mockImplementation(({ data }: { data: { ativo: boolean } }) => {
+      servico.ativo = data.ativo;
+      return Promise.resolve({ ...servico });
+    });
+    for (const ativo of [false, true]) {
+      const resposta = await agente
+        .patch('/servicos/3')
+        .set('X-CSRF-Token', csrf)
+        .send({ ativo })
+        .expect(200);
+      expect(resposta.body as unknown).toMatchObject({
+        id: 3,
+        nome: 'Corte',
+        precoBase: '50.00',
+        duracaoMinutos: 30,
+        ativo,
+      });
+      expect(prisma.servico.update).toHaveBeenLastCalledWith({ where: { id: 3 }, data: { ativo } });
+    }
+    expect(prisma.agendamento.update).not.toHaveBeenCalled();
+    expect(prisma.agendamento.create).not.toHaveBeenCalled();
+    prisma.servico.findUnique.mockResolvedValue(null);
+    await agente.patch('/servicos/99').set('X-CSRF-Token', csrf).send({ ativo: false }).expect(404);
+  });
+
+  it('oculta serviços inativos do catálogo público e rejeita novas reservas', async () => {
+    await request(app.getHttpServer()).get('/publico/servicos').expect(200);
+    expect(prisma.servico.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { ativo: true } }),
+    );
+    prisma.servico.findMany.mockResolvedValue([
+      { id: 3, ativo: false, precoBase: new Prisma.Decimal('50'), duracaoMinutos: 30 },
+    ]);
+    await request(app.getHttpServer())
+      .get(
+        '/agendamentos/horarios-disponiveis?idFilial=1&idBarbeiro=2&data=2030-01-07&servicoIds=3',
+      )
+      .expect(400);
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((cookie) => cookie.startsWith('csrf='))!
+      .split(';')[0]
+      .slice('csrf='.length);
+    await agente
+      .post('/agendamentos')
+      .set('X-CSRF-Token', csrf)
+      .send({ idFilial: 1, idBarbeiro: 2, inicio: '2030-01-07T12:00:00Z', servicoIds: [3] })
+      .expect(400);
+    expect(prisma.agendamento.create).not.toHaveBeenCalled();
   });
 
   it('/ (GET)', () => {
@@ -530,6 +628,9 @@ describe('AppController (e2e)', () => {
     const schemaErro = document.components?.schemas?.ErroRespostaDto as
       { required?: string[] } | undefined;
     expect(schemaErro?.required ?? []).not.toContain('error');
+    expect(document.components?.schemas?.AtualizarServicoDto).toMatchObject({
+      properties: { ativo: { type: 'boolean' } },
+    });
     expect(document.components?.schemas?.LimiteRequisicoesRespostaDto).toBeDefined();
   });
 });

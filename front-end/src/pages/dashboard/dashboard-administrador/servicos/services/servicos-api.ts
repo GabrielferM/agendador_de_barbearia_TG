@@ -1,4 +1,6 @@
 import { servicosDashboardControllerObter } from "../../../../../api/dashboard-administrativo-serviços/dashboard-administrativo-serviços";
+import { servicoControllerAtualizar } from "../../../../../api/serviços/serviços";
+import { ErroOperacao } from "../../../../../api/operacao-http";
 import {
   executarHttp,
   lista,
@@ -6,6 +8,22 @@ import {
   numero,
   texto,
 } from "../../services/administracao-api";
+
+export async function alterarStatusServico(id: number, ativo: boolean) {
+  const dados = await executarHttp(() =>
+    servicoControllerAtualizar(id, { ativo }),
+  ).catch((erro: unknown) => {
+    if (erro instanceof ErroOperacao) throw erro;
+    throw new Error(
+      "Não foi possível confirmar a alteração. Atualize a lista antes de tentar novamente.",
+    );
+  });
+  const resposta = registro(dados);
+  if (resposta.id !== id || resposta.ativo !== ativo)
+    throw new Error(
+      "Não foi possível confirmar o status do serviço. Atualize a lista antes de tentar novamente.",
+    );
+}
 
 export async function consultarServicos(
   busca: string,

@@ -7,6 +7,8 @@
  */
 
 export interface AtualizarServicoDto {
+  /** Disponibilidade do serviço para novas reservas. */
+  ativo?: boolean;
   /** @minLength 2 */
   nome?: string;
   descricao?: string;

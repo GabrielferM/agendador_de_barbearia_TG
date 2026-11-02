@@ -50,7 +50,17 @@ Após sucesso, a tela limpa busca/status, retorna à primeira página e invalida
 
 ## Serviços integrados
 
-`/admin/servicos` consulta `GET /dashboard/administrador/servicos` com busca, status ativo/inativo e paginação no servidor, exigindo `GERENCIAR_SERVICOS`. Indicadores globais vêm do servidor, inclusive o ticket médio por atendimento concluído. A tabela mostra preço, duração, status e realizações/receita do mês. Validação, cancelamento, cache por usuário, carregamento, vazio e nova tentativa seguem o padrão administrativo. Mocks não são usados. Categoria e comissão padrão não existem no schema e são sinalizadas como indisponíveis. Esta entrega cobre consulta; não apresenta botões de gravação fictícios.
+`/admin/servicos` consulta `GET /dashboard/administrador/servicos` com busca, status ativo/inativo e paginação no servidor, exigindo `GERENCIAR_SERVICOS`. Indicadores globais vêm do servidor, inclusive o ticket médio por atendimento concluído. A tabela mostra preço, duração, status e realizações/receita do mês. Validação, cancelamento, cache por usuário, carregamento, vazio e nova tentativa seguem o padrão administrativo. Mocks não são usados. Categoria e comissão padrão não existem no schema e são sinalizadas como indisponíveis.
+
+### Ativação e desativação
+
+A coluna Ações oferece “Ativar” ou “Desativar” conforme o status atual. A gravação usa o cliente gerado para `PATCH /servicos/:id` com `{ ativo: boolean }`, sob `GERENCIAR_SERVICOS`, sessão e CSRF. O campo é opcional no DTO de edição, aceita somente booleano quando informado e é persistido também quando `false`. A coluna `servico.ativo` já existe no schema e na migration histórica; não foi criada nova migration.
+
+A tela impede envios duplicados enquanto a operação está pendente, não repete a mutação automaticamente e só confirma sucesso após HTTP 200 com ID e status esperados. Falhas mantêm o status exibido e mostram uma mensagem. Após sucesso, preserva busca/filtro, retorna à primeira página e invalida a consulta administrativa de serviços, o catálogo inicial e as consultas de agendamento, atualizando lista e indicadores pelo servidor.
+
+Serviços inativos deixam o catálogo público e são recusados na disponibilidade e na criação de novas reservas. A alteração de status não modifica nem cancela agendamentos existentes e não altera seus preços ou durações registrados. Reativar torna o serviço disponível novamente, respeitando as demais regras de agendamento. Cadastro de serviços continua pendente.
+
+Os testes HTTP do backend cobrem booleanos válidos/inválidos, inexistência, sessão, permissão, CSRF, preservação dos demais campos e ausência de escrita em agendamentos, além do filtro do catálogo e da rejeição de novas reservas. Os testes da tela cobrem ambas as ações, payload, indicadores, invalidação de caches, filtros/paginação, duplicação e falhas HTTP/rede/resposta inválida. Usam Prisma e HTTP simulados; não comprovam gravação em PostgreSQL real. Nesta entrega, a coluna foi confirmada por consulta de metadados ao banco configurado, sem alterar registros; a inspeção visual em navegador não foi realizada.
 
 ## Financeiro integrado
 

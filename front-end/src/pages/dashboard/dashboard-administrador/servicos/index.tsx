@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAutenticacao } from "../../../../auth/contexto-autenticacao";
 import {
   DashboardLayout,
@@ -9,9 +9,15 @@ import {
 import { MENU_ADMINISTRADOR } from "../constants/menu-administrador";
 import { estiloCampo } from "../components/formulario-cadastro";
 import { IndicadoresServicos, CatalogoServicos } from "./components/components";
-import { consultarServicos } from "./services/servicos-api";
+import {
+  alterarStatusServico,
+  consultarServicos,
+} from "./services/servicos-api";
 
-import { PainelCatalogo, PaginacaoCatalogo } from "../components/painel-catalogo";
+import {
+  PainelCatalogo,
+  PaginacaoCatalogo,
+} from "../components/painel-catalogo";
 
 export function ServicosAdministrador() {
   const { usuario } = useAutenticacao();
@@ -19,6 +25,29 @@ export function ServicosAdministrador() {
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("");
   const [pagina, setPagina] = useState(1);
+  const cache = useQueryClient();
+  const [aviso, setAviso] = useState("");
+  const alterarStatus = useMutation({
+    mutationFn: ({ id, ativo }: { id: number; ativo: boolean }) =>
+      alterarStatusServico(id, ativo),
+    retry: false,
+    onMutate: () => setAviso(""),
+    onSuccess: async (_, { ativo }) => {
+      setAviso(
+        ativo
+          ? "Serviço ativado."
+          : "Serviço desativado. Agendamentos existentes foram preservados.",
+      );
+      setPagina(1);
+      await Promise.all([
+        cache.invalidateQueries({
+          queryKey: ["admin", usuario?.id, "servicos"],
+        }),
+        cache.invalidateQueries({ queryKey: ["inicio", "servicos"] }),
+        cache.invalidateQueries({ queryKey: ["agendar"] }),
+      ]);
+    },
+  });
   const consulta = useQuery({
     queryKey: ["admin", usuario?.id, "servicos", busca, status, pagina],
     enabled: permitido,
@@ -28,16 +57,28 @@ export function ServicosAdministrador() {
   return (
     <DashboardLayout
       titulo="Serviços"
-      subtitulo="Consulte os serviços oferecidos pela barbearia"
+      subtitulo="Gerencie os serviços oferecidos pela barbearia"
       itens={MENU_ADMINISTRADOR}
     >
       {!permitido ? (
         <p role="alert">Você não possui permissão para consultar serviços.</p>
       ) : (
         <PainelCatalogo>
-          {consulta.data && !consulta.isError && <IndicadoresServicos dados={consulta.data.indicadores} />}
+          {aviso && (
+            <p role="status" className="p-4 text-success">
+              {aviso}
+            </p>
+          )}
+          {alterarStatus.isError && (
+            <p role="alert" className="p-4 text-danger">
+              {alterarStatus.error.message}
+            </p>
+          )}
+          {consulta.data && !consulta.isError && (
+            <IndicadoresServicos dados={consulta.data.indicadores} />
+          )}
           <div className="filtros-catalogo">
-            <label >
+            <label>
               Buscar serviço
               <input
                 className={estiloCampo}
@@ -79,8 +120,32 @@ export function ServicosAdministrador() {
             />
           ) : (
             <>
-              <div className="min-w-0 p-4 pt-0"><CatalogoServicos servicos={consulta.data.data} /><p className="mt-4 text-sm text-foreground">Categorias e percentuais padrão de comissão ainda não são cadastrados no sistema.</p></div>
-              <PaginacaoCatalogo pagina={pagina} totalPaginas={consulta.data.meta.totalPaginas} total={consulta.data.meta.total} entidade="serviços" mudar={setPagina} />
+              <div className="min-w-0 p-4 pt-0">
+                <CatalogoServicos
+                  servicos={consulta.data.data}
+                  pendente={alterarStatus.isPending}
+                  idPendente={
+                    alterarStatus.isPending
+                      ? alterarStatus.variables.id
+                      : undefined
+                  }
+                  alterar={(id, ativo) => {
+                    if (!alterarStatus.isPending)
+                      alterarStatus.mutate({ id, ativo });
+                  }}
+                />
+                <p className="mt-4 text-sm text-foreground">
+                  Categorias e percentuais padrão de comissão ainda não são
+                  cadastrados no sistema.
+                </p>
+              </div>
+              <PaginacaoCatalogo
+                pagina={pagina}
+                totalPaginas={consulta.data.meta.totalPaginas}
+                total={consulta.data.meta.total}
+                entidade="serviços"
+                mudar={setPagina}
+              />
             </>
           )}
         </PainelCatalogo>

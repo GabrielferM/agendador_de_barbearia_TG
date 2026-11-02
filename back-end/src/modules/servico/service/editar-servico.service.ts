@@ -18,6 +18,7 @@ export class EditarServicoService {
     if (dto.descricao !== undefined) data.descricao = dto.descricao.trim();
     if (dto.precoBase !== undefined) data.precoBase = new Prisma.Decimal(dto.precoBase.toString());
     if (dto.duracaoMinutos !== undefined) data.duracaoMinutos = dto.duracaoMinutos;
+    if (dto.ativo !== undefined) data.ativo = dto.ativo;
     try {
       return serializarResposta(await this.prisma.servico.update({ where: { id }, data }));
     } catch (error) {
