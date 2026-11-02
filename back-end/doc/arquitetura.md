@@ -79,3 +79,7 @@ Esses itens não autorizam refatorações ou migrations durante uma tarefa docum
 ## Indicadores administrativos de serviços
 
 `GET /dashboard/administrador/servicos` calcula realizações e ticket médio a partir dos atendimentos concluídos do início do mês até o fim do dia atual em America/Sao_Paulo (limite exclusivo à meia-noite seguinte). Não inclui parte do dia seguinte. Busca/status/paginação afetam a lista, preservando os indicadores globais.
+
+## Contas públicas
+
+Autenticação inclui cadastro de cliente e recuperação/redefinição, conforme [guia de contas públicas](contas-publicas.md). RecuperacaoSenha armazena somente hash, expiração e consumo; a redefinição serializável revoga sessões e links. O cadastro reutiliza o nested write do domínio Cliente, sem tornar o CRUD público.

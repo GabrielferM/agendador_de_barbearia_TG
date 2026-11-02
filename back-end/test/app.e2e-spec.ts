@@ -1,3 +1,5 @@
+import { EmailContaService } from '../src/modules/autenticacao/service/email-conta.service';
+jest.mock('node:timers/promises', () => ({ setTimeout: jest.fn().mockResolvedValue(undefined) }));
 import { Prisma } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
@@ -26,7 +28,13 @@ describe('AppController (e2e)', () => {
     CORS_ORIGINS: process.env.CORS_ORIGINS,
     CSRF_SECRET: process.env.CSRF_SECRET,
   };
+  const emails = {
+    recuperar: jest.fn().mockResolvedValue(undefined),
+    notificarAlteracao: jest.fn().mockResolvedValue(undefined),
+  };
   const prisma = {
+    papel: { findUnique: jest.fn() },
+    recuperacaoSenha: { create: jest.fn(), findUnique: jest.fn(), updateMany: jest.fn() },
     historicoStatusAgendamento: { create: jest.fn().mockResolvedValue({}) },
     comissao: { findMany: jest.fn(), count: jest.fn() },
     filial: {
@@ -59,7 +67,7 @@ describe('AppController (e2e)', () => {
     },
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
-    usuario: { findUnique: jest.fn(), update: jest.fn() },
+    usuario: { findUnique: jest.fn(), update: jest.fn(), updateMany: jest.fn(), create: jest.fn() },
     sessao: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -74,6 +82,13 @@ describe('AppController (e2e)', () => {
     process.env.NODE_ENV = 'test';
     delete process.env.CORS_ORIGINS;
     process.env.CSRF_SECRET = 'segredo-de-testes-e2e-com-mais-de-32-caracteres';
+    prisma.papel.findUnique.mockReset().mockResolvedValue({ id: 1, ativo: true });
+    prisma.usuario.create.mockReset();
+    prisma.recuperacaoSenha.create.mockReset().mockResolvedValue({ id: 'recuperacao-teste' });
+    prisma.recuperacaoSenha.findUnique.mockReset().mockResolvedValue(null);
+    prisma.recuperacaoSenha.updateMany.mockReset().mockResolvedValue({ count: 1 });
+    emails.recuperar.mockClear();
+    emails.notificarAlteracao.mockClear();
     prisma.$queryRaw.mockReset().mockResolvedValue([{ result: 1 }]);
     sessaoAtual = null;
     prisma.filial.findUnique.mockReset().mockResolvedValue({ id: 1, status: 'ATIVA' });
@@ -118,6 +133,7 @@ describe('AppController (e2e)', () => {
     };
     prisma.usuario.findUnique.mockReset().mockResolvedValue(usuario);
     prisma.usuario.update.mockReset().mockResolvedValue(usuario);
+    prisma.usuario.updateMany.mockReset().mockResolvedValue({ count: 1 });
     prisma.sessao.create.mockReset().mockImplementation(({ data }: { data: object }) => {
       sessaoAtual = {
         id: 'sessao-e2e',
@@ -146,6 +162,8 @@ describe('AppController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
+      .overrideProvider(EmailContaService)
+      .useValue(emails)
       .overrideProvider(PrismaService)
       .useValue(prisma)
       .compile();
@@ -798,6 +816,133 @@ describe('AppController (e2e)', () => {
       .expect(403);
   });
 
+  it.each(['papel', 'idPapel', 'status', 'permissoes', 'observacao', 'dataNascimento'])(
+    'rejeita campo público privilegiado %s',
+    async (campo) => {
+      await request(app.getHttpServer())
+        .post('/auth/cadastro-cliente')
+        .send({
+          nome: 'Cliente Teste',
+          email: 'cliente@example.com',
+          cpf: '52998224725',
+          senha: 'senha segura longa',
+          [campo]: 'privilegio',
+        })
+        .expect(400)
+        .expect('Cache-Control', 'no-store');
+      expect(prisma.usuario.create).not.toHaveBeenCalled();
+    },
+  );
+
+  it('protege operações públicas por origem e JSON; mantém CRUD privado', async () => {
+    await request(app.getHttpServer())
+      .post('/auth/cadastro-cliente')
+      .set('Origin', 'https://malicioso.example')
+      .send({
+        nome: 'Cliente Teste',
+        email: 'cliente@example.com',
+        cpf: '52998224725',
+        senha: 'senha segura longa',
+      })
+      .expect(403);
+    await request(app.getHttpServer())
+      .post('/auth/recuperar-senha')
+      .set('Content-Type', 'text/plain')
+      .send('{}')
+      .expect(415);
+    await request(app.getHttpServer()).get('/clientes').expect(401);
+  });
+
+  it('recuperação anônima responde genericamente para conta inexistente e existente', async () => {
+    prisma.usuario.findUnique.mockResolvedValueOnce(null);
+    const ausente = await request(app.getHttpServer())
+      .post('/auth/recuperar-senha')
+      .send({ email: 'inexistente@example.com' })
+      .expect(200);
+    const existente = await request(app.getHttpServer())
+      .post('/auth/recuperar-senha')
+      .send({ email: 'cliente@teste.local' })
+      .expect(200);
+    expect(ausente.body as unknown).toEqual(existente.body);
+    expect(existente.headers['cache-control']).toBe('no-store');
+    expect(emails.recuperar).toHaveBeenCalledTimes(1);
+    await request(app.getHttpServer())
+      .post('/auth/recuperar-senha')
+      .send({ email: ' CLIENTE@TESTE.LOCAL ' })
+      .expect(429)
+      .expect('Retry-After', '60');
+    await request(app.getHttpServer()).get('/').expect(200);
+  });
+
+  it('cadastro permite login normal e nunca estabelece sessão por si só', async () => {
+    const senha = ' senha nova muito longa ';
+    prisma.usuario.findUnique.mockResolvedValue(null);
+    prisma.cliente.findUnique.mockResolvedValue(null);
+    prisma.usuario.create.mockImplementation(({ data }: { data: Record<string, unknown> }) => {
+      const usuario = {
+        ...data,
+        id: 25,
+        cliente: { id: 25 },
+        status: 'ATIVO',
+        papel: { codigo: 'CLIENTE', ativo: true, permissoes: [] },
+      };
+      prisma.usuario.findUnique.mockResolvedValue(usuario);
+      return Promise.resolve(usuario);
+    });
+    const resultado = await request(app.getHttpServer())
+      .post('/auth/cadastro-cliente')
+      .send({ nome: 'Cliente Novo', email: 'novo@example.com', cpf: '52998224725', senha })
+      .expect(200);
+    expect(resultado.headers['set-cookie']).toBeUndefined();
+    expect(JSON.stringify(resultado.body)).not.toContain('senhaHash');
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'novo@example.com', senha })
+      .expect(200);
+  });
+
+  it('redefinição revoga sessão anterior e permite login só com senha nova', async () => {
+    const agente = request.agent(app.getHttpServer());
+    await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const usuario = sessaoAtual!.usuario as {
+      senhaHash: string;
+      email: string;
+      status: string;
+      papel: object;
+    };
+    let consumido = false;
+    prisma.recuperacaoSenha.findUnique.mockImplementation(() => ({
+      id: 'r1',
+      idUsuario: 1,
+      dataConsumo: consumido ? new Date() : null,
+      dataExpiracao: new Date(Date.now() + 60_000),
+      usuario,
+    }));
+    prisma.recuperacaoSenha.updateMany.mockImplementation(() => {
+      consumido = true;
+      return Promise.resolve({ count: 1 });
+    });
+    prisma.usuario.update.mockImplementation(({ data }: { data: { senhaHash?: string } }) => {
+      if (data.senhaHash) usuario.senhaHash = data.senhaHash;
+      return Promise.resolve(usuario);
+    });
+    const entrada = { token: 't'.repeat(43), senha: ' nova senha segura longa ' };
+    await request(app.getHttpServer()).post('/auth/redefinir-senha').send(entrada).expect(200);
+    await agente.get('/auth/me').expect(401);
+    await request(app.getHttpServer()).post('/auth/redefinir-senha').send(entrada).expect(400);
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: usuario.email, senha: 'senha correta de teste' })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: usuario.email, senha: entrada.senha })
+      .expect(200);
+  });
+
   it('/api-json (GET) exposes the OpenAPI contract', async () => {
     const response = await request(app.getHttpServer()).get('/api-json').expect(200);
     const document = response.body as OpenApiDocument;
@@ -814,6 +959,9 @@ describe('AppController (e2e)', () => {
         '/auth/me',
         '/auth/csrf',
         '/auth/logout',
+        '/auth/cadastro-cliente',
+        '/auth/recuperar-senha',
+        '/auth/redefinir-senha',
         '/publico/servicos',
         '/dashboard/barbeiro/clientes',
         '/dashboard/barbeiro/servicos',

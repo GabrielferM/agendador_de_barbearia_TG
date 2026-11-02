@@ -41,3 +41,7 @@ usa somente tabelas temporárias com `search_path=pg_temp`, executa o reparo dua
 vezes e verifica idempotência, isolamento do administrador e preservação de usuários.
 O mesmo SQL foi exercitado com PostgreSQL embarcado (PGlite); isso não substitui
 validação do banco de destino nem teste de concorrência em PostgreSQL servidor.
+
+## Contas públicas
+
+Os testes unitários/HTTP adicionais usam Prisma e Resend simulados e cobrem cadastro, recuperação, limites, tokens, revogação e login após a mudança. A suíte opt-in de [PostgreSQL real](../test/conta-postgres.e2e-spec.ts) requer DATABASE_URL_TESTE local descartável; consulte [preparo e limites](contas-publicas.md). Sem essa variável, três testes ficam ignorados.

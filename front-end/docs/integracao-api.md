@@ -56,3 +56,7 @@ Referência: [mutator personalizado do Orval](https://orval.dev/docs/guides/cust
 O adapter manual `pages/inicio/services/catalogo-inicio.ts` utiliza os clientes gerados de serviços e barbeiros, sem filtro de filial, e percorre a paginação com limite de 100. Confere status 200, metadados e campos consumidos antes de entregar os itens. HTTP não exitoso, resposta inválida ou falha de rede rejeitam a consulta; listas parciais não são apresentadas como catálogo completo. As chaves TanStack Query são `['inicio', 'servicos']` e `['inicio', 'barbeiros']`.
 
 Não houve alteração de contrato público. Contatos demonstrativos não usam endpoints privados nem são inferidos do telefone da filial.
+
+## Contas públicas
+
+O adapter manual `pages/conta-publica/conta-api.ts` usa as três operações Orval regeneradas do domínio Autenticação, valida status 200 e mensagem de sucesso, traduz 400/409/429/5xx e respeita Retry-After. Não repete mutações automaticamente. Contratos e configuração: [contas públicas](../../back-end/doc/contas-publicas.md).

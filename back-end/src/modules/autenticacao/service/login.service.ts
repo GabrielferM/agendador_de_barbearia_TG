@@ -41,10 +41,17 @@ export class LoginService {
     const agora = new Date();
     const novoHash = verificacao.precisaMigrar ? await this.senhas.gerarHash(dto.senha) : undefined;
     const sessao = await this.prisma.$transaction(async (tx) => {
-      await tx.usuario.update({
-        where: { id: usuario.id },
+      // Uma redefinição concorrente não pode emitir sessão com a senha antiga.
+      const atualizado = await tx.usuario.updateMany({
+        where: {
+          id: usuario.id,
+          senhaHash: usuario.senhaHash,
+          status: 'ATIVO',
+          papel: { ativo: true },
+        },
         data: { ultimoAcesso: agora, ...(novoHash ? { senhaHash: novoHash } : {}) },
       });
+      if (atualizado.count !== 1) throw new UnauthorizedException(mensagemInvalida);
       return tx.sessao.create({
         data: {
           idUsuario: usuario.id,

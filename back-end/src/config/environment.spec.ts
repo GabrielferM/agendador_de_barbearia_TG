@@ -18,6 +18,9 @@ describe('environment configuration', () => {
       DATABASE_URL: databaseUrl,
       NODE_ENV: 'production',
       CORS_ORIGINS: 'https://app.example.com, https://admin.example.com',
+      RESEND_API_KEY: 're_teste',
+      EMAIL_FROM: 'contas@example.com',
+      FRONTEND_URL: 'https://app.example.com',
       CSRF_SECRET: 'um-segredo-de-teste-com-mais-de-32-caracteres',
     });
 
@@ -36,6 +39,31 @@ describe('environment configuration', () => {
         CSRF_SECRET: 'curto',
       }),
     ).toThrow('CSRF_SECRET must contain at least 32 characters.');
+  });
+
+  it('exige provedor em produção e recusa URLs inseguras ou com credenciais', () => {
+    const base = {
+      DATABASE_URL: databaseUrl,
+      NODE_ENV: 'production',
+      CORS_ORIGINS: 'https://app.example.com',
+      CSRF_SECRET: 'um-segredo-de-teste-com-mais-de-32-caracteres',
+    };
+    expect(() => validateEnvironment(base)).toThrow('Configure RESEND');
+    for (const url of [
+      'http://app.example.com',
+      'https://user:pass@app.example.com',
+      'https://app.example.com/path',
+      'javascript:alert(1)',
+    ]) {
+      expect(() =>
+        validateEnvironment({
+          ...base,
+          RESEND_API_KEY: 're_teste',
+          EMAIL_FROM: 'contas@example.com',
+          FRONTEND_URL: url,
+        }),
+      ).toThrow();
+    }
   });
 
   it('allows only localhost origins outside production', () => {

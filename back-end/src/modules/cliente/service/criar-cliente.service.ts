@@ -26,7 +26,7 @@ export class CriarClienteService {
     if (await this.prisma.cliente.findUnique({ where: { cpf } }))
       throw new ConflictException('CPF já cadastrado.');
     const papel = await this.prisma.papel.findUnique({ where: { codigo: CODIGOS_PAPEL.CLIENTE } });
-    if (!papel) throw new ConflictException('Papel CLIENTE não configurado.');
+    if (!papel?.ativo) throw new ConflictException('Papel CLIENTE não configurado.');
     const usuario = await this.prisma.usuario.create({
       data: {
         nome: input.nome.trim(),
