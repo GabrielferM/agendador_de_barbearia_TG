@@ -53,3 +53,33 @@ Melhorias pendentes: expediente por filial, feriados/pausas, cadastro público, 
 A lista e o detalhe privados exigem `GERENCIAR_PROPRIA_AGENDA` para o barbeiro e impõem seu ID da sessão. Filtros de outro profissional não ampliam acesso; detalhes de terceiros retornam 403. A resposta do profissional contém somente o resumo público do agendamento e `cliente{id,nome}`. CPF, nascimento, contatos pessoais, observação cadastral, observação interna e comissão ficam fora dessa projeção. Administradores com `GERENCIAR_AGENDAMENTOS` preservam a resposta administrativa.
 
 O frontend oferece `/barbeiro/agenda` e `/barbeiro/agenda/:id`, com período/status, paginação do servidor e retorno aos filtros da lista. O dashboard abre essas rotas pelos horários e pelo menu. Datas de filtro usam America/Sao_Paulo. Esta entrega permite consulta; as ações de atendimento e histórico pertencem às próximas entregas.
+
+### Apresentação dos agendamentos do cliente
+
+`/cliente/agendamentos` percorre as páginas de `GET /agendamentos` com limite de
+100 para classificar o conjunto completo, sem alterar o contrato ou ampliar acesso.
+Uma falha em qualquer página interrompe a consulta, sem apresentar contagens parciais.
+A interface pagina cada aba em dez itens e reinicia na primeira página ao alternar.
+As contagens correspondem ao último conjunto carregado; não são totais independentes
+consultados no servidor. Históricos muito extensos exigem mais requisições e memória;
+filtros compostos/contagens no servidor permanecem uma evolução futura.
+
+“Próximos” prioriza `EM_ATENDIMENTO`, mesmo com início passado, depois os ativos com
+início maior ou igual ao instante atual, em ordem crescente. “Histórico” reúne
+`CONCLUIDO`, `CANCELADO`, `NAO_COMPARECEU` e ativos com início passado, em ordem
+decrescente. O status da API é preservado; ativos passados recebem “Data já passou”.
+Comparações usam os instantes ISO com fuso retornados pela API; a exibição usa
+`America/Sao_Paulo`. Um relógio local atualiza a classificação a cada 30 segundos,
+sem polling HTTP. Nenhuma transição de status é inferida pela passagem do tempo.
+
+Os cards destacam data, serviços, profissional, filial, duração e total dos itens
+aplicados. Endereço, observação e motivo do cancelamento ficam em “Ver detalhes”.
+A ação de cancelar continua disponível exclusivamente para `PENDENTE`/`CONFIRMADO`,
+inclusive passados, conforme a regra existente. O diálogo nativo mantém foco contido,
+restaura o foco na origem ou no título quando o card desaparece, exige motivo e
+bloqueia envios concorrentes. Falhas preservam o texto. O sucesso aplica a resposta
+ao cache e invalida consultas relacionadas para revalidação.
+
+A confirmação final de `/agendar` compartilha resumo e badge de status com a lista.
+O título confirma o registro, e `PENDENTE` recebe uma explicação de que a confirmação
+do atendimento ainda está pendente. As demais etapas do fluxo permanecem iguais.

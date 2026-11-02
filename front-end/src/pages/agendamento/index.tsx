@@ -6,6 +6,7 @@ import {
   EtapasAgendamento,
   EstadoConsulta,
 } from "./components/etapas-agendamento";
+import { StatusAgendamento } from "./components/status-agendamento";
 import { ResumoAgendamento } from "./components/resumo-agendamento";
 import { dataHorario, endereco, moeda } from "./formatadores";
 import { mensagemErro } from "./services/agendamento-api";
@@ -15,7 +16,9 @@ export function AgendamentoCliente() {
   const navigate = useNavigate();
   const titulo = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
-    document.title = a.criacao.isSuccess ? "Agendamento realizado — Corte Certo" : `${a.indice + 1} de ${a.etapas.length}: ${a.etapa} — Corte Certo`;
+    document.title = a.criacao.isSuccess
+      ? "Agendamento realizado — Corte Certo"
+      : `${a.indice + 1} de ${a.etapas.length}: ${a.etapa} — Corte Certo`;
     titulo.current?.focus();
   }, [a.etapa, a.indice, a.etapas.length, a.criacao.isSuccess]);
   const total =
@@ -31,14 +34,29 @@ export function AgendamentoCliente() {
           <p className="font-semibold text-success" role="status">
             Agendamento realizado!
           </p>
-          <h1 ref={titulo} tabIndex={-1} className="font-serif text-3xl outline-none">
-            Seu próximo cuidado está marcado.
+          <h1
+            ref={titulo}
+            tabIndex={-1}
+            className="font-serif text-3xl outline-none"
+          >
+            Seu agendamento foi registrado.
           </h1>
-          <p>
-            Agendamento nº {a.criacao.data.id} registrado. Acompanhe a situação
-            em Meus agendamentos.
-          </p>
-          <ResumoAgendamento item={a.criacao.data} />
+          <p>Confira os detalhes do seu atendimento.</p>
+          <div className="rounded-xl border border-border p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs text-foreground/75">
+                Agendamento #{a.criacao.data.id}
+              </span>
+              <StatusAgendamento status={a.criacao.data.status} />
+            </div>
+            <ResumoAgendamento item={a.criacao.data} />
+            {a.criacao.data.status === "PENDENTE" && (
+              <p className="mt-4 text-sm text-primary">
+                Seu pedido está pendente de confirmação. Acompanhe a situação em
+                Meus agendamentos.
+              </p>
+            )}
+          </div>
           <Link
             className="inline-block rounded-lg bg-primary px-5 py-3 font-semibold text-white"
             to="/cliente/agendamentos"

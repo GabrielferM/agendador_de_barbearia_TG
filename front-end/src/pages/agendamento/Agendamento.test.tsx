@@ -179,12 +179,20 @@ describe("Jornada de agendamento", () => {
   it("preserva o serviço escolhido no início ao selecionar uma filial", async () => {
     filiais = [filial, { ...filial, id: 4, nome: "Bairro" }];
     montar("/");
-    await userEvent.click(await screen.findByRole("button", { name: "Agendar este serviço: Corte" }));
-    await userEvent.click(await screen.findByRole("radio", { name: /^Centro/ }));
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: "Agendar este serviço: Corte",
+      }),
+    );
+    await userEvent.click(
+      await screen.findByRole("radio", { name: /^Centro/ }),
+    );
     await userEvent.click(screen.getByRole("button", { name: "Continuar" }));
     await userEvent.click(await screen.findByRole("radio", { name: /João/ }));
     await userEvent.click(screen.getByRole("button", { name: "Continuar" }));
-    expect(await screen.findByRole("checkbox", { name: /Corte/ })).toBeChecked();
+    expect(
+      await screen.findByRole("checkbox", { name: /Corte/ }),
+    ).toBeChecked();
     expect(screen.getByText("Serviços (1)")).toBeInTheDocument();
   });
   it("omite a filial única e exige serviço antes de continuar", async () => {
@@ -239,6 +247,10 @@ describe("Jornada de agendamento", () => {
     await userEvent.click(confirmar);
     expect(
       await screen.findByText("Agendamento realizado!"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Pendente")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Seu pedido está pendente de confirmação/),
     ).toBeInTheDocument();
     expect(
       vi
@@ -336,5 +348,167 @@ it("invalida somente escolhas dependentes", () => {
   expect(reduzirRascunho(estado, { tipo: "filial", id: 4 })).toEqual({
     ...rascunhoInicial,
     idFilial: 4,
+  });
+});
+
+describe("Área do cliente organizada", () => {
+  function responderLista(itens: unknown[], falha?: () => boolean) {
+    const anterior = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = new URL(String(input));
+      if (
+        url.pathname === "/agendamentos" &&
+        (!init?.method || init.method === "GET")
+      ) {
+        if (falha?.()) return json({}, 503);
+        return json(pagina(itens));
+      }
+      return anterior(input, init);
+    });
+  }
+  it("mostra contagens completas, pagina a aba e permite alternar pelo teclado", async () => {
+    autenticado = true;
+    const anterior = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = new URL(String(input));
+      if (url.pathname !== "/agendamentos") return anterior(input, init);
+      const atual = Number(url.searchParams.get("pagina"));
+      return json({
+        data:
+          atual === 1
+            ? Array.from({ length: 11 }, (_, i) => ({
+                ...agendamento,
+                id: i + 1,
+              }))
+            : [{ ...agendamento, id: 12, status: "CANCELADO" }],
+        meta: { pagina: atual, totalPaginas: 2, total: 12, limite: 100 },
+      });
+    });
+    montar("/cliente/agendamentos");
+    const proximos = await screen.findByRole("tab", { name: "Próximos 11" });
+    expect(screen.getAllByRole("article")).toHaveLength(10);
+    await userEvent.click(screen.getByRole("button", { name: "Próxima" }));
+    expect(screen.getAllByRole("article")).toHaveLength(1);
+    proximos.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(screen.getByRole("tab", { name: "Histórico 1" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByText("Cancelado")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Cancelar agendamento/ }),
+    ).not.toBeInTheDocument();
+    await userEvent.keyboard("{Home}");
+    expect(screen.getAllByRole("article")).toHaveLength(10);
+  });
+  it("atualiza status e contagens após cancelar sem recarregar", async () => {
+    autenticado = true;
+    let cancelado = false;
+    const anterior = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/agendamentos/10") {
+        cancelado = true;
+        return json({ ...agendamento, status: "CANCELADO" });
+      }
+      if (url.pathname === "/agendamentos")
+        return json(
+          pagina([
+            { ...agendamento, status: cancelado ? "CANCELADO" : "PENDENTE" },
+          ]),
+        );
+      return anterior(input, init);
+    });
+    montar("/cliente/agendamentos");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Cancelar agendamento #10" }),
+    );
+    await userEvent.type(
+      screen.getByLabelText("Motivo do cancelamento"),
+      "Outro compromisso",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Confirmar cancelamento" }),
+    );
+    expect(
+      await screen.findByRole("tab", { name: "Próximos 0" }),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Histórico 1" }));
+    expect(screen.getByText("Cancelado")).toBeInTheDocument();
+  });
+  it("preserva motivo após conflito e não envia duas vezes enquanto aguarda", async () => {
+    autenticado = true;
+    let concluir: ((resposta: Response) => void) | undefined;
+    const anterior = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      if (new URL(String(input)).pathname === "/agendamentos/10")
+        return new Promise<Response>((resolve) => {
+          concluir = resolve;
+        });
+      return anterior(input, init);
+    });
+    montar("/cliente/agendamentos");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Cancelar agendamento #10" }),
+    );
+    await userEvent.type(
+      screen.getByLabelText("Motivo do cancelamento"),
+      "Outro compromisso",
+    );
+    await userEvent.dblClick(
+      screen.getByRole("button", { name: "Confirmar cancelamento" }),
+    );
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.filter(([, init]) => init?.method === "PATCH"),
+    ).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Cancelando…" })).toBeDisabled();
+    concluir!(json({}, 409));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "A agenda foi atualizada",
+    );
+    expect(screen.getByLabelText("Motivo do cancelamento")).toHaveValue(
+      "Outro compromisso",
+    );
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+  it("distingue erro recuperável e vazio em cada aba", async () => {
+    autenticado = true;
+    let falha = true;
+    responderLista([], () => falha);
+    montar("/cliente/agendamentos");
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Não foi possível acessar",
+    );
+    falha = false;
+    await userEvent.click(
+      screen.getByRole("button", { name: "Tentar novamente" }),
+    );
+    expect(
+      await screen.findByText("Nenhum atendimento próximo"),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Histórico 0" }));
+    expect(
+      screen.getByText("Seu histórico ainda está vazio"),
+    ).toBeInTheDocument();
+  });
+  it("não apresenta resultados parciais se a segunda página falhar", async () => {
+    autenticado = true;
+    const anterior = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = new URL(String(input));
+      if (url.pathname !== "/agendamentos") return anterior(input, init);
+      return url.searchParams.get("pagina") === "1"
+        ? json({
+            data: [agendamento],
+            meta: { pagina: 1, total: 2, totalPaginas: 2 },
+          })
+        : json({}, 503);
+    });
+    montar("/cliente/agendamentos");
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.queryByRole("article")).not.toBeInTheDocument();
   });
 });

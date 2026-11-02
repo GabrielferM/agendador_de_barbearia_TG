@@ -152,6 +152,7 @@ function agendamentoValido(item: unknown): boolean {
     objeto(item) &&
     Number.isInteger(item.id) &&
     typeof item.inicioPrevisto === "string" &&
+    Number.isFinite(Date.parse(item.inicioPrevisto)) &&
     typeof item.fimPrevisto === "string" &&
     typeof item.status === "string" &&
     objeto(item.filial) &&
@@ -177,17 +178,11 @@ export async function criarAgendamento(
   if (!agendamentoValido(valor)) return invalida();
   return valor as AgendamentoRespostaDto;
 }
-export async function listarAgendamentos(
-  paginaAtual: number,
-  signal?: AbortSignal,
-) {
-  return pagina<AgendamentoRespostaDto>(
-    conferir(
-      await agendamentoControllerListar(
-        { pagina: paginaAtual, limite: 10 },
-        { signal },
-      ),
-    ),
+// Percorre o contrato paginado antes de classificar: contagens não são de uma página isolada.
+export async function listarAgendamentos(signal?: AbortSignal) {
+  return todas<AgendamentoRespostaDto>(
+    (pagina) =>
+      agendamentoControllerListar({ pagina, limite: 100 }, { signal }),
     agendamentoValido,
   );
 }
