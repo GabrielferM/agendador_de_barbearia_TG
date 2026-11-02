@@ -1,40 +1,106 @@
 import { StatusFilial } from '@prisma/client';
-import { Type } from 'class-transformer';
-import { IsEmail, IsEnum, IsOptional, IsString, Length, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsDefined,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
 import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 
+const aparar = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim() : value;
+
 export class DadosEnderecoDto {
-  @IsString() @Length(8, 9) cep!: string;
-  @IsString() logradouro!: string;
-  @IsString() numero!: string;
-  @IsOptional() @IsString() complemento?: string;
-  @IsString() bairro!: string;
-  @IsString() cidade!: string;
-  @IsString() @Length(2, 2) estado!: string;
+  @Transform(aparar) @IsString() @Matches(/^\d{5}-?\d{3}$/) cep!: string;
+  @Transform(aparar) @IsString() @IsNotEmpty() logradouro!: string;
+  @Transform(aparar) @IsString() @IsNotEmpty() numero!: string;
+  @Transform(aparar) @IsOptional() @IsString() complemento?: string;
+  @Transform(aparar) @IsString() @IsNotEmpty() bairro!: string;
+  @Transform(aparar) @IsString() @IsNotEmpty() cidade!: string;
+  @Transform(aparar) @IsString() @Length(2, 2) estado!: string;
 }
 export class AtualizarEnderecoDto {
-  @IsOptional() @IsString() @Length(8, 9) cep?: string;
-  @IsOptional() @IsString() logradouro?: string;
-  @IsOptional() @IsString() numero?: string;
-  @IsOptional() @IsString() complemento?: string;
-  @IsOptional() @IsString() bairro?: string;
-  @IsOptional() @IsString() cidade?: string;
-  @IsOptional() @IsString() @Length(2, 2) estado?: string;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @Matches(/^\d{5}-?\d{3}$/)
+  cep?: string;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @IsNotEmpty()
+  logradouro?: string;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @IsNotEmpty()
+  numero?: string;
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @Transform(aparar)
+  @IsOptional()
+  @IsString()
+  complemento?: string | null;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @IsNotEmpty()
+  bairro?: string;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @IsNotEmpty()
+  cidade?: string;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @Length(2, 2)
+  estado?: string;
 }
 export class CriarFilialDto {
-  @IsString() nome!: string;
-  @IsString() cnpj!: string;
-  @IsOptional() @IsString() telefone?: string;
-  @IsOptional() @IsEmail() email?: string;
-  @ValidateNested() @Type(() => DadosEnderecoDto) endereco!: DadosEnderecoDto;
+  @Transform(aparar) @IsString() @IsNotEmpty() nome!: string;
+  @Transform(aparar) @IsString() @IsNotEmpty() cnpj!: string;
+  @Transform(aparar) @IsOptional() @IsString() telefone?: string;
+  @Transform(aparar) @IsOptional() @IsEmail() email?: string;
+  @IsDefined() @ValidateNested() @Type(() => DadosEnderecoDto) endereco!: DadosEnderecoDto;
 }
 export class AtualizarFilialDto {
-  @IsOptional() @IsString() nome?: string;
-  @IsOptional() @IsString() cnpj?: string;
-  @IsOptional() @IsString() telefone?: string;
-  @IsOptional() @IsEmail() email?: string;
-  @IsOptional() @IsEnum(StatusFilial) status?: StatusFilial;
-  @IsOptional() @ValidateNested() @Type(() => AtualizarEnderecoDto) endereco?: AtualizarEnderecoDto;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @IsNotEmpty()
+  nome?: string;
+  @Transform(aparar)
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @IsNotEmpty()
+  cnpj?: string;
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @Transform(aparar)
+  @IsOptional()
+  @IsString()
+  telefone?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @Transform(aparar)
+  @IsOptional()
+  @IsEmail()
+  email?: string | null;
+  @ApiPropertyOptional({ enum: StatusFilial })
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsEnum(StatusFilial)
+  status?: StatusFilial;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => AtualizarEnderecoDto)
+  endereco?: AtualizarEnderecoDto;
 }
 export class ListarFiliaisDto extends PaginacaoDto {
   @IsOptional() @IsEnum(StatusFilial) status?: StatusFilial;

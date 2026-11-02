@@ -29,7 +29,13 @@ describe('AppController (e2e)', () => {
   const prisma = {
     historicoStatusAgendamento: { create: jest.fn().mockResolvedValue({}) },
     comissao: { findMany: jest.fn(), count: jest.fn() },
-    filial: { findUnique: jest.fn() },
+    filial: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
     barbeiro: { findUnique: jest.fn() },
     cliente: {
       findUnique: jest.fn(),
@@ -71,6 +77,10 @@ describe('AppController (e2e)', () => {
     prisma.$queryRaw.mockReset().mockResolvedValue([{ result: 1 }]);
     sessaoAtual = null;
     prisma.filial.findUnique.mockReset().mockResolvedValue({ id: 1, status: 'ATIVA' });
+    prisma.filial.findMany.mockReset().mockResolvedValue([]);
+    prisma.filial.count.mockReset().mockResolvedValue(0);
+    prisma.filial.create.mockReset();
+    prisma.filial.update.mockReset();
     prisma.barbeiro.findUnique.mockReset().mockResolvedValue({
       id: 2,
       idFilial: 1,
@@ -304,6 +314,198 @@ describe('AppController (e2e)', () => {
       .expect(400);
     expect(prisma.agendamento.create).not.toHaveBeenCalled();
   });
+
+  async function autenticarAdministradorFiliais() {
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((cookie) => cookie.startsWith('csrf='))!
+      .split(';')[0]
+      .slice('csrf='.length);
+    const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: unknown[] } };
+    usuario.papel.codigo = 'ADMINISTRADOR';
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_FILIAIS' } },
+    ];
+    return { agente, csrf };
+  }
+
+  const enderecoFilial = {
+    cep: '01001000',
+    logradouro: 'Praça da Sé',
+    numero: '1',
+    bairro: 'Sé',
+    cidade: 'São Paulo',
+    estado: 'SP',
+  };
+  const cadastroFilial = { nome: 'Centro', cnpj: '11222333000181', endereco: enderecoFilial };
+  const filialCompleta = {
+    id: 1,
+    idEndereco: 5,
+    ...cadastroFilial,
+    telefone: null,
+    email: null,
+    status: 'ATIVA',
+    dataCadastro: new Date(),
+    dataAtualizacao: new Date(),
+    endereco: { id: 5, ...enderecoFilial, complemento: null },
+  };
+
+  it('protege filiais por sessão, permissão e CSRF e lista com paginação/status', async () => {
+    await request(app.getHttpServer()).get('/filiais').expect(401);
+    const { agente, csrf } = await autenticarAdministradorFiliais();
+    await agente.post('/filiais').send(cadastroFilial).expect(403);
+    const usuario = sessaoAtual!.usuario as { papel: { permissoes: unknown[] } };
+    usuario.papel.permissoes = [];
+    await agente.get('/filiais').expect(403);
+    await agente.post('/filiais').set('X-CSRF-Token', csrf).send(cadastroFilial).expect(403);
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_FILIAIS' } },
+    ];
+    prisma.filial.findMany.mockResolvedValue([filialCompleta]);
+    prisma.filial.count.mockResolvedValue(13);
+    const resposta = await agente.get('/filiais?status=ATIVA&pagina=2&limite=12').expect(200);
+    expect(resposta.body as unknown).toMatchObject({
+      data: [{ id: 1, endereco: { cidade: 'São Paulo' } }],
+      meta: { pagina: 2, limite: 12, total: 13, totalPaginas: 2 },
+    });
+    expect(prisma.filial.findMany).toHaveBeenLastCalledWith({
+      include: { endereco: true },
+      where: { status: 'ATIVA' },
+      skip: 12,
+      take: 12,
+      orderBy: { id: 'asc' },
+    });
+    await agente.get('/filiais?status=INVALIDO').expect(400);
+  });
+
+  it('cadastra e edita filial com endereço, valida entradas e permite limpar opcionais', async () => {
+    const { agente, csrf } = await autenticarAdministradorFiliais();
+    prisma.filial.findUnique.mockResolvedValue(null);
+    prisma.filial.create.mockResolvedValue(filialCompleta);
+    const criada = await agente
+      .post('/filiais')
+      .set('X-CSRF-Token', csrf)
+      .send({
+        ...cadastroFilial,
+        nome: ' Centro ',
+        cnpj: '11.222.333/0001-81',
+        endereco: { ...enderecoFilial, cep: '01001-000', estado: 'sp' },
+      })
+      .expect(201);
+    expect(criada.body as unknown).toMatchObject({
+      id: 1,
+      status: 'ATIVA',
+      endereco: { cep: '01001000' },
+    });
+    expect(prisma.filial.create).toHaveBeenCalledWith({
+      data: {
+        nome: 'Centro',
+        cnpj: '11222333000181',
+        telefone: undefined,
+        email: null,
+        endereco: { create: enderecoFilial },
+      },
+      include: { endereco: true },
+    });
+    for (const entrada of [
+      { ...cadastroFilial, nome: '   ' },
+      { ...cadastroFilial, cnpj: '123' },
+      { ...cadastroFilial, endereco: undefined },
+      { ...cadastroFilial, endereco: { ...enderecoFilial, cidade: ' ' } },
+      { ...cadastroFilial, endereco: { ...enderecoFilial, cep: 'abcdefgh' } },
+    ]) {
+      await agente.post('/filiais').set('X-CSRF-Token', csrf).send(entrada).expect(400);
+    }
+    prisma.filial.findUnique.mockResolvedValue(filialCompleta);
+    await agente.post('/filiais').set('X-CSRF-Token', csrf).send(cadastroFilial).expect(409);
+    await agente.get('/filiais/1').expect(200);
+    prisma.filial.update.mockResolvedValue({ ...filialCompleta, status: 'INATIVA' });
+    await agente
+      .patch('/filiais/1')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'INATIVA', telefone: null, email: null, endereco: { complemento: null } })
+      .expect(200);
+    expect(prisma.filial.update).toHaveBeenLastCalledWith({
+      where: { id: 1 },
+      data: {
+        status: 'INATIVA',
+        telefone: null,
+        email: null,
+        endereco: { update: { complemento: null } },
+      },
+      include: { endereco: true },
+    });
+    for (const status of ['EM_MANUTENCAO', 'ATIVA']) {
+      prisma.filial.update.mockResolvedValue({ ...filialCompleta, status });
+      await agente.patch('/filiais/1').set('X-CSRF-Token', csrf).send({ status }).expect(200);
+      expect(prisma.filial.update).toHaveBeenLastCalledWith({
+        where: { id: 1 },
+        data: { status },
+        include: { endereco: true },
+      });
+    }
+    for (const entrada of [
+      { status: 'INVALIDO' },
+      { status: null },
+      { nome: ' ' },
+      { endereco: { numero: ' ' } },
+      { email: 'invalido' },
+    ]) {
+      await agente.patch('/filiais/1').set('X-CSRF-Token', csrf).send(entrada).expect(400);
+    }
+    prisma.filial.update.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('Conflito', {
+        code: 'P2002',
+        clientVersion: 'teste',
+      }),
+    );
+    await agente
+      .patch('/filiais/1')
+      .set('X-CSRF-Token', csrf)
+      .send({ cnpj: cadastroFilial.cnpj })
+      .expect(409);
+    expect(prisma.agendamento.update).not.toHaveBeenCalled();
+    prisma.filial.findUnique.mockResolvedValue(null);
+    await agente.get('/filiais/99').expect(404);
+    await agente
+      .patch('/filiais/99')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'INATIVA' })
+      .expect(404);
+  });
+
+  it.each(['INATIVA', 'EM_MANUTENCAO'])(
+    'bloqueia novas reservas em filial %s sem alterar agendamentos',
+    async (status) => {
+      await request(app.getHttpServer()).get('/publico/filiais').expect(200);
+      expect(prisma.filial.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { status: 'ATIVA' } }),
+      );
+      prisma.filial.findUnique.mockResolvedValue({ ...filialCompleta, status });
+      await request(app.getHttpServer())
+        .get(
+          '/agendamentos/horarios-disponiveis?idFilial=1&idBarbeiro=2&data=2030-01-07&servicoIds=3',
+        )
+        .expect(400);
+      const { agente, csrf } = await autenticarAdministradorFiliais();
+      const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: unknown[] } };
+      usuario.papel.codigo = 'CLIENTE';
+      usuario.papel.permissoes = [
+        { ativo: true, permissao: { ativo: true, codigo: 'CRIAR_AGENDAMENTO' } },
+      ];
+      await agente
+        .post('/agendamentos')
+        .set('X-CSRF-Token', csrf)
+        .send({ idFilial: 1, idBarbeiro: 2, inicio: '2030-01-07T12:00:00Z', servicoIds: [3] })
+        .expect(400);
+      expect(prisma.agendamento.create).not.toHaveBeenCalled();
+      expect(prisma.agendamento.update).not.toHaveBeenCalled();
+    },
+  );
 
   it('/ (GET)', () => {
     return request(app.getHttpServer()).get('/').expect(200).expect('Hello World!');
@@ -630,6 +832,14 @@ describe('AppController (e2e)', () => {
     expect(schemaErro?.required ?? []).not.toContain('error');
     expect(document.components?.schemas?.AtualizarServicoDto).toMatchObject({
       properties: { ativo: { type: 'boolean' } },
+    });
+    expect(document.components?.schemas?.ListaFiliaisRespostaDto).toMatchObject({
+      properties: {
+        data: { type: 'array', items: { $ref: '#/components/schemas/FilialRespostaDto' } },
+      },
+    });
+    expect(document.components?.schemas?.AtualizarFilialDto).toMatchObject({
+      properties: { telefone: { nullable: true }, email: { nullable: true } },
     });
     expect(document.components?.schemas?.LimiteRequisicoesRespostaDto).toBeDefined();
   });

@@ -6,5 +6,6 @@ export const MENU_ADMINISTRADOR: ItemMenu[] = [
   { rotulo: 'Clientes', permissao: 'GERENCIAR_USUARIOS', icone: 'usuarios', destino: '/admin/clientes' },
   { rotulo: 'Barbeiros', permissao: 'GERENCIAR_USUARIOS', icone: 'usuarios', destino: '/admin/barbeiros' },
   { rotulo: 'Serviços', permissao: 'GERENCIAR_SERVICOS', icone: 'servicos', destino: '/admin/servicos' },
+  { rotulo: 'Filiais', permissao: 'GERENCIAR_FILIAIS', icone: 'filiais', destino: '/admin/filiais' },
   { rotulo: 'Financeiro', permissao: 'GERENCIAR_COMISSOES', icone: 'financeiro', destino: '/admin/financeiro' },
 ]

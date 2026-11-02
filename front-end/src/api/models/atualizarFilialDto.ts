@@ -9,10 +9,12 @@ import type { AtualizarEnderecoDto } from './atualizarEnderecoDto';
 import type { AtualizarFilialDtoStatus } from './atualizarFilialDtoStatus';
 
 export interface AtualizarFilialDto {
+  /** @nullable */
+  telefone?: string | null;
+  /** @nullable */
+  email?: string | null;
+  status?: AtualizarFilialDtoStatus;
   nome?: string;
   cnpj?: string;
-  telefone?: string;
-  email?: string;
-  status?: AtualizarFilialDtoStatus;
   endereco?: AtualizarEnderecoDto;
 }

@@ -7,14 +7,12 @@
  */
 
 export interface AtualizarEnderecoDto {
-  /**
-     * @minLength 8
-     * @maxLength 9
-     */
+  /** @nullable */
+  complemento?: string | null;
+  /** @pattern ^\d{5}-?\d{3}$ */
   cep?: string;
   logradouro?: string;
   numero?: string;
-  complemento?: string;
   bairro?: string;
   cidade?: string;
   /**

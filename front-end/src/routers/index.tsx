@@ -11,6 +11,7 @@ import { BarbeirosAdministrador } from "../pages/dashboard/dashboard-administrad
 import { ClientesAdministrador } from "../pages/dashboard/dashboard-administrador/clientes";
 import { FinanceiroAdministrador } from "../pages/dashboard/dashboard-administrador/financeiro";
 import { ServicosAdministrador } from "../pages/dashboard/dashboard-administrador/servicos";
+import { FiliaisAdministrador } from "../pages/dashboard/dashboard-administrador/filiais";
 import { DashboardBarbeiro } from "../pages/dashboard/dashboard-barbeiro";
 import { Inicio } from "../pages/inicio";
 import { Login } from "../pages/login";
@@ -167,6 +168,7 @@ export function AppRouter() {
           }
           path="/admin/servicos"
         />
+        <Route path="/admin/filiais" element={<RotaProtegida papel="ADMINISTRADOR"><FiliaisAdministrador /></RotaProtegida>} />
         <Route
           element={
             <RotaProtegida papel="ADMINISTRADOR">

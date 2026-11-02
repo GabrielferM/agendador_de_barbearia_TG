@@ -32,11 +32,10 @@ import type {
   AtualizarFilialDto,
   CriarFilialDto,
   ErroRespostaDto,
-  FilialControllerAtualizar200,
-  FilialControllerBuscar200,
-  FilialControllerCriar201,
   FilialControllerListarParams,
-  LimiteRequisicoesRespostaDto
+  FilialRespostaDto,
+  LimiteRequisicoesRespostaDto,
+  ListaFiliaisRespostaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -62,7 +61,7 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 };
 
 export type filialControllerCriarResponse201 = {
-  data: FilialControllerCriar201
+  data: FilialRespostaDto
   status: 201
 }
 
@@ -177,7 +176,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getFilialControllerCriarMutationOptions(options), queryClient);
     }
     export type filialControllerListarResponse200 = {
-  data: void
+  data: ListaFiliaisRespostaDto
   status: 200
 }
 
@@ -322,7 +321,7 @@ export function useFilialControllerListar<TData = Awaited<ReturnType<typeof fili
 
 
 export type filialControllerBuscarResponse200 = {
-  data: FilialControllerBuscar200
+  data: FilialRespostaDto
   status: 200
 }
 
@@ -460,7 +459,7 @@ export function useFilialControllerBuscar<TData = Awaited<ReturnType<typeof fili
 
 
 export type filialControllerAtualizarResponse200 = {
-  data: FilialControllerAtualizar200
+  data: FilialRespostaDto
   status: 200
 }
 

@@ -7,10 +7,7 @@
  */
 
 export interface DadosEnderecoDto {
-  /**
-     * @minLength 8
-     * @maxLength 9
-     */
+  /** @pattern ^\d{5}-?\d{3}$ */
   cep: string;
   logradouro: string;
   numero: string;

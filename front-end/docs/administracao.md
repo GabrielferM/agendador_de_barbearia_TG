@@ -62,6 +62,22 @@ Serviços inativos deixam o catálogo público e são recusados na disponibilida
 
 Os testes HTTP do backend cobrem booleanos válidos/inválidos, inexistência, sessão, permissão, CSRF, preservação dos demais campos e ausência de escrita em agendamentos, além do filtro do catálogo e da rejeição de novas reservas. Os testes da tela cobrem ambas as ações, payload, indicadores, invalidação de caches, filtros/paginação, duplicação e falhas HTTP/rede/resposta inválida. Usam Prisma e HTTP simulados; não comprovam gravação em PostgreSQL real. Nesta entrega, a coluna foi confirmada por consulta de metadados ao banco configurado, sem alterar registros; a inspeção visual em navegador não foi realizada.
 
+## Gerenciamento de filiais
+
+`/admin/filiais` está disponível no menu para administradores com `GERENCIAR_FILIAIS`. A tela usa `GET /filiais` com filtro Todos/Ativa/Inativa/Em manutenção e paginação de 12 registros no servidor. Mostra nome, CNPJ, telefone/e-mail, endereço e status. Não possui busca textual, indicadores globais ou exclusão.
+
+“Nova filial” abre o formulário na própria página. Nome, CNPJ, CEP, logradouro, número, bairro, cidade e UF são obrigatórios; telefone, e-mail e complemento são opcionais. A criação usa `POST /filiais` e o status inicial ATIVA do banco. “Editar” consulta `GET /filiais/:id` novamente antes de abrir o formulário, mesmo quando há detalhe em cache, e permite alterar os dados e escolher os três status por `PATCH /filiais/:id`. A atualização por foco/reconexão fica desabilitada no detalhe para não substituir um formulário em andamento. Fechar descarta o formulário e retorna o foco para Nova filial.
+
+O adapter usa os clientes gerados, cookies e CSRF existentes; confere status HTTP, campos consumidos, paginação, ID e status da resposta de gravação. As respostas administrativas de filiais possuem DTOs Swagger explícitos, preservando o formato JSON existente. O backend rejeita obrigatórios vazios após remover espaços e mantém normalização/validação de CNPJ, e-mail, CEP e UF. Na edição, telefone, e-mail e complemento vazios são enviados como `null` para limpar os valores; omitir esses campos no PATCH preserva os valores anteriores. Não houve alteração de schema ou migration.
+
+Durante a gravação, o formulário impede duplicações e fechamento; não há repetição automática. Falhas preservam os campos e mostram uma mensagem, inclusive para CNPJ duplicado. Após sucesso, fecha o formulário, mostra confirmação, preserva o filtro e volta à página 1. Invalida lista/detalhes de filiais, consulta administrativa de barbeiros, opções de filial do cadastro de barbeiros, catálogo inicial de barbeiros e consultas de agendamento.
+
+INATIVA e EM_MANUTENCAO deixam de aparecer na seleção pública de filiais, e a disponibilidade/criação de reservas rejeita essas unidades. Alterar o status não cancela nem modifica agendamentos registrados e não altera os cadastros dos barbeiros vinculados. Reativar libera novas reservas segundo as demais regras da agenda. Não há consulta automática de CEP.
+
+Os testes da tela verificam navegação, permissão, paginação/filtro, carregamento/vazio/erro, cadastro, edição e três status, limpeza de opcionais, duplicação, mensagens, invalidações e foco/teclado, com HTTP simulado. Os testes HTTP do backend usam Prisma simulado para verificar autorização/CSRF, entradas, criação com endereço, edição, conflitos, inexistência, status, bloqueio de novas reservas e contrato OpenAPI. Essas verificações não comprovam persistência no PostgreSQL real nem substituem inspeção visual em navegador.
+
+A inspeção em Firefox headless conferiu lista e edição em áreas de conteúdo de 1440 × 914 e 500 × 758, com sessão e HTTP simulados. Não houve transbordamento horizontal da página; a tabela mantém rolagem interna em telas estreitas. Foram conferidos foco inicial no nome e sucesso da mudança de status pelo formulário. A navegação por teclado e o retorno de foco também são cobertos em jsdom. Nenhuma dessas verificações gravou dados no banco real.
+
 ## Financeiro integrado
 
 `/admin/financeiro` exige `GERENCIAR_COMISSOES` e consulta `GET /dashboard/administrador/financeiro`. Abre do início do mês até hoje em America/Sao_Paulo; formulário aplica um período válido. Cache inclui usuário e período, com cancelamento, validação da resposta, erro/nova tentativa e vazios independentes para atendimentos e comissões.

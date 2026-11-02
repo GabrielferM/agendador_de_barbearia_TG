@@ -25,8 +25,10 @@ export class EditarFilialService {
         throw new BadRequestException('CNPJ inválido.');
       }
     }
-    if (input.telefone !== undefined) data.telefone = input.telefone.trim();
-    if (input.email !== undefined) data.email = normalizarEmail(input.email);
+    if (input.telefone !== undefined)
+      data.telefone = input.telefone === null ? null : input.telefone.trim();
+    if (input.email !== undefined)
+      data.email = input.email === null ? null : normalizarEmail(input.email);
     if (input.status !== undefined) data.status = input.status;
     if (input.endereco) data.endereco = { update: this.normalizarEndereco.execute(input.endereco) };
     try {
