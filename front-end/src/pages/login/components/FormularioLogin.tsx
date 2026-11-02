@@ -1,6 +1,6 @@
 import { Button, Input } from "@heroui/react";
 import { type FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useLogin } from "../hooks/use-login";
 import type { CredenciaisLogin } from "../types";
 import {
@@ -11,6 +11,11 @@ import {
 const VALORES_INICIAIS: CredenciaisLogin = { email: "", senha: "" };
 
 export function FormularioLogin() {
+  const location = useLocation();
+  const retorno =
+    location.state?.retorno === "/agendar"
+      ? { retorno: "/agendar" }
+      : undefined;
   const [valores, setValores] = useState(VALORES_INICIAIS);
   const [erros, setErros] = useState<ErrosFormularioLogin>({});
   const [senhaVisivel, setSenhaVisivel] = useState(false);
@@ -121,6 +126,7 @@ export function FormularioLogin() {
         <Link
           className="text-xs font-semibold text-primary underline-offset-4 hover:underline"
           to="/recuperar-senha"
+          state={retorno}
         >
           Esqueci minha senha
         </Link>
@@ -131,6 +137,7 @@ export function FormularioLogin() {
         <Link
           className="font-bold text-primary underline-offset-4 hover:underline"
           to="/cadastro"
+          state={retorno}
         >
           Criar conta
         </Link>

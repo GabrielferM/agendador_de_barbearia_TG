@@ -27,3 +27,7 @@ Ao mudar um comportamento, atualize seu guia e exemplos no mesmo trabalho. Use l
 Os diretórios de documentação guardam arquitetura, exemplos e decisões explicadas para pessoas e agentes. `.codex/config.toml` serve para configurações da ferramenta, não é necessário para esta documentação. Skills são procedimentos reutilizáveis e também não são necessárias nesta entrega. Mantemos os caminhos atuais, sem criar configurações extras.
 
 Fontes: [instruções AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) e [configuração do Codex](https://learn.chatgpt.com/docs/config-file/config-basic), consultadas na pesquisa de 15/09/2026.
+
+## Contas públicas
+
+[Cadastro público e recuperação de senha](contas-publicas.md): contratos, migration, configuração Resend, limites, limpeza e validação.

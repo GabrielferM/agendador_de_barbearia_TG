@@ -4,7 +4,7 @@ import { DetalheAtendimento } from "../pages/dashboard/dashboard-barbeiro/agenda
 import { AgendamentoCliente } from "../pages/agendamento";
 import { MeusAgendamentos } from "../pages/meus-agendamentos";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { PaginaEmConstrucao } from "../pages/dashboard";
+import { ContaPublica } from "../pages/conta-publica";
 import { DashboardAdministrador } from "../pages/dashboard/dashboard-administrador";
 import { AgendamentosAdministrador } from "../pages/dashboard/dashboard-administrador/agendamentos";
 import { BarbeirosAdministrador } from "../pages/dashboard/dashboard-administrador/barbeiros";
@@ -178,22 +178,16 @@ export function AppRouter() {
           path="/admin/financeiro"
         />
         <Route
-          element={
-            <PaginaEmConstrucao
-              descricao="O cadastro online será disponibilizado em breve."
-              titulo="Criar conta"
-            />
-          }
+          element={<ContaPublica key="cadastro" modo="cadastro" />}
           path="/cadastro"
         />
         <Route
-          element={
-            <PaginaEmConstrucao
-              descricao="A recuperação segura de senha será disponibilizada em breve."
-              titulo="Recuperar senha"
-            />
-          }
+          element={<ContaPublica key="recuperar" modo="recuperar" />}
           path="/recuperar-senha"
+        />
+        <Route
+          element={<ContaPublica key="redefinir" modo="redefinir" />}
+          path="/redefinir-senha"
         />
         <Route element={<Navigate replace to="/" />} path="*" />
       </Routes>

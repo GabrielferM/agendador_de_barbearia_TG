@@ -1,5 +1,13 @@
+import { OperacaoContaInterceptor } from './operacao-conta.interceptor';
+import {
+  CadastroClienteDto,
+  RecuperarSenhaDto,
+  RedefinirSenhaDto,
+  MensagemContaDto,
+} from './dto/conta-publica.dto';
 import {
   Body,
+  UseInterceptors,
   Controller,
   Get,
   Headers,
@@ -15,6 +23,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBody,
+  ApiConflictResponse,
   ApiBadRequestResponse,
   ApiCookieAuth,
   ApiForbiddenResponse,
@@ -93,6 +102,97 @@ export class AutenticacaoController {
     }
     this.cookies.definir(response, resultado.token, this.csrf.criar(resultado.sessaoId));
     return { usuario: resultado.usuario };
+  }
+
+  @UseInterceptors(OperacaoContaInterceptor)
+  @Post('recuperar-senha')
+  @HttpCode(HttpStatus.OK)
+  @Publico()
+  @CsrfIsento()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Header('Cache-Control', 'no-store')
+  @ApiBody({ type: RecuperarSenhaDto })
+  @ApiOkResponse({ type: MensagemContaDto })
+  @ApiBadRequestResponse({ type: ErroRespostaDto })
+  @ApiForbiddenResponse({ type: ErroRespostaDto })
+  @ApiUnsupportedMediaTypeResponse({ type: ErroRespostaDto })
+  @ApiTooManyRequestsResponse({ type: LimiteRequisicoesRespostaDto })
+  async recuperarSenha(
+    @Body() dto: RecuperarSenhaDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    try {
+      return await this.service.recuperarSenha(dto.email);
+    } catch (erro) {
+      if (erro instanceof HttpException && erro.getStatus() === 429) {
+        const corpo = erro.getResponse();
+        if (corpo && typeof corpo === 'object' && 'retryAfter' in corpo)
+          response.setHeader('Retry-After', String(corpo.retryAfter));
+      }
+      throw erro;
+    }
+  }
+
+  @UseInterceptors(OperacaoContaInterceptor)
+  @Post('redefinir-senha')
+  @HttpCode(HttpStatus.OK)
+  @Publico()
+  @CsrfIsento()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Header('Cache-Control', 'no-store')
+  @ApiBody({ type: RedefinirSenhaDto })
+  @ApiOkResponse({ type: MensagemContaDto })
+  @ApiBadRequestResponse({ type: ErroRespostaDto })
+  @ApiForbiddenResponse({ type: ErroRespostaDto })
+  @ApiUnsupportedMediaTypeResponse({ type: ErroRespostaDto })
+  @ApiTooManyRequestsResponse({ type: LimiteRequisicoesRespostaDto })
+  async redefinirSenha(
+    @Body() dto: RedefinirSenhaDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    try {
+      return await this.service.redefinirSenha(dto);
+    } catch (erro) {
+      if (erro instanceof HttpException && erro.getStatus() === 429) {
+        const corpo = erro.getResponse();
+        if (corpo && typeof corpo === 'object' && 'retryAfter' in corpo)
+          response.setHeader('Retry-After', String(corpo.retryAfter));
+      }
+      throw erro;
+    }
+  }
+
+  @ApiConflictResponse({
+    type: ErroRespostaDto,
+    description: 'Não foi possível criar a conta com os dados informados.',
+  })
+  @UseInterceptors(OperacaoContaInterceptor)
+  @Post('cadastro-cliente')
+  @HttpCode(HttpStatus.OK)
+  @Publico()
+  @CsrfIsento()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Header('Cache-Control', 'no-store')
+  @ApiBody({ type: CadastroClienteDto })
+  @ApiOkResponse({ type: MensagemContaDto })
+  @ApiBadRequestResponse({ type: ErroRespostaDto })
+  @ApiForbiddenResponse({ type: ErroRespostaDto })
+  @ApiUnsupportedMediaTypeResponse({ type: ErroRespostaDto })
+  @ApiTooManyRequestsResponse({ type: LimiteRequisicoesRespostaDto })
+  async cadastrarCliente(
+    @Body() dto: CadastroClienteDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    try {
+      return await this.service.cadastrarCliente(dto);
+    } catch (erro) {
+      if (erro instanceof HttpException && erro.getStatus() === 429) {
+        const corpo = erro.getResponse();
+        if (corpo && typeof corpo === 'object' && 'retryAfter' in corpo)
+          response.setHeader('Retry-After', String(corpo.retryAfter));
+      }
+      throw erro;
+    }
   }
 
   @Get('me')

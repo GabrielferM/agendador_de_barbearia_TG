@@ -1,6 +1,9 @@
 export type NodeEnvironment = 'development' | 'test' | 'production';
 
 export interface EnvironmentVariables {
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
+  FRONTEND_URL?: string;
   DATABASE_URL: string;
   PORT: number;
   NODE_ENV: NodeEnvironment;
@@ -104,11 +107,14 @@ export function validateEnvironment(config: RawEnvironment): EnvironmentVariable
       : requiredString(segredoInformado, 'CSRF_SECRET');
   if (csrfSecret.length < 32) throw new Error('CSRF_SECRET must contain at least 32 characters.');
 
+  const corsOrigins = parseCorsOrigins(config.CORS_ORIGINS, nodeEnvironment);
+  const emailConfig = validarEmail(config, nodeEnvironment);
   return {
+    ...emailConfig,
     DATABASE_URL: parseDatabaseUrl(config.DATABASE_URL),
     PORT: parsePort(config.PORT),
     NODE_ENV: nodeEnvironment,
-    CORS_ORIGINS: parseCorsOrigins(config.CORS_ORIGINS, nodeEnvironment),
+    CORS_ORIGINS: corsOrigins,
     CSRF_SECRET: csrfSecret,
   };
 }
@@ -119,4 +125,32 @@ export function corsOriginFor(environment: EnvironmentVariables): string[] | Reg
   }
 
   return /^https?:\/\/localhost(?::\d+)?$/;
+}
+
+function validarEmail(config: RawEnvironment, environment: NodeEnvironment) {
+  const key = typeof config.RESEND_API_KEY === 'string' ? config.RESEND_API_KEY.trim() : '';
+  const from = typeof config.EMAIL_FROM === 'string' ? config.EMAIL_FROM.trim() : '';
+  const frontend = typeof config.FRONTEND_URL === 'string' ? config.FRONTEND_URL.trim() : '';
+  if (!key && !from && !frontend && environment !== 'production') return {};
+  if (!key || !from || !frontend)
+    throw new Error('Configure RESEND_API_KEY, EMAIL_FROM e FRONTEND_URL.');
+  if (!/^re_[A-Za-z0-9_-]+$/.test(key) || !/^[^<>\r\n]+@[^<>\s]+\.[^<>\s]+$/.test(from))
+    throw new Error('Configuração de e-mail inválida. EMAIL_FROM deve conter somente o endereço.');
+  let url: URL;
+  try {
+    url = new URL(frontend);
+  } catch {
+    throw new Error('FRONTEND_URL inválida.');
+  }
+  if (
+    !['http:', 'https:'].includes(url.protocol) ||
+    url.username ||
+    url.password ||
+    url.pathname !== '/' ||
+    url.search ||
+    url.hash ||
+    (environment === 'production' && url.protocol !== 'https:')
+  )
+    throw new Error('FRONTEND_URL deve ser uma origem confiável; HTTPS é obrigatório em produção.');
+  return { RESEND_API_KEY: key, EMAIL_FROM: from, FRONTEND_URL: url.origin };
 }

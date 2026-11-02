@@ -30,9 +30,13 @@ import {
 
 import type {
   AutenticacaoRespostaDto,
+  CadastroClienteDto,
   ErroRespostaDto,
   LimiteRequisicoesRespostaDto,
-  LoginDto
+  LoginDto,
+  MensagemContaDto,
+  RecuperarSenhaDto,
+  RedefinirSenhaDto
 } from '../models';
 
 import { httpClient } from '.././http-client';
@@ -166,6 +170,326 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getAutenticacaoControllerLoginMutationOptions(options), queryClient);
+    }
+    export type autenticacaoControllerRecuperarSenhaResponse200 = {
+  data: MensagemContaDto
+  status: 200
+}
+
+export type autenticacaoControllerRecuperarSenhaResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type autenticacaoControllerRecuperarSenhaResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type autenticacaoControllerRecuperarSenhaResponse415 = {
+  data: ErroRespostaDto
+  status: 415
+}
+
+export type autenticacaoControllerRecuperarSenhaResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type autenticacaoControllerRecuperarSenhaResponseSuccess = (autenticacaoControllerRecuperarSenhaResponse200) & {
+  headers: Headers;
+};
+export type autenticacaoControllerRecuperarSenhaResponseError = (autenticacaoControllerRecuperarSenhaResponse400 | autenticacaoControllerRecuperarSenhaResponse403 | autenticacaoControllerRecuperarSenhaResponse415 | autenticacaoControllerRecuperarSenhaResponse429) & {
+  headers: Headers;
+};
+
+export type autenticacaoControllerRecuperarSenhaResponse = (autenticacaoControllerRecuperarSenhaResponseSuccess | autenticacaoControllerRecuperarSenhaResponseError)
+
+export const getAutenticacaoControllerRecuperarSenhaUrl = () => {
+
+
+
+
+  return `${apiBaseUrl}/auth/recuperar-senha`
+}
+
+export const autenticacaoControllerRecuperarSenha = async (recuperarSenhaDto: RecuperarSenhaDto, options?: Parameters<typeof httpClient>[1]): Promise<autenticacaoControllerRecuperarSenhaResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return httpClient<autenticacaoControllerRecuperarSenhaResponse>(getAutenticacaoControllerRecuperarSenhaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(recuperarSenhaDto)
+  }
+);}
+
+
+
+
+
+export const getAutenticacaoControllerRecuperarSenhaMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerRecuperarSenha>>, TError,AutenticacaoControllerRecuperarSenhaMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerRecuperarSenha>>, TError,AutenticacaoControllerRecuperarSenhaMutationVariables, TContext> => {
+
+const mutationKey = ['autenticacaoControllerRecuperarSenha'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof autenticacaoControllerRecuperarSenha>>, AutenticacaoControllerRecuperarSenhaMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  autenticacaoControllerRecuperarSenha(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutenticacaoControllerRecuperarSenhaMutationResult = NonNullable<Awaited<ReturnType<typeof autenticacaoControllerRecuperarSenha>>>
+    export type AutenticacaoControllerRecuperarSenhaMutationBody = RecuperarSenhaDto
+    export type AutenticacaoControllerRecuperarSenhaMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+    export type AutenticacaoControllerRecuperarSenhaMutationVariables = {data: RecuperarSenhaDto}
+
+    export const useAutenticacaoControllerRecuperarSenha = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerRecuperarSenha>>, TError,AutenticacaoControllerRecuperarSenhaMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof autenticacaoControllerRecuperarSenha>>,
+        TError,
+        AutenticacaoControllerRecuperarSenhaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutenticacaoControllerRecuperarSenhaMutationOptions(options), queryClient);
+    }
+    export type autenticacaoControllerRedefinirSenhaResponse200 = {
+  data: MensagemContaDto
+  status: 200
+}
+
+export type autenticacaoControllerRedefinirSenhaResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type autenticacaoControllerRedefinirSenhaResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type autenticacaoControllerRedefinirSenhaResponse415 = {
+  data: ErroRespostaDto
+  status: 415
+}
+
+export type autenticacaoControllerRedefinirSenhaResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type autenticacaoControllerRedefinirSenhaResponseSuccess = (autenticacaoControllerRedefinirSenhaResponse200) & {
+  headers: Headers;
+};
+export type autenticacaoControllerRedefinirSenhaResponseError = (autenticacaoControllerRedefinirSenhaResponse400 | autenticacaoControllerRedefinirSenhaResponse403 | autenticacaoControllerRedefinirSenhaResponse415 | autenticacaoControllerRedefinirSenhaResponse429) & {
+  headers: Headers;
+};
+
+export type autenticacaoControllerRedefinirSenhaResponse = (autenticacaoControllerRedefinirSenhaResponseSuccess | autenticacaoControllerRedefinirSenhaResponseError)
+
+export const getAutenticacaoControllerRedefinirSenhaUrl = () => {
+
+
+
+
+  return `${apiBaseUrl}/auth/redefinir-senha`
+}
+
+export const autenticacaoControllerRedefinirSenha = async (redefinirSenhaDto: RedefinirSenhaDto, options?: Parameters<typeof httpClient>[1]): Promise<autenticacaoControllerRedefinirSenhaResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return httpClient<autenticacaoControllerRedefinirSenhaResponse>(getAutenticacaoControllerRedefinirSenhaUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(redefinirSenhaDto)
+  }
+);}
+
+
+
+
+
+export const getAutenticacaoControllerRedefinirSenhaMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerRedefinirSenha>>, TError,AutenticacaoControllerRedefinirSenhaMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerRedefinirSenha>>, TError,AutenticacaoControllerRedefinirSenhaMutationVariables, TContext> => {
+
+const mutationKey = ['autenticacaoControllerRedefinirSenha'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof autenticacaoControllerRedefinirSenha>>, AutenticacaoControllerRedefinirSenhaMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  autenticacaoControllerRedefinirSenha(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutenticacaoControllerRedefinirSenhaMutationResult = NonNullable<Awaited<ReturnType<typeof autenticacaoControllerRedefinirSenha>>>
+    export type AutenticacaoControllerRedefinirSenhaMutationBody = RedefinirSenhaDto
+    export type AutenticacaoControllerRedefinirSenhaMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+    export type AutenticacaoControllerRedefinirSenhaMutationVariables = {data: RedefinirSenhaDto}
+
+    export const useAutenticacaoControllerRedefinirSenha = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerRedefinirSenha>>, TError,AutenticacaoControllerRedefinirSenhaMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof autenticacaoControllerRedefinirSenha>>,
+        TError,
+        AutenticacaoControllerRedefinirSenhaMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutenticacaoControllerRedefinirSenhaMutationOptions(options), queryClient);
+    }
+    export type autenticacaoControllerCadastrarClienteResponse200 = {
+  data: MensagemContaDto
+  status: 200
+}
+
+export type autenticacaoControllerCadastrarClienteResponse400 = {
+  data: ErroRespostaDto
+  status: 400
+}
+
+export type autenticacaoControllerCadastrarClienteResponse403 = {
+  data: ErroRespostaDto
+  status: 403
+}
+
+export type autenticacaoControllerCadastrarClienteResponse409 = {
+  data: ErroRespostaDto
+  status: 409
+}
+
+export type autenticacaoControllerCadastrarClienteResponse415 = {
+  data: ErroRespostaDto
+  status: 415
+}
+
+export type autenticacaoControllerCadastrarClienteResponse429 = {
+  data: LimiteRequisicoesRespostaDto
+  status: 429
+}
+
+export type autenticacaoControllerCadastrarClienteResponseSuccess = (autenticacaoControllerCadastrarClienteResponse200) & {
+  headers: Headers;
+};
+export type autenticacaoControllerCadastrarClienteResponseError = (autenticacaoControllerCadastrarClienteResponse400 | autenticacaoControllerCadastrarClienteResponse403 | autenticacaoControllerCadastrarClienteResponse409 | autenticacaoControllerCadastrarClienteResponse415 | autenticacaoControllerCadastrarClienteResponse429) & {
+  headers: Headers;
+};
+
+export type autenticacaoControllerCadastrarClienteResponse = (autenticacaoControllerCadastrarClienteResponseSuccess | autenticacaoControllerCadastrarClienteResponseError)
+
+export const getAutenticacaoControllerCadastrarClienteUrl = () => {
+
+
+
+
+  return `${apiBaseUrl}/auth/cadastro-cliente`
+}
+
+export const autenticacaoControllerCadastrarCliente = async (cadastroClienteDto: CadastroClienteDto, options?: Parameters<typeof httpClient>[1]): Promise<autenticacaoControllerCadastrarClienteResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+return httpClient<autenticacaoControllerCadastrarClienteResponse>(getAutenticacaoControllerCadastrarClienteUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(cadastroClienteDto)
+  }
+);}
+
+
+
+
+
+export const getAutenticacaoControllerCadastrarClienteMutationOptions = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerCadastrarCliente>>, TError,AutenticacaoControllerCadastrarClienteMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+): UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerCadastrarCliente>>, TError,AutenticacaoControllerCadastrarClienteMutationVariables, TContext> => {
+
+const mutationKey = ['autenticacaoControllerCadastrarCliente'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof autenticacaoControllerCadastrarCliente>>, AutenticacaoControllerCadastrarClienteMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  autenticacaoControllerCadastrarCliente(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AutenticacaoControllerCadastrarClienteMutationResult = NonNullable<Awaited<ReturnType<typeof autenticacaoControllerCadastrarCliente>>>
+    export type AutenticacaoControllerCadastrarClienteMutationBody = CadastroClienteDto
+    export type AutenticacaoControllerCadastrarClienteMutationError = ErroRespostaDto | LimiteRequisicoesRespostaDto
+    export type AutenticacaoControllerCadastrarClienteMutationVariables = {data: CadastroClienteDto}
+
+    export const useAutenticacaoControllerCadastrarCliente = <TError = ErroRespostaDto | LimiteRequisicoesRespostaDto,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof autenticacaoControllerCadastrarCliente>>, TError,AutenticacaoControllerCadastrarClienteMutationVariables, TContext>, request?: SecondParameter<typeof httpClient>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof autenticacaoControllerCadastrarCliente>>,
+        TError,
+        AutenticacaoControllerCadastrarClienteMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAutenticacaoControllerCadastrarClienteMutationOptions(options), queryClient);
     }
     export type autenticacaoControllerMeResponse200 = {
   data: AutenticacaoRespostaDto

@@ -56,7 +56,7 @@ A jornada `/agendar` pode ser explorada sem sessão; confirmar exige cliente aut
 
 ## Melhorias pendentes
 
-Recuperação de senha e cadastro público ainda são telas em construção. MFA/passkeys, lista de senhas comprometidas, auditoria centralizada, limites distribuídos, rotação/revogação coordenada após mudanças de privilégios e validação adicional de Origin/Referer são trabalhos separados. Não são controles garantidos por esta documentação.
+MFA/passkeys, lista de senhas comprometidas, auditoria centralizada, limites distribuídos, rotação/revogação coordenada após mudanças de privilégios e validação adicional de Origin/Referer são trabalhos separados. Não são controles garantidos por esta documentação.
 
 ## Referências
 
@@ -97,3 +97,21 @@ restrita do GET. O barbeiro não pode criar ou consultar a auditoria administrat
 independente (`historico-status`); o histórico de atendimentos é outra consulta.
 Não há geração de comissões nessa operação. Conflitos P2034 repetem a transação e
 revalidam o estado. Testes simulados não comprovam concorrência no PostgreSQL.
+
+## Contas públicas implementadas
+
+`/cadastro`, `/recuperar-senha` e `/redefinir-senha` usam os três endpoints de
+[contas públicas](../../back-end/doc/contas-publicas.md). Somente contas ativas
+com papel ativo recuperam senha; o cadastro fixa CLIENTE e não verifica posse do
+endereço. CPF/e-mail duplicados têm conflito público genérico. Novas rotas usam
+JSON e Origin com isenções específicas de CSRF, sem emitir sessão. O token tem
+32 bytes aleatórios, hash persistido e validade de 15 minutos; é consumido apenas
+na troca e invalida outros links/sessões na mesma transação. A página remove o
+fragmento da URL, guarda token só em memória e usa no-referrer definido no HTML
+antes dos scripts. Senhas mantêm espaços. Não há persistência em storage.
+
+A tela exige confirmação local da senha e trata falha de rede, conflito e 429 com
+Retry-After. A recuperação aceita reenvio após 60s; o backend também limita três
+solicitações por e-mail em 15 minutos, por processo. Cadastro e login preservam
+somente retorno `/agendar` em state, com rascunho em memória. Cadastro não autentica;
+a pessoa confirma e segue para o login. Credenciais Resend ficam no backend.

@@ -92,3 +92,9 @@ em desktop e celular, além de carregamento, erro, vazio, histórico, detalhes e
 textos longos. A inspeção em navegador usa HTTP/sessão simulados e calendário real;
 confere foco do diálogo, Escape, cancelamento com falha/sucesso, contagens,
 paginação e ausência de overflow horizontal. Não comprova persistência real.
+
+## Contas públicas
+
+`conta-publica.test.tsx` cobre validação por campo/foco, máscaras e envio normalizado, preservação de espaços, mostrar senha, duplicação durante envio, conflitos, confirmação, recuperação genérica, intervalo/429, token ausente/expirado e remoção do fragmento antes do consumo. O adapter é exercitado com HTTP simulado, incluindo rede, 403, 5xx e corpo inválido. Esses testes não validam entrega de e-mail nem PostgreSQL.
+
+As [21 capturas das contas públicas](capturas-conta/README.md) mostram desktop e celular (incluindo 320 px), formulários, erros com nome longo, envio pendente, conclusão genérica com cooldown, nova senha e token ausente. Houve inspeção visual e checagens automatizadas de overflow, foco e remoção do fragmento, com respostas HTTP simuladas.
