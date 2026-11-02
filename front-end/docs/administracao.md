@@ -87,6 +87,8 @@ Exibe receita de serviços concluídos, variação contra o intervalo anterior d
 
 ### Painel compacto da agenda administrativa
 
+O seletor Dia/Semana/Mês fica à direita da barra de controles, inclusive quando a barra quebra em mais de uma linha. Os botões usam borda sólida e aparência uniforme; a visualização ativa tem fundo marrom e texto branco, mantendo indicação acessível por `aria-pressed`.
+
 Controles, calendário, resumo e total do período compartilham um painel. Semana e dia
 preenchem a altura disponível; o mês usa segunda-feira como primeira coluna e espaços
 antes/depois das datas do mês. A rolagem horizontal em telas estreitas fica contida na

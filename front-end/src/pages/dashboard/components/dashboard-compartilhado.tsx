@@ -5,7 +5,11 @@ import { dataCurta, moeda } from "./dashboard-formatadores";
 
 const icones: Record<string, ReactNode> = {
   dashboard: <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />,
-  filiais: <><path d="M3 10h18L19 3H5l-2 7ZM5 10v11h14V10M9 21v-7h6v7" /></>,
+  filiais: (
+    <>
+      <path d="M3 10h18L19 3H5l-2 7ZM5 10v11h14V10M9 21v-7h6v7" />
+    </>
+  ),
   agenda: (
     <>
       <rect x="3" y="5" width="18" height="16" rx="2" />
