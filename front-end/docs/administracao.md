@@ -38,7 +38,15 @@ Cadastro e alteração administrativos de agendamentos permanecem pendentes; os 
 
 `/admin/barbeiros` sempre consulta `GET /dashboard/administrador/barbeiros` com busca, status e paginação no servidor e `GERENCIAR_USUARIOS`. Indicadores são globais; cards correspondem à página filtrada. Cache inclui usuário e filtros; consultas são canceláveis, verificam status e validam dados. Não há fallback de mocks.
 
-Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita concluída e comissões registradas. O total global a pagar inclui todos os períodos; o valor no card inclui apenas comissões geradas no mês. Especialidades, jornada e percentual padrão não existem no schema; a tela informa essa ausência. Cadastro/edição e disponibilidade individual ficam fora desta consulta, sem controles fictícios.
+Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita concluída e comissões registradas. O total global a pagar inclui todos os períodos; o valor no card inclui apenas comissões geradas no mês. Especialidades, jornada e percentual padrão não existem no schema; a tela informa essa ausência. Edição e disponibilidade individual permanecem pendentes.
+
+### Criação de conta de barbeiro
+
+O botão “Novo barbeiro” abre um formulário na própria tela, sob `GERENCIAR_USUARIOS`. Nome, e-mail, senha de 15 a 128 caracteres e filial são obrigatórios. Nome profissional, descrição, URL da foto e data de admissão são opcionais. A seleção carrega todas as páginas de `GET /publico/filiais`, oferecendo filiais ativas sem exigir a permissão de gerenciamento de filiais. Uma filial única é pré-selecionada; ausência de filiais impede o envio e falhas permitem nova tentativa.
+
+A gravação usa o cliente gerado para `POST /barbeiros`, com cookies e CSRF existentes. O backend cria atomicamente Usuario e Barbeiro com papel BARBEIRO e status ativo por padrão, permitindo login com o e-mail e a senha cadastrados. A senha é enviada sem remover espaços e não é persistida no navegador. O formulário impede envios duplicados enquanto pendente, preserva campos após falha e descarta os valores ao fechar ou concluir. O adapter confere HTTP 201 e não repete a gravação automaticamente.
+
+Após sucesso, a tela limpa busca/status, retorna à primeira página e invalida consultas administrativas do usuário, catálogo inicial de barbeiros e seleção de barbeiros do agendamento. Testes HTTP simulados cobrem payload, atualização da lista, conflito com preservação dos campos, bloqueio de envio duplicado, paginação/seleção de filiais e ausência de filial; não comprovam login/persistência em banco real.
 
 ## Serviços integrados
 
@@ -97,9 +105,7 @@ períodos”, enquanto o card identifica os valores gerados no mês. Serviços a
 preços, quantidades e receitas à direita e preserva “Sem atendimentos”.
 
 Contratos, permissões, busca/paginação no servidor, retorno à primeira página e
-invalidações após gravações permanecem existentes. Não foram acrescentados CRUDs,
-endpoints, indicadores ou campos persistidos. As limitações de cadastro de
-barbeiros/serviços continuam visíveis junto ao conteúdo.
+invalidações após gravações permanecem existentes. O cadastro de barbeiros está descrito acima e reutiliza o endpoint existente; não foram acrescentados endpoints, indicadores ou campos persistidos. Cadastro de serviços, especialidades, jornada e comissão padrão permanecem pendentes.
 
 Ao abrir detalhes de Clientes, o ID vem do argumento da mutação concluída, evitando
 uma corrida com a atualização de `mutation.variables` quando a resposta é imediata.

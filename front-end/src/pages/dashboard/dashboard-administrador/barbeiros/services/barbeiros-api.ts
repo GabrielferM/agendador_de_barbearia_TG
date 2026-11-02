@@ -1,4 +1,6 @@
 import { barbeiroDashboardControllerObter } from "../../../../../api/dashboard-administrativo-barbeiros/dashboard-administrativo-barbeiros";
+import { barbeiroControllerCriar } from "../../../../../api/barbeiros/barbeiros";
+import { catalogoPublicoControllerFiliais } from "../../../../../api/catálogo-público/catálogo-público";
 import {
   executarHttp,
   lista,
@@ -6,6 +8,37 @@ import {
   numero,
   texto,
 } from "../../services/administracao-api";
+
+export async function consultarFiliaisCadastro(signal?: AbortSignal) {
+  const filiais: { id: number; nome: string }[] = [];
+  let pagina = 1;
+  let totalPaginas: number;
+  do {
+    const resposta = lista(
+      await executarHttp(() => catalogoPublicoControllerFiliais({ pagina, limite: 100 }, { signal })),
+      item => { const filial = registro(item); return { id: numero(filial.id), nome: texto(filial.nome) }; },
+    );
+    filiais.push(...resposta.data);
+    totalPaginas = resposta.meta.totalPaginas;
+    pagina++;
+  } while (pagina <= totalPaginas);
+  return filiais;
+}
+
+export function criarBarbeiro(dados: Record<string, string>) {
+  const idFilial = Number(dados.idFilial);
+  if (!Number.isInteger(idFilial) || idFilial <= 0) throw new Error("Selecione uma filial.");
+  return executarHttp(() => barbeiroControllerCriar({
+    nome: dados.nome,
+    email: dados.email,
+    senha: dados.senha,
+    idFilial,
+    nomeProfissional: dados.nomeProfissional || undefined,
+    descricao: dados.descricao || undefined,
+    fotoUrl: dados.fotoUrl || undefined,
+    dataAdmissao: dados.dataAdmissao || undefined,
+  }), 201);
+}
 
 export async function consultarBarbeiros(
   busca: string,
