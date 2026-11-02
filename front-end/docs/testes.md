@@ -76,3 +76,19 @@ de exclusão de Clientes. O teste de conflito não exclui nenhum registro real.
 Capturas finais estão em [capturas-catalogos](capturas-catalogos/README.md). São
 respostas de teste, sem comprovação de sessão, autorização ou persistência em API
 ou PostgreSQL reais. Nenhuma API/banco real estava configurado neste ambiente.
+
+## Área do cliente compacta
+
+A suíte de agendamento verifica contagens com múltiplas páginas HTTP, paginação
+local, alternância das abas pelo teclado, atualização de status/contagens após
+cancelar, motivo preservado em HTTP 409 e prevenção de envio duplicado. Também
+confere vazio por aba, erro com nova tentativa, falha na segunda página sem resultado
+parcial e confirmação final com status pendente explícito. Os testes puros de
+`organizar-agendamentos.test.ts` cobrem os seis status, ordenação, atendimento atual,
+instante de início exato, offsets equivalentes e mudança de dia em São Paulo.
+
+As [capturas da área do cliente](capturas-cliente/README.md) documentam antes/depois
+em desktop e celular, além de carregamento, erro, vazio, histórico, detalhes e
+textos longos. A inspeção em navegador usa HTTP/sessão simulados e calendário real;
+confere foco do diálogo, Escape, cancelamento com falha/sucesso, contagens,
+paginação e ausência de overflow horizontal. Não comprova persistência real.
