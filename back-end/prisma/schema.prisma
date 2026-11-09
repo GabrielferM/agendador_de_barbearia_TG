@@ -131,7 +131,8 @@ model PapelPermissao {
 model Cliente {
   id             Int           @id
   cpf            String        @unique
-  dataNascimento DateTime?     @db.Date
+  diaAniversario Int?
+  mesAniversario Int?
   observacao     String?
   usuario        Usuario       @relation("UsuarioCliente", fields: [id], references: [id], onDelete: Cascade)
   agendamentos   Agendamento[] @relation("ClienteAgendamentos")

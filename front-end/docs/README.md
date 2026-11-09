@@ -11,6 +11,7 @@
 | Exibir falhas e lidar com respostas inválidas | [Tratamento de erros](tratamento-de-erros.md) |
 | Alterar login, sessão ou permissões | [Segurança da autenticação](seguranca-autenticacao.md) |
 | Alterar cores, estilos ou temas | [Cores](padroes/cores-front-end.md) |
+| Validar formulários, máscaras e payloads | [Formulários](formularios.md) |
 | Validar uma alteração | [Testes](testes.md) |
 | Executar a aplicação | [README do frontend](../README.md) |
 

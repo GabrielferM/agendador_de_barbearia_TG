@@ -98,3 +98,25 @@ paginação e ausência de overflow horizontal. Não comprova persistência real
 `conta-publica.test.tsx` cobre validação por campo/foco, máscaras e envio normalizado, preservação de espaços, mostrar senha, duplicação durante envio, conflitos, confirmação, recuperação genérica, intervalo/429, token ausente/expirado e remoção do fragmento antes do consumo. O adapter é exercitado com HTTP simulado, incluindo rede, 403, 5xx e corpo inválido. Esses testes não validam entrega de e-mail nem PostgreSQL.
 
 As [21 capturas das contas públicas](capturas-conta/README.md) mostram desktop e celular (incluindo 320 px), formulários, erros com nome longo, envio pendente, conclusão genérica com cooldown, nova senha e token ausente. Houve inspeção visual e checagens automatizadas de overflow, foco e remoção do fragmento, com respostas HTTP simuladas.
+
+## Padronização de formulários e aniversário
+
+Os testes em `src/forms/campos.test.ts` verificam máscaras, CPF/CNPJ, telefone, UF, datas reais, aniversário, senha e períodos inclusivos de até 366 dias. Clientes verifica também erro ao sair do campo, correção, foco, payload sem máscara, preservação de senha, remoção de aniversário com null e prevenção de envio duplicado. Contas públicas inclui aniversário válido/inválido e envio numérico. O adapter administrativo testa mensagens conhecidas e rejeição de detalhes desconhecidos.
+
+Lint, build e os 181 testes do frontend passaram. As interações automatizadas usam jsdom e HTTP simulado. O cadastro público também foi inspecionado no navegador em desktop e viewport de 390 × 844: foco no primeiro erro, máscaras, mensagens, aniversário inválido/correção para 29/02 e ausência de overflow horizontal. Nenhuma conta foi criada. A inspeção visual autenticada das áreas de administrador e barbeiro permanece pendente.
+
+## Dialogs administrativos
+
+As suítes de Clientes, Barbeiros, Serviços e Filiais exercitam criação/edição em modal, consulta atual de detalhes, erros por campo, preservação após erro HTTP, descarte confirmado, reabertura limpa e bloqueio de envios durante gravação. Barbeiros cobre filial atual fora do catálogo ativo, senha inicialmente vazia/omitida no PATCH e inativação/reativação da conta sem alterar o perfil. Serviços cobre payload `precoBase`, duração/preço inválidos, conflito e edição bem-sucedida com atualização das consultas. Filiais verifica preservação do filtro e da página válida após salvar. Os cenários usam HTTP/sessão simulados.
+
+A inspeção em Chromium headless percorreu as quatro telas em 1440 × 1000, 390 × 844 e 320 × 844 (12 composições). Verificou foco inicial, contenção por Tab, retorno ao botão de origem, cancelamento/Escape com confirmação, continuar editando, campos preservados após conflito, alinhamento no desktop e ausência de overflow horizontal. A listagem conservou sua posição no documento ao abrir/fechar. O roteiro também criou um serviço e inativou/reativou uma conta com respostas HTTP simuladas, preservando o status profissional. Essas verificações não comprovam persistência em API ou PostgreSQL reais.
+
+Nesta entrega passaram `npm run lint`, `npm run build` e os 189 testes do frontend (19 arquivos). O build mantém o aviso de chunk acima de 500 kB. As 12 composições do navegador não apresentaram overflow horizontal; no desktop o modal mediu 640 px, e nos viewports de 390/320 px mediu 358/288 px. A inspeção usou sessão e HTTP simulados, sem criar registros no banco real.
+
+## Busca por botão e carregamento de listagens
+
+Os testes de Clientes administrativos cobrem ausência de requisições durante digitação/seleção de status, submissão conjunta por Enter, repetição, texto vazio, preservação de foco/itens/indicadores durante resposta atrasada, erro de atualização, recuperação e paginação com rascunho não aplicado. Os testes existentes de Barbeiros, Serviços e Filiais usam Buscar para aplicar filtros. Clientes e Serviços do barbeiro cobrem busca explícita, bloqueio durante atualização, preservação da tabela e do rascunho na paginação e Limpar.
+
+`use-consulta-listagem.test.tsx` verifica retenção durante consulta/falha/recuperação, retirada em 401/403, isolamento por usuário/tela/permissão e cancelamento por AbortSignal. `resultados-listagem.test.tsx` verifica preservação dos nós e reserva/liberação de altura usando geometria simulada. Esses testes usam jsdom/HTTP simulado e não comprovam estabilidade visual em navegador. A inspeção desktop/celular com rede lenta e página rolada não foi executada nesta alteração: o navegador integrado estava indisponível.
+
+Verificações desta alteração: lint, build e `git diff --check` passaram; o build mantém o aviso de bundle acima de 500 kB. A suíte completa executou 200 testes: 194 passaram, incluindo os 11 novos, e seis falharam em ativação/desativação de Serviços porque esperam mensagens de sucesso ausentes no código anterior a esta tarefa. As mesmas seis falhas foram reproduzidas com a versão anterior da tela de Serviços, por configuração temporária de teste, sem restaurar ou sobrescrever as alterações existentes do usuário. Esse comportamento permanece pendente de alinhamento entre tela e testes.

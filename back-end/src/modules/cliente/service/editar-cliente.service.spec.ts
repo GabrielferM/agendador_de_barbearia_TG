@@ -29,3 +29,41 @@ describe('Edição administrativa de cliente', () => {
     );
   });
 });
+
+describe('Atualizar aniversário do cliente', () => {
+  const atualizar = jest
+    .fn<Promise<{ id: number; usuario: { id: number } }>, [{ data: Record<string, unknown> }]>()
+    .mockResolvedValue({ id: 1, usuario: { id: 1 } });
+  const buscar = { execute: jest.fn().mockResolvedValue({ id: 1 }) };
+  const senhas = { gerarHash: jest.fn() };
+  const service = new EditarClienteService(
+    { cliente: { update: atualizar } } as never,
+    buscar as never,
+    senhas as never,
+  );
+  beforeEach(() => jest.clearAllMocks());
+  it('mantém quando omitido, grava o par e remove com null', async () => {
+    await service.execute(1, { nome: 'Cliente' });
+    expect(atualizar.mock.calls[0][0].data).not.toHaveProperty('diaAniversario');
+    await service.execute(1, { diaAniversario: 29, mesAniversario: 2 });
+    expect(atualizar.mock.calls[1][0].data).toMatchObject({
+      diaAniversario: 29,
+      mesAniversario: 2,
+    });
+    await service.execute(1, { diaAniversario: null, mesAniversario: null });
+    expect(atualizar.mock.calls[2][0].data).toMatchObject({
+      diaAniversario: null,
+      mesAniversario: null,
+    });
+    expect(senhas.gerarHash).not.toHaveBeenCalled();
+  });
+  it('não grava um par incompleto ou data impossível', async () => {
+    await expect(service.execute(1, { diaAniversario: 29 })).rejects.toThrow(
+      'Aniversário inválido.',
+    );
+    await expect(service.execute(1, { diaAniversario: 31, mesAniversario: 4 })).rejects.toThrow(
+      'Aniversário inválido.',
+    );
+    expect(atualizar).not.toHaveBeenCalled();
+  });
+});

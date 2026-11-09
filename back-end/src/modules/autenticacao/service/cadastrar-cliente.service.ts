@@ -15,6 +15,9 @@ export class CadastrarClienteService {
         cpf: dto.cpf,
         senha: dto.senha,
         telefone: dto.telefone,
+        ...(dto.diaAniversario !== undefined
+          ? { diaAniversario: dto.diaAniversario, mesAniversario: dto.mesAniversario }
+          : {}),
       });
     } catch (erro) {
       if (

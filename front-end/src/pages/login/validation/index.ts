@@ -1,26 +1,11 @@
-import type { CredenciaisLogin } from "../types";
-
-export type ErrosFormularioLogin = Partial<
-  Record<keyof CredenciaisLogin, string>
->;
-
-const PADRAO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function validarFormularioLogin(
-  valores: CredenciaisLogin,
-): ErrosFormularioLogin {
-  const erros: ErrosFormularioLogin = {};
-  const email = valores.email.trim();
-
-  if (!email) {
-    erros.email = "Informe seu e-mail.";
-  } else if (!PADRAO_EMAIL.test(email)) {
-    erros.email = "Informe um e-mail válido.";
-  }
-
-  if (!valores.senha) {
-    erros.senha = "Informe sua senha.";
-  }
-
-  return erros;
+import * as yup from 'yup';
+import type { CredenciaisLogin } from '../types';
+import { emailSchema, errosSchema } from '../../../forms/campos';
+export type ErrosFormularioLogin = Partial<Record<keyof CredenciaisLogin, string>>;
+export const schemaLogin = yup.object({
+  email: emailSchema,
+  senha: yup.string().required('Informe sua senha.'),
+});
+export function validarFormularioLogin(valores: CredenciaisLogin): ErrosFormularioLogin {
+  return errosSchema(schemaLogin, valores);
 }

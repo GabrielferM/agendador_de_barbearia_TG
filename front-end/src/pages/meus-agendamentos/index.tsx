@@ -1,38 +1,41 @@
-import { Button } from "@heroui/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import type { AgendamentoRespostaDto } from "../../api/models";
-import { useAutenticacao } from "../../auth/contexto-autenticacao";
+import { errosSchema } from '../../forms/campos';
+import { ErroCampo } from '../../forms/erro-campo';
+import { schemaCancelamento } from '../../forms/schemas-operacoes';
+import { Button } from '@heroui/react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import type { AgendamentoRespostaDto } from '../../api/models';
+import { useAutenticacao } from '../../auth/contexto-autenticacao';
 import {
   cancelarAgendamento,
   listarAgendamentos,
   mensagemErro,
-} from "../agendamento/services/agendamento-api";
+} from '../agendamento/services/agendamento-api';
 import {
   ResumoAgendamento,
   DetalhesAgendamento,
-} from "../agendamento/components/resumo-agendamento";
-import { StatusAgendamento } from "../agendamento/components/status-agendamento";
-import { dataHorario } from "../agendamento/formatadores";
-import { dataJaPassou, organizarAgendamentos } from "./organizar-agendamentos";
+} from '../agendamento/components/resumo-agendamento';
+import { StatusAgendamento } from '../agendamento/components/status-agendamento';
+import { dataHorario } from '../agendamento/formatadores';
+import { dataJaPassou, organizarAgendamentos } from './organizar-agendamentos';
 
 const POR_PAGINA = 10;
 export function MeusAgendamentos() {
   const { usuario, sair } = useAutenticacao();
-  const [aba, definirAba] = useState<"proximos" | "historico">("proximos");
+  const [aba, definirAba] = useState<'proximos' | 'historico'>('proximos');
   const [pagina, definirPagina] = useState(1);
-  const [cancelando, definirCancelando] =
-    useState<AgendamentoRespostaDto | null>(null);
-  const [motivo, definirMotivo] = useState("");
-  const [aviso, definirAviso] = useState("");
+  const [cancelando, definirCancelando] = useState<AgendamentoRespostaDto | null>(null);
+  const [motivo, definirMotivo] = useState('');
+  const [erroMotivo, setErroMotivo] = useState('');
+  const [aviso, definirAviso] = useState('');
   const [agora, definirAgora] = useState(() => Date.now());
   const dialogo = useRef<HTMLDialogElement>(null);
   const origemFoco = useRef<HTMLElement | null>(null);
   const titulo = useRef<HTMLHeadingElement>(null);
   const envioEmCurso = useRef(false);
   const queryClient = useQueryClient();
-  const chave = ["meus-agendamentos", usuario?.id];
+  const chave = ['meus-agendamentos', usuario?.id];
   const consulta = useQuery({
     queryKey: chave,
     queryFn: ({ signal }) => listarAgendamentos(signal),
@@ -47,16 +50,15 @@ export function MeusAgendamentos() {
         itens?.map((item) => (item.id === atualizado.id ? atualizado : item)),
       );
       definirCancelando(null);
-      definirMotivo("");
-      definirAviso("Agendamento cancelado.");
+      definirMotivo('');
+      definirAviso('Agendamento cancelado.');
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["meus-agendamentos"] }),
+        queryClient.invalidateQueries({ queryKey: ['meus-agendamentos'] }),
         queryClient.invalidateQueries({
           predicate: (query) =>
-            query.queryKey[0] === "admin" &&
-            query.queryKey[2] === "agendamentos",
+            query.queryKey[0] === 'admin' && query.queryKey[2] === 'agendamentos',
         }),
-        queryClient.invalidateQueries({ queryKey: ["agendar", "horarios"] }),
+        queryClient.invalidateQueries({ queryKey: ['agendar', 'horarios'] }),
       ]);
     },
     onSettled: () => {
@@ -64,12 +66,9 @@ export function MeusAgendamentos() {
     },
   });
   useEffect(() => {
-    document.title = "Meus agendamentos — Corte Certo";
+    document.title = 'Meus agendamentos — Corte Certo';
     // Atualiza somente a classificação local, sem consultas periódicas à API.
-    const intervalo = window.setInterval(
-      () => definirAgora(Date.now()),
-      30_000,
-    );
+    const intervalo = window.setInterval(() => definirAgora(Date.now()), 30_000);
     return () => window.clearInterval(intervalo);
   }, []);
   useEffect(() => {
@@ -102,11 +101,7 @@ export function MeusAgendamentos() {
           </div>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
             <div className="min-w-0 flex-1 basis-64 break-words">
-              <h1
-                ref={titulo}
-                tabIndex={-1}
-                className="font-serif text-3xl outline-none"
-              >
+              <h1 ref={titulo} tabIndex={-1} className="font-serif text-3xl outline-none">
                 Meus agendamentos
               </h1>
               <p className="mt-2 text-sm text-foreground/75">
@@ -136,8 +131,8 @@ export function MeusAgendamentos() {
         >
           {(
             [
-              ["proximos", "Próximos"],
-              ["historico", "Histórico"],
+              ['proximos', 'Próximos'],
+              ['historico', 'Histórico'],
             ] as const
           ).map(([valor, rotulo]) => (
             <button
@@ -149,29 +144,25 @@ export function MeusAgendamentos() {
               tabIndex={aba === valor ? 0 : -1}
               onClick={() => mudarAba(valor)}
               onKeyDown={(e) => {
-                if (
-                  ["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)
-                ) {
+                if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
                   e.preventDefault();
                   const nova =
-                    e.key === "Home"
-                      ? "proximos"
-                      : e.key === "End"
-                        ? "historico"
-                        : aba === "proximos"
-                          ? "historico"
-                          : "proximos";
+                    e.key === 'Home'
+                      ? 'proximos'
+                      : e.key === 'End'
+                        ? 'historico'
+                        : aba === 'proximos'
+                          ? 'historico'
+                          : 'proximos';
                   mudarAba(nova);
                   document.getElementById(`aba-${nova}`)?.focus();
                 }
               }}
-              className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-semibold focus-visible:outline-primary ${aba === valor ? "bg-primary text-white" : "text-primary hover:bg-background"}`}
+              className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-3 py-3 text-sm font-semibold focus-visible:outline-primary ${aba === valor ? 'bg-primary text-white' : 'text-primary hover:bg-background'}`}
             >
-              {rotulo}{" "}
+              {rotulo}{' '}
               <span className="rounded-full bg-current/10 px-2 text-xs">
-                {consulta.isPending || consulta.isError
-                  ? "—"
-                  : grupos[valor].length}
+                {consulta.isPending || consulta.isError ? '—' : grupos[valor].length}
               </span>
             </button>
           ))}
@@ -184,11 +175,7 @@ export function MeusAgendamentos() {
           className="rounded-xl focus-visible:outline-primary"
         >
           {consulta.isPending ? (
-            <div
-              role="status"
-              aria-label="Carregando agendamentos"
-              className="space-y-3"
-            >
+            <div role="status" aria-label="Carregando agendamentos" className="space-y-3">
               <span className="sr-only">Carregando agendamentos…</span>
               {[0, 1, 2].map((i) => (
                 <div
@@ -203,10 +190,7 @@ export function MeusAgendamentos() {
               ))}
             </div>
           ) : consulta.isError ? (
-            <div
-              role="alert"
-              className="rounded-2xl border border-border bg-surface p-6"
-            >
+            <div role="alert" className="rounded-2xl border border-border bg-surface p-6">
               <p>{mensagemErro(consulta.error)}</p>
               <Button
                 variant="secondary"
@@ -214,7 +198,7 @@ export function MeusAgendamentos() {
                 isDisabled={consulta.isFetching}
                 onPress={() => void consulta.refetch()}
               >
-                {consulta.isFetching ? "Tentando…" : "Tentar novamente"}
+                {consulta.isFetching ? 'Tentando…' : 'Tentar novamente'}
               </Button>
             </div>
           ) : !itens.length ? (
@@ -223,16 +207,16 @@ export function MeusAgendamentos() {
               role="status"
             >
               <h2 className="font-serif text-xl">
-                {aba === "proximos"
-                  ? "Nenhum atendimento próximo"
-                  : "Seu histórico ainda está vazio"}
+                {aba === 'proximos'
+                  ? 'Nenhum atendimento próximo'
+                  : 'Seu histórico ainda está vazio'}
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-foreground/75">
-                {aba === "proximos"
-                  ? "Quando você agendar um novo cuidado, ele aparecerá aqui."
-                  : "Atendimentos anteriores, cancelados e não comparecimentos aparecerão aqui."}
+                {aba === 'proximos'
+                  ? 'Quando você agendar um novo cuidado, ele aparecerá aqui.'
+                  : 'Atendimentos anteriores, cancelados e não comparecimentos aparecerão aqui.'}
               </p>
-              {aba === "proximos" && (
+              {aba === 'proximos' && (
                 <Link
                   to="/agendar"
                   className="mt-4 inline-block rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white"
@@ -243,55 +227,48 @@ export function MeusAgendamentos() {
             </div>
           ) : (
             <div className="space-y-3">
-              {itens
-                .slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA)
-                .map((item) => (
-                  <article
-                    key={item.id}
-                    aria-label={`Agendamento #${item.id}`}
-                    className="min-w-0 rounded-2xl border border-border bg-surface p-4 sm:p-5"
-                  >
-                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="text-xs text-foreground/75">
-                        Agendamento #{item.id}
-                      </h2>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusAgendamento status={item.status} />
-                        {dataJaPassou(item, agora) && (
-                          <span className="text-xs text-foreground/75">
-                            Data já passou
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <ResumoAgendamento item={item} detalhes={false} />
-                    <div className="mt-4 flex flex-wrap items-start justify-between gap-3 border-t border-border pt-3">
-                      <details className="min-w-0 flex-1 basis-48">
-                        <summary className="w-fit cursor-pointer rounded py-2 text-sm font-medium text-primary focus-visible:outline-primary">
-                          Ver detalhes
-                        </summary>
-                        <DetalhesAgendamento item={item} />
-                      </details>
-                      {["PENDENTE", "CONFIRMADO"].includes(item.status) && (
-                        <Button
-                          variant="secondary"
-                          className="shrink-0 rounded-lg border border-danger/30 bg-surface text-danger"
-                          isDisabled={cancelamento.isPending}
-                          aria-label={`Cancelar agendamento #${item.id}`}
-                          onPress={() => {
-                            origemFoco.current =
-                              document.activeElement as HTMLElement;
-                            cancelamento.reset();
-                            definirMotivo("");
-                            definirCancelando(item);
-                          }}
-                        >
-                          Cancelar agendamento
-                        </Button>
+              {itens.slice((paginaAtual - 1) * POR_PAGINA, paginaAtual * POR_PAGINA).map((item) => (
+                <article
+                  key={item.id}
+                  aria-label={`Agendamento #${item.id}`}
+                  className="min-w-0 rounded-2xl border border-border bg-surface p-4 sm:p-5"
+                >
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-xs text-foreground/75">Agendamento #{item.id}</h2>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <StatusAgendamento status={item.status} />
+                      {dataJaPassou(item, agora) && (
+                        <span className="text-xs text-foreground/75">Data já passou</span>
                       )}
                     </div>
-                  </article>
-                ))}
+                  </div>
+                  <ResumoAgendamento item={item} detalhes={false} />
+                  <div className="mt-4 flex flex-wrap items-start justify-between gap-3 border-t border-border pt-3">
+                    <details className="min-w-0 flex-1 basis-48">
+                      <summary className="w-fit cursor-pointer rounded py-2 text-sm font-medium text-primary focus-visible:outline-primary">
+                        Ver detalhes
+                      </summary>
+                      <DetalhesAgendamento item={item} />
+                    </details>
+                    {['PENDENTE', 'CONFIRMADO'].includes(item.status) && (
+                      <Button
+                        variant="secondary"
+                        className="shrink-0 rounded-lg border border-danger/30 bg-surface text-danger"
+                        isDisabled={cancelamento.isPending}
+                        aria-label={`Cancelar agendamento #${item.id}`}
+                        onPress={() => {
+                          origemFoco.current = document.activeElement as HTMLElement;
+                          cancelamento.reset();
+                          definirMotivo('');
+                          definirCancelando(item);
+                        }}
+                      >
+                        Cancelar agendamento
+                      </Button>
+                    )}
+                  </div>
+                </article>
+              ))}
             </div>
           )}
           {!consulta.isPending && !consulta.isError && totalPaginas > 1 && (
@@ -329,10 +306,7 @@ export function MeusAgendamentos() {
           }}
           onClose={() => {
             definirCancelando(null);
-            (origemFoco.current?.isConnected
-              ? origemFoco.current
-              : titulo.current
-            )?.focus();
+            (origemFoco.current?.isConnected ? origemFoco.current : titulo.current)?.focus();
           }}
           className="m-auto max-h-[90dvh] w-[calc(100%_-_2rem)] max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-5 text-foreground backdrop:bg-foreground/40 sm:p-6"
         >
@@ -340,7 +314,7 @@ export function MeusAgendamentos() {
             onSubmit={(e) => {
               e.preventDefault();
               if (
-                motivo.trim() &&
+                schemaCancelamento.isValidSync({ motivo }) &&
                 !envioEmCurso.current &&
                 !cancelamento.isPending
               ) {
@@ -352,10 +326,7 @@ export function MeusAgendamentos() {
             <h2 id="titulo-cancelamento" className="font-serif text-2xl">
               Cancelar agendamento?
             </h2>
-            <p
-              id="descricao-cancelamento"
-              className="mt-2 text-sm text-foreground/75"
-            >
+            <p id="descricao-cancelamento" className="mt-2 text-sm text-foreground/75">
               O horário será liberado para outro cliente.
             </p>
             {cancelando && (
@@ -363,18 +334,13 @@ export function MeusAgendamentos() {
                 <p className="font-semibold text-primary">
                   {dataHorario(cancelando.inicioPrevisto)}
                 </p>
-                <p className="mt-1">
-                  {cancelando.servicos.map((s) => s.servico.nome).join(", ")}
-                </p>
+                <p className="mt-1">{cancelando.servicos.map((s) => s.servico.nome).join(', ')}</p>
                 <p className="mt-1 text-foreground/75">
                   Com {cancelando.barbeiro.nomeProfissional} · #{cancelando.id}
                 </p>
               </div>
             )}
-            <label
-              htmlFor="motivo-cancelamento"
-              className="mb-2 mt-4 block text-sm font-semibold"
-            >
+            <label htmlFor="motivo-cancelamento" className="mb-2 mt-4 block text-sm font-semibold">
               Motivo do cancelamento
             </label>
             <p id="ajuda-motivo" className="mb-2 text-xs text-foreground/75">
@@ -386,11 +352,20 @@ export function MeusAgendamentos() {
               required
               rows={3}
               value={motivo}
-              aria-describedby="ajuda-motivo"
+              aria-invalid={Boolean(erroMotivo)}
+              onBlur={() => setErroMotivo(errosSchema(schemaCancelamento, { motivo }).motivo ?? '')}
+              aria-describedby={erroMotivo ? 'ajuda-motivo erro-motivo' : 'ajuda-motivo'}
               disabled={cancelamento.isPending}
-              onChange={(e) => definirMotivo(e.target.value)}
+              onChange={(e) => {
+                definirMotivo(e.target.value);
+                if (erroMotivo)
+                  setErroMotivo(
+                    errosSchema(schemaCancelamento, { motivo: e.target.value }).motivo ?? '',
+                  );
+              }}
               className="w-full rounded-lg border border-border bg-surface p-3 text-sm focus-visible:outline-primary"
             />
+            <ErroCampo id="erro-motivo" mensagem={erroMotivo} />
             {cancelamento.isError && (
               <p role="alert" className="mt-3 text-sm text-danger">
                 {mensagemErro(cancelamento.error)}
@@ -408,11 +383,9 @@ export function MeusAgendamentos() {
               <Button
                 type="submit"
                 className="min-h-11 rounded-lg bg-danger text-white disabled:opacity-50"
-                isDisabled={!motivo.trim() || cancelamento.isPending}
+                isDisabled={!schemaCancelamento.isValidSync({ motivo }) || cancelamento.isPending}
               >
-                {cancelamento.isPending
-                  ? "Cancelando…"
-                  : "Confirmar cancelamento"}
+                {cancelamento.isPending ? 'Cancelando…' : 'Confirmar cancelamento'}
               </Button>
             </div>
           </form>

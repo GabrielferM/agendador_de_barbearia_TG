@@ -5,9 +5,12 @@
  * Contrato OpenAPI da API REST do Agendador de Barbearia.
  * OpenAPI spec version: 1.0
  */
+import type { AtualizarBarbeiroDtoStatusConta } from './atualizarBarbeiroDtoStatusConta';
 import type { AtualizarBarbeiroDtoStatusProfissional } from './atualizarBarbeiroDtoStatusProfissional';
 
 export interface AtualizarBarbeiroDto {
+  /** Status da conta, independente do perfil profissional. */
+  statusConta?: AtualizarBarbeiroDtoStatusConta;
   /** @minLength 2 */
   nome?: string;
   email?: string;
@@ -16,6 +19,7 @@ export interface AtualizarBarbeiroDto {
      * @maxLength 128
      */
   senha?: string;
+  /** @minimum 1 */
   idFilial?: number;
   nomeProfissional?: string;
   descricao?: string;

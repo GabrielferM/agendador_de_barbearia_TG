@@ -28,6 +28,7 @@ export class EditarBarbeiroService {
     if (input.fotoUrl !== undefined) data.fotoUrl = input.fotoUrl.trim();
     if (input.statusProfissional !== undefined) data.statusProfissional = input.statusProfissional;
     const usuario: Prisma.UsuarioUpdateWithoutBarbeiroInput = {};
+    if (input.statusConta !== undefined) usuario.status = input.statusConta;
     if (input.nome !== undefined) usuario.nome = input.nome.trim();
     if (input.email !== undefined) usuario.email = normalizarEmail(input.email);
     if (input.senha !== undefined) usuario.senhaHash = await this.senhas.gerarHash(input.senha);

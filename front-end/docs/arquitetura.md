@@ -58,3 +58,7 @@ A classe local `inicio-container` compartilha largura fluida entre as seções: 
 A seção Sobre apresenta dois parágrafos institucionais, três destaques de atendimento e o link “Agendar meu atendimento”, que abre `/agendar` sem alterar o rascunho. Não há selo demonstrativo nessa seção. O texto vem antes das imagens no DOM e no celular; no desktop a composição visual ocupa a coluna esquerda e o conteúdo ocupa a direita.
 
 As imagens locais [sobre-ambiente.png](../src/assets/sobre-ambiente.png) e [sobre-detalhes.png](../src/assets/sobre-detalhes.png) foram geradas com IA pela skill imagegen para esta interface. Representam um ambiente fictício e uma composição de instrumentos, sem pessoas, marcas ou alegação de fotografar instalações reais. Ambas têm 1536 × 1024 pixels, proporção reservada de 3:2, texto alternativo e carregamento tardio. Não dependem de URLs externas nem substituem fotos de profissionais cadastrados.
+
+## Validação compartilhada de formulários
+
+`src/forms/` concentra regras Yup, máscaras, serialização de aniversário, mensagens de campo e validação dos filtros. Os schemas de cadastros e contas permanecem próximos das funcionalidades. Os quatro cadastros administrativos usam Dialog HeroUI compartilhado, com contexto local para proteção de alterações e retorno de foco; os detalhes e contratos estão no guia de administração. O fluxo é entrada formatada → schema → projeção explícita no adapter → API, preservando os tipos e opcionais do contrato. Consulte [formulários](formularios.md).

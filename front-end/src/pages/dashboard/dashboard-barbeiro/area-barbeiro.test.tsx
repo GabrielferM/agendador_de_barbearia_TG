@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import App from "../../../App";
@@ -118,6 +118,47 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe("área do barbeiro integrada", () => {
+  it.each(['clientes', 'servicos'])('busca explícita em %s preserva lista, foco e rascunho na paginação', async (tela) => {
+    const original = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (...args) => {
+      const resposta = await original(...args);
+      if (String(args[0]).includes('/dashboard/barbeiro/')) {
+        const corpo = await resposta.json();
+        return json({ ...corpo, meta: { ...meta, total: 20, totalPaginas: 2,
+          pagina: Number(new URL(String(args[0])).searchParams.get('pagina')) } });
+      }
+      return resposta;
+    });
+    abrir(`/barbeiro/${tela}`);
+    const tabela = await screen.findByRole('table');
+    const campo = screen.getByLabelText('Buscar por nome');
+    const quantidade = vi.mocked(fetch).mock.calls.length;
+    await userEvent.type(campo, 'Corte');
+    expect(vi.mocked(fetch).mock.calls).toHaveLength(quantidade);
+    let concluir!: (resposta: Response) => void;
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>((resolve) => { concluir = resolve; }));
+    await userEvent.type(campo, '{Enter}');
+    await screen.findByText('Atualizando resultados…');
+    expect(campo).toHaveFocus();
+    expect(screen.getByRole('table')).toBe(tabela);
+    expect(screen.getByRole('button', { name: 'Buscar' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Próxima' })).toBeDisabled();
+    await userEvent.type(campo, ' rascunho');
+    const resposta = await original(`http://localhost:3000/dashboard/barbeiro/${tela}?pagina=1`, {});
+    await act(async () => concluir(json({ ...(await resposta.json()), meta: { ...meta, total: 20, totalPaginas: 2 } })));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Buscar' })).toBeEnabled());
+    await userEvent.click(screen.getByRole('button', { name: 'Próxima' }));
+    await screen.findByText(/Página 2 de/);
+    expect(campo).toHaveValue('Corte rascunho');
+    const url = new URL(String(vi.mocked(fetch).mock.calls.at(-1)![0]));
+    expect(url.searchParams.get('busca')).toBe('Corte');
+    expect(url.searchParams.get('pagina')).toBe('2');
+    const antes = vi.mocked(fetch).mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: 'Limpar' }));
+    await waitFor(() => expect(vi.mocked(fetch).mock.calls.length).toBeGreaterThan(antes));
+    expect(campo).toHaveValue('');
+  });
+
   it.each([
     ["servicos", "Meus serviços"],
     ["clientes", "Clientes"],

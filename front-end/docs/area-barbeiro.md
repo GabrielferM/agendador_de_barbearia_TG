@@ -79,3 +79,13 @@ permanece pendente antes de considerar o fluxo validado em produção.
 
 Veja [capturas desktop/celular](capturas-barbeiro/README.md), com HTTP e sessão
 simulados, e [resultados dos checks](validacao-barbeiro.md).
+
+## Validação dos formulários existentes
+
+Agenda, serviços e histórico validam datas, situação e paginação com Yup, preservando o teto de 366 dias e impedindo aplicação de filtros inválidos. Cancelamento valida motivo após trim e limite de 1000 caracteres; alterações de status impedem envio duplicado. Os schemas não substituem permissões, propriedade do atendimento nem transições no servidor. Padrão compartilhado: [formulários](formularios.md).
+
+## Atualização estável das consultas
+
+Clientes e Serviços aplicam seus campos pelo botão **Buscar** ou Enter; Histórico mantém **Aplicar filtros**. Nova aplicação retorna à página 1 e repetir os mesmos filtros atualiza os resultados. Os filtros aplicados continuam na URL. Paginar não apaga alterações ainda não aplicadas nos campos; navegação para outros filtros sincroniza os campos sem remontar o formulário. Limpar restaura os defaults.
+
+Clientes, Serviços e Histórico preservam os resultados durante novas consultas, com indicação “Atualizando resultados…”, `aria-busy` e altura mantida até a conclusão. A paginação mostra os metadados dos itens ainda visíveis. Campos permanecem editáveis; submissão, Limpar e paginação ficam bloqueados enquanto a consulta está em andamento. Falhas preservam o último resultado válido com aviso e nova tentativa, exceto perda de sessão/acesso. Não há alteração de endpoints ou filtros no servidor.

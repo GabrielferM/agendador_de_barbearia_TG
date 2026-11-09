@@ -10,6 +10,18 @@ export interface CadastroClienteDto {
   /** @maxLength 254 */
   email: string;
   /**
+     * @minimum 1
+     * @maximum 31
+     * @nullable
+     */
+  diaAniversario?: number | null;
+  /**
+     * @minimum 1
+     * @maximum 12
+     * @nullable
+     */
+  mesAniversario?: number | null;
+  /**
      * @minLength 2
      * @maxLength 120
      */

@@ -44,7 +44,7 @@ describe('AppController (e2e)', () => {
       create: jest.fn(),
       update: jest.fn(),
     },
-    barbeiro: { findUnique: jest.fn() },
+    barbeiro: { findUnique: jest.fn(), update: jest.fn() },
     cliente: {
       findUnique: jest.fn(),
       findMany: jest.fn().mockResolvedValue([]),
@@ -102,6 +102,7 @@ describe('AppController (e2e)', () => {
       statusProfissional: 'ATIVO',
       usuario: { status: 'ATIVO' },
     });
+    prisma.barbeiro.update.mockReset();
     prisma.cliente.findUnique.mockReset().mockResolvedValue({ id: 1 });
     prisma.servico.findUnique.mockReset();
     prisma.servico.update.mockReset();
@@ -240,6 +241,76 @@ describe('AppController (e2e)', () => {
     await agente.get('/comissoes').expect(200);
     const me = await agente.get('/auth/me').expect(200);
     expect(me.body as unknown).toMatchObject({ usuario: { permissoes: ['GERENCIAR_COMISSOES'] } });
+  });
+
+  it('edita o status da conta do barbeiro com permissão e CSRF, sem alterar o perfil', async () => {
+    await request(app.getHttpServer())
+      .patch('/barbeiros/9')
+      .send({ statusConta: 'INATIVO' })
+      .expect(401);
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((cookie) => cookie.startsWith('csrf='))!
+      .split(';')[0]
+      .slice('csrf='.length);
+    await agente
+      .patch('/barbeiros/9')
+      .set('X-CSRF-Token', csrf)
+      .send({ statusConta: 'INATIVO' })
+      .expect(403);
+    const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: unknown[] } };
+    usuario.papel.codigo = 'ADMINISTRADOR';
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_USUARIOS' } },
+    ];
+    await agente.patch('/barbeiros/9').send({ statusConta: 'INATIVO' }).expect(403);
+    for (const statusConta of [null, 1, 'BLOQUEADO', 'AFASTADO']) {
+      await agente
+        .patch('/barbeiros/9')
+        .set('X-CSRF-Token', csrf)
+        .send({ statusConta })
+        .expect(400);
+    }
+    expect(prisma.barbeiro.update).not.toHaveBeenCalled();
+    for (const statusConta of ['INATIVO', 'ATIVO']) {
+      prisma.barbeiro.findUnique.mockResolvedValue({
+        id: 9,
+        usuario: { id: 9, status: 'ATIVO' },
+        statusProfissional: 'AFASTADO',
+      });
+      prisma.barbeiro.update.mockResolvedValue({
+        id: 9,
+        usuario: { id: 9, status: statusConta, senhaHash: 'hash-oculto' },
+        statusProfissional: 'AFASTADO',
+      });
+      const resposta = await agente
+        .patch('/barbeiros/9')
+        .set('X-CSRF-Token', csrf)
+        .send({ statusConta })
+        .expect(200);
+      expect(resposta.body as unknown).toMatchObject({
+        id: 9,
+        usuario: { id: 9, status: statusConta },
+        statusProfissional: 'AFASTADO',
+      });
+      expect(JSON.stringify(resposta.body)).not.toContain('senhaHash');
+      expect(prisma.barbeiro.update).toHaveBeenLastCalledWith({
+        where: { id: 9 },
+        data: { usuario: { update: { status: statusConta } } },
+        include: { usuario: true, filial: true },
+      });
+    }
+    expect(prisma.agendamento.update).not.toHaveBeenCalled();
+    prisma.barbeiro.findUnique.mockResolvedValue(null);
+    await agente
+      .patch('/barbeiros/99')
+      .set('X-CSRF-Token', csrf)
+      .send({ statusConta: 'INATIVO' })
+      .expect(404);
   });
 
   it('altera apenas a ativação do serviço com sessão, permissão e CSRF e preserva os agendamentos', async () => {
@@ -833,6 +904,56 @@ describe('AppController (e2e)', () => {
       expect(prisma.usuario.create).not.toHaveBeenCalled();
     },
   );
+
+  it.each([
+    { diaAniversario: 31, mesAniversario: 4 },
+    { mesAniversario: 2 },
+    { diaAniversario: null },
+    { diaAniversario: '29', mesAniversario: 2 },
+    { cpf: '00000000000' },
+    { telefone: 'abc11999994444' },
+    { nome: '  ' },
+  ])('rejeita entrada inválida de cadastro em HTTP: %j', async (campos) => {
+    await request(app.getHttpServer())
+      .post('/auth/cadastro-cliente')
+      .send({
+        nome: 'Cliente',
+        email: 'cliente@example.com',
+        cpf: '529.982.247-25',
+        senha: ' senha longa segura ',
+        ...campos,
+      })
+      .expect(400);
+    expect(prisma.usuario.create).not.toHaveBeenCalled();
+  });
+
+  it('normaliza telefone e grava aniversário válido no cadastro público', async () => {
+    const dados = {
+      nome: 'Cliente',
+      email: 'cliente@example.com',
+      cpf: '529.982.247-25',
+      senha: ' senha longa segura ',
+    };
+    prisma.usuario.findUnique.mockResolvedValueOnce(null);
+    prisma.cliente.findUnique.mockResolvedValueOnce(null);
+    prisma.usuario.create.mockResolvedValueOnce({ id: 88, cliente: { id: 88 } });
+    await request(app.getHttpServer())
+      .post('/auth/cadastro-cliente')
+      .send({ ...dados, telefone: '(11) 99999-4444', diaAniversario: 29, mesAniversario: 2 })
+      .expect(200);
+    const gravacao = prisma.usuario.create.mock.calls[0][0] as {
+      data: {
+        telefone: string;
+        cliente: { create: { cpf: string; diaAniversario: number; mesAniversario: number } };
+      };
+    };
+    expect(gravacao.data.telefone).toBe('11999994444');
+    expect(gravacao.data.cliente.create).toMatchObject({
+      cpf: '52998224725',
+      diaAniversario: 29,
+      mesAniversario: 2,
+    });
+  });
 
   it('protege operações públicas por origem e JSON; mantém CRUD privado', async () => {
     await request(app.getHttpServer())

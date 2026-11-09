@@ -128,3 +128,7 @@ isolado e entrega real do Resend não foram validados neste ambiente.
 
 Fora do escopo: verificação de e-mail, login automático/social, MFA, SMS/WhatsApp,
 recuperação administrativa, filas/Redis, notificações de agendamento e marketing.
+
+## Aniversário opcional
+
+`POST /auth/cadastro-cliente` aceita `diaAniversario` e `mesAniversario` inteiros opcionais, juntos ou ambos ausentes/nulos; aceita 29/02 e rejeita pares incompletos ou datas impossíveis. O adapter público projeta esses campos explicitamente, sem permitir campos administrativos. `dataNascimento` continua rejeitado. Regras, migration e normalização de CPF/telefone: [validação](tratamento-de-erros.md#aniversário-e-normalização-de-cadastros).

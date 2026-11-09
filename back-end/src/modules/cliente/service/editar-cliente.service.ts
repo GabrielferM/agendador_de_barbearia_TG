@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { SenhaService } from '../../../common/security/senha.service';
+import { validarAniversario } from '../../../common/validation/aniversario';
 import { normalizarCpf, normalizarEmail } from '../../../common/utils/documentos';
 import { semSenha } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -16,6 +17,7 @@ export class EditarClienteService {
   ) {}
 
   async execute(id: number, input: AtualizarClienteDto) {
+    validarAniversario(input);
     await this.buscar.execute(id);
     const data: Prisma.ClienteUpdateInput = {};
     if (input.cpf !== undefined) {
@@ -25,7 +27,10 @@ export class EditarClienteService {
         throw new BadRequestException('CPF inválido.');
       }
     }
-    if (input.dataNascimento !== undefined) data.dataNascimento = new Date(input.dataNascimento);
+    if (input.diaAniversario !== undefined) {
+      data.diaAniversario = input.diaAniversario;
+      data.mesAniversario = input.mesAniversario;
+    }
     if (input.observacao !== undefined) data.observacao = input.observacao.trim();
     const usuario: Prisma.UsuarioUpdateWithoutClienteInput = {};
     if (input.status !== undefined) usuario.status = input.status;

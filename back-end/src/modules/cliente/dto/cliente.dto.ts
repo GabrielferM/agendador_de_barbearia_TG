@@ -1,9 +1,17 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { AniversarioValido } from '../../../common/validation/aniversario';
+import {
+  Aparar,
+  DocumentoValido,
+  EmailNormalizado,
+  TelefoneNormalizado,
+} from '../../../common/validation/campos';
 import { StatusUsuario } from '@prisma/client';
 import {
   IsEnum,
-  IsDateString,
+  Matches,
   IsEmail,
-  IsOptional,
+  ValidateIf,
   IsString,
   MaxLength,
   MinLength,
@@ -12,22 +20,57 @@ import { SENHA_MAXIMA, SENHA_MINIMA } from '../../../common/constants/seguranca'
 import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 
 export class CriarClienteDto {
-  @IsString() @MinLength(2) nome!: string;
-  @IsEmail() email!: string;
+  @Aparar() @IsString() @MinLength(2) nome!: string;
+  @EmailNormalizado() @IsEmail() email!: string;
   @IsString() @MinLength(SENHA_MINIMA) @MaxLength(SENHA_MAXIMA) senha!: string;
-  @IsString() cpf!: string;
-  @IsOptional() @IsString() telefone?: string;
-  @IsOptional() @IsDateString() dataNascimento?: string;
-  @IsOptional() @IsString() observacao?: string;
+  @Aparar() @DocumentoValido('cpf') @IsString() cpf!: string;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @TelefoneNormalizado()
+  @Matches(/^(?:\d{10,11})?$/)
+  @IsString()
+  telefone?: string;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: 1, maximum: 31 })
+  @AniversarioValido()
+  diaAniversario?: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: 1, maximum: 12 })
+  @AniversarioValido()
+  mesAniversario?: number | null;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined) @IsString() observacao?: string;
 }
 export class AtualizarClienteDto {
-  @IsOptional() @IsEnum(StatusUsuario) status?: StatusUsuario;
-  @IsOptional() @IsString() @MinLength(2) nome?: string;
-  @IsOptional() @IsEmail() email?: string;
-  @IsOptional() @IsString() @MinLength(SENHA_MINIMA) @MaxLength(SENHA_MAXIMA) senha?: string;
-  @IsOptional() @IsString() cpf?: string;
-  @IsOptional() @IsString() telefone?: string;
-  @IsOptional() @IsDateString() dataNascimento?: string;
-  @IsOptional() @IsString() observacao?: string;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsEnum(StatusUsuario)
+  status?: StatusUsuario;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @Aparar()
+  @IsString()
+  @MinLength(2)
+  nome?: string;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @EmailNormalizado()
+  @IsEmail()
+  email?: string;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @IsString()
+  @MinLength(SENHA_MINIMA)
+  @MaxLength(SENHA_MAXIMA)
+  senha?: string;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @Aparar()
+  @DocumentoValido('cpf')
+  @IsString()
+  cpf?: string;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
+  @TelefoneNormalizado()
+  @Matches(/^(?:\d{10,11})?$/)
+  @IsString()
+  telefone?: string;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: 1, maximum: 31 })
+  @AniversarioValido()
+  diaAniversario?: number | null;
+  @ApiPropertyOptional({ type: Number, nullable: true, minimum: 1, maximum: 12 })
+  @AniversarioValido()
+  mesAniversario?: number | null;
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined) @IsString() observacao?: string;
 }
 export class ListarClientesDto extends PaginacaoDto {}

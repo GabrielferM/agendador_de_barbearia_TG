@@ -45,3 +45,21 @@ validação do banco de destino nem teste de concorrência em PostgreSQL servido
 ## Contas públicas
 
 Os testes unitários/HTTP adicionais usam Prisma e Resend simulados e cobrem cadastro, recuperação, limites, tokens, revogação e login após a mudança. A suíte opt-in de [PostgreSQL real](../test/conta-postgres.e2e-spec.ts) requer DATABASE_URL_TESTE local descartável; consulte [preparo e limites](contas-publicas.md). Sem essa variável, três testes ficam ignorados.
+
+## Aniversário e normalização
+
+A suíte unitária valida DTOs de criação/edição, par ausente/nulo/incompleto, 29/02, 31/04, formato e dígitos de CPF/CNPJ, telefone pontuado, trim, UF, URL e admissão. A edição do cliente testa manter, substituir e remover aniversário. A suíte HTTP exercita rejeição de entradas inválidas antes de gravar e cadastro público com telefone normalizado/aniversário válido, preservando os limites reais de requisições.
+
+`test/aniversario-postgres.e2e-spec.ts` é opt-in por `DATABASE_URL_TESTE`, somente em PostgreSQL local descartável com nome terminado em `_auth_test`. Cria e remove um schema próprio, aplica o histórico anterior, insere datas conhecidas e verifica conversão e restrições com os triggers ativos. Não utiliza o banco da aplicação como destino desse teste.
+
+Nesta alteração, a conversão também foi validada em PostgreSQL embarcado (PGlite) com o histórico completo: reproduziu a falha de eventos de trigger pendentes e confirmou a correção. A migration foi aplicada ao banco local configurado, com comparação agregada de todos os IDs/dias/meses antes e depois, sem expor dados pessoais. Isso comprova a conversão local, não concorrência ou todos os fluxos da API em produção.
+
+A verificação final executou geração Prisma, build, lint, format:check, 94 testes unitários e 41 testes HTTP/integração. A suíte HTTP foi executada com um banco PostgreSQL local exclusivo e descartável, incluindo os quatro testes opt-in de conta/migração, sem testes ignorados. O banco de teste foi removido ao concluir. O fixture de recuperação foi ajustado para criar Usuario e Cliente juntos, respeitando o trigger histórico de especialização.
+
+## Formulários administrativos e conta de barbeiro
+
+Os novos testes de edição de barbeiro cobrem alteração de status da conta independentemente do perfil, escrita conjunta de conta/perfil por nested write, senha omitida, validação de status inválido, inexistência, filial inválida, conflito e sanitização da resposta. O teste HTTP usa a aplicação Nest com guards reais e Prisma simulado para verificar 401, 403 por permissão/CSRF, 400, 404 e ambas as transições da conta, sem escrita em agendamentos.
+
+A suíte HTTP passou com 38 testes; quatro testes opt-in de PostgreSQL ficaram ignorados por ausência de `DATABASE_URL_TESTE`. O sandbox bloqueou sockets locais (EPERM), e a execução HTTP bem-sucedida foi realizada fora dele. Geração Prisma e build foram executados, sem aplicar migrations. A inspeção da interface e os testes HTTP simulados não comprovam persistência em PostgreSQL real nesta entrega.
+
+Também passaram os 104 testes unitários (27 suítes), `npm run lint` e `npm run format:check`. O lint terminou sem erros, mantendo 13 avisos preexistentes em testes fora do novo caso de edição de barbeiro. Nenhum banco real foi alterado para validar estes formulários.

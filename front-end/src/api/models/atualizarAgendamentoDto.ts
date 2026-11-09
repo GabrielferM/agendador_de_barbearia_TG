@@ -17,5 +17,6 @@ export interface AtualizarAgendamentoDto {
   observacaoCliente?: string;
   observacaoInterna?: string;
   status?: AtualizarAgendamentoDtoStatus;
+  /** @maxLength 1000 */
   motivoCancelamento?: string;
 }

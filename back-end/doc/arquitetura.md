@@ -22,7 +22,7 @@ O [PrismaService](../src/prisma/prisma.service.ts) centraliza cliente, adapter P
 | Usuario | E-mail único, `senhaHash`, status e vínculo obrigatório com Papel. |
 | Sessao | Token armazenado como hash único; expiração, último uso e revogação. |
 | Papel, Permissao, PapelPermissao | Códigos únicos, ativação e vínculo único entre papel e permissão. |
-| Cliente, Barbeiro, Administrador | Compartilham o ID com Usuario. Cliente tem CPF único; barbeiro pertence a uma filial. |
+| Cliente, Barbeiro, Administrador | Compartilham o ID com Usuario. Cliente tem CPF único e aniversário opcional em dia/mês; barbeiro pertence a uma filial. |
 | Filial, Endereco | CNPJ único; cada filial exige um endereço exclusivo; endereço pode não ter filial. |
 | Servico | Nome único, preço decimal, duração em minutos e ativação. |
 | Agendamento | Cliente, barbeiro, filial, horários previstos/reais, origem e status. |
@@ -83,3 +83,7 @@ Esses itens não autorizam refatorações ou migrations durante uma tarefa docum
 ## Contas públicas
 
 Autenticação inclui cadastro de cliente e recuperação/redefinição, conforme [guia de contas públicas](contas-publicas.md). RecuperacaoSenha armazena somente hash, expiração e consumo; a redefinição serializável revoga sessões e links. O cadastro reutiliza o nested write do domínio Cliente, sem tornar o CRUD público.
+
+## Edição administrativa e status da conta do barbeiro
+
+O PATCH existente de barbeiros aceita `statusConta` opcional ATIVO/INATIVO, validado pelo DTO e protegido por `GERENCIAR_USUARIOS`. O caso de uso atualiza `usuario.status` por nested write da relação Barbeiro/Usuario, junto aos demais campos quando informados. Não utiliza exclusão, não altera status profissional implicitamente e não modifica agendamentos existentes. O dashboard acrescenta `statusConta` na resposta, preservando o filtro/status profissional e os indicadores existentes. A autenticação já exige conta ativa. Não houve alteração de schema ou migrations. Fluxo da interface: [administração](../../front-end/docs/administracao.md).

@@ -1,8 +1,10 @@
+import { DocumentoValido, TelefoneNormalizado, UFS } from '../../../common/validation/campos';
 import { StatusFilial } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsDefined,
+  IsIn,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -25,7 +27,14 @@ export class DadosEnderecoDto {
   @Transform(aparar) @IsOptional() @IsString() complemento?: string;
   @Transform(aparar) @IsString() @IsNotEmpty() bairro!: string;
   @Transform(aparar) @IsString() @IsNotEmpty() cidade!: string;
-  @Transform(aparar) @IsString() @Length(2, 2) estado!: string;
+  @Transform(aparar)
+  @IsString()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  @IsIn(UFS)
+  @Length(2, 2)
+  estado!: string;
 }
 export class AtualizarEnderecoDto {
   @Transform(aparar)
@@ -62,12 +71,21 @@ export class AtualizarEnderecoDto {
   @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
   @IsString()
   @Length(2, 2)
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  @IsIn(UFS)
   estado?: string;
 }
 export class CriarFilialDto {
   @Transform(aparar) @IsString() @IsNotEmpty() nome!: string;
-  @Transform(aparar) @IsString() @IsNotEmpty() cnpj!: string;
-  @Transform(aparar) @IsOptional() @IsString() telefone?: string;
+  @Transform(aparar) @IsString() @IsNotEmpty() @DocumentoValido('cnpj') cnpj!: string;
+  @Transform(aparar)
+  @IsOptional()
+  @TelefoneNormalizado()
+  @Matches(/^\d{10,11}$/)
+  @IsString()
+  telefone?: string;
   @Transform(aparar) @IsOptional() @IsEmail() email?: string;
   @IsDefined() @ValidateNested() @Type(() => DadosEnderecoDto) endereco!: DadosEnderecoDto;
 }
@@ -81,11 +99,14 @@ export class AtualizarFilialDto {
   @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
   @IsString()
   @IsNotEmpty()
+  @DocumentoValido('cnpj')
   cnpj?: string;
   @ApiPropertyOptional({ type: String, nullable: true })
   @Transform(aparar)
   @IsOptional()
   @IsString()
+  @TelefoneNormalizado()
+  @Matches(/^\d{10,11}$/)
   telefone?: string | null;
   @ApiPropertyOptional({ type: String, nullable: true })
   @Transform(aparar)

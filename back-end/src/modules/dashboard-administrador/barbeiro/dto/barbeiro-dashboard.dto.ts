@@ -1,4 +1,4 @@
-import { StatusBarbeiro } from '@prisma/client';
+import { StatusBarbeiro, StatusUsuario } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { PaginacaoDto } from '../../../../common/dto/paginacao.dto';
@@ -18,6 +18,7 @@ export class BarbeiroDashboardDto {
   @ApiProperty({ nullable: true }) fotoUrl!: string | null;
   @ApiProperty() filial!: string;
   @ApiProperty({ enum: StatusBarbeiro }) status!: StatusBarbeiro;
+  @ApiProperty({ enum: StatusUsuario }) statusConta!: StatusUsuario;
   @ApiProperty() atendimentosHoje!: number;
   @ApiProperty() receitaMes!: number;
   @ApiProperty() comissoesRegistradasMes!: number;

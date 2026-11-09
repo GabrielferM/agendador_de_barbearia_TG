@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { BarbeiroDashboardDtoStatus } from './barbeiroDashboardDtoStatus';
+import type { BarbeiroDashboardDtoStatusConta } from './barbeiroDashboardDtoStatusConta';
 
 export interface BarbeiroDashboardDto {
   id: number;
@@ -14,6 +15,7 @@ export interface BarbeiroDashboardDto {
   fotoUrl: string | null;
   filial: string;
   status: BarbeiroDashboardDtoStatus;
+  statusConta: BarbeiroDashboardDtoStatusConta;
   atendimentosHoje: number;
   receitaMes: number;
   comissoesRegistradasMes: number;

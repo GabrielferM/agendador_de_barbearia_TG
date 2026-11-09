@@ -1,158 +1,140 @@
-import { Button } from "@heroui/react";
-import { useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { CampoConta } from "./campo-conta";
-import { enviarConta, ErroConta } from "./conta-api";
-import { mascararCpf, mascararTelefone, validarCpf } from "./validacao-conta";
+import { Button } from '@heroui/react';
+import { useEffect, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { CampoConta } from './campo-conta';
+import { enviarConta, ErroConta } from './conta-api';
+import { mascararCpf, mascararTelefone } from './validacao-conta';
 
-type Modo = "cadastro" | "recuperar" | "redefinir";
+import { errosSchema, focarPrimeiroErro, serializarAniversario } from '../../forms/campos';
+import { schemaConta } from './schema-conta';
+
+type Modo = 'cadastro' | 'recuperar' | 'redefinir';
 const titulos = {
-  cadastro: "Crie sua conta",
-  recuperar: "Esqueceu sua senha?",
-  redefinir: "Defina uma nova senha",
+  cadastro: 'Crie sua conta',
+  recuperar: 'Esqueceu sua senha?',
+  redefinir: 'Defina uma nova senha',
 };
 const descricoes = {
-  cadastro: "Seus próximos horários começam por aqui.",
-  recuperar: "Informe seu e-mail para solicitar um link de recuperação.",
-  redefinir: "Escolha uma senha para voltar a acessar sua conta.",
+  cadastro: 'Seus próximos horários começam por aqui.',
+  recuperar: 'Informe seu e-mail para solicitar um link de recuperação.',
+  redefinir: 'Escolha uma senha para voltar a acessar sua conta.',
 };
 
 export function ContaPublica({ modo }: { modo: Modo }) {
   const location = useLocation();
-  const retorno =
-    location.state?.retorno === "/agendar"
-      ? { retorno: "/agendar" }
-      : undefined;
+  const retorno = location.state?.retorno === '/agendar' ? { retorno: '/agendar' } : undefined;
   const [token] = useState(() => {
-    if (modo !== "redefinir") return "";
-    return (
-      new URLSearchParams(window.location.hash.slice(1)).get("token") ?? ""
-    );
+    if (modo !== 'redefinir') return '';
+    return new URLSearchParams(window.location.hash.slice(1)).get('token') ?? '';
   });
   const [valores, setValores] = useState({
-    nome: "",
-    email: "",
-    cpf: "",
-    telefone: "",
-    senha: "",
-    confirmacao: "",
+    nome: '',
+    email: '',
+    cpf: '',
+    telefone: '',
+    senha: '',
+    confirmacao: '',
+    diaAniversario: '',
+    mesAniversario: '',
   });
   const [erros, setErros] = useState<Record<string, string>>({});
-  const [mensagem, setMensagem] = useState("");
-  const [erro, setErro] = useState("");
+  const [mensagem, setMensagem] = useState('');
+  const [erro, setErro] = useState('');
   const [invalido, setInvalido] = useState(false);
   const [pendente, setPendente] = useState(false);
   const [espera, setEspera] = useState(0);
   const ocupado = useRef(false);
-  const cadastro = modo === "cadastro";
-  const senha = modo !== "recuperar";
-  const tokenAusente =
-    modo === "redefinir" && !/^[A-Za-z0-9_-]{43}$/.test(token);
+  const cadastro = modo === 'cadastro';
+  const senha = modo !== 'recuperar';
+  const tokenAusente = modo === 'redefinir' && !/^[A-Za-z0-9_-]{43}$/.test(token);
 
   useEffect(() => {
     document.title = `${titulos[modo]} — Corte Certo`;
   }, [modo]);
   useEffect(() => {
-    if (modo !== "redefinir") return;
+    if (modo !== 'redefinir') return;
     // Limpa o fragmento antes de qualquer operação e mantém o segredo só em memória.
-    window.history.replaceState(
-      window.history.state,
-      "",
-      window.location.pathname,
-    );
+    window.history.replaceState(window.history.state, '', window.location.pathname);
   }, [modo]);
   useEffect(() => {
     if (espera <= 0) return;
-    const timer = window.setInterval(
-      () => setEspera((valor) => Math.max(0, valor - 1)),
-      1000,
-    );
+    const timer = window.setInterval(() => setEspera((valor) => Math.max(0, valor - 1)), 1000);
     return () => window.clearInterval(timer);
   }, [espera]);
   function atualizar(nome: keyof typeof valores, valor: string) {
     setValores((atual) => ({ ...atual, [nome]: valor }));
-    setErros((atual) => ({ ...atual, [nome]: "" }));
+    if (
+      erros[nome] ||
+      (nome.endsWith('Aniversario') && (erros.diaAniversario || erros.mesAniversario)) ||
+      (nome === 'senha' && erros.confirmacao)
+    ) {
+      const novos = errosSchema(schemaConta(modo), { ...valores, [nome]: valor });
+      setErros((atual) => ({
+        ...atual,
+        [nome]: novos[nome] ?? '',
+        ...(nome === 'senha' && erros.confirmacao ? { confirmacao: novos.confirmacao ?? '' } : {}),
+        ...(nome.endsWith('Aniversario')
+          ? {
+              diaAniversario: novos.diaAniversario ?? '',
+              mesAniversario: novos.mesAniversario ?? '',
+            }
+          : {}),
+      }));
+    }
   }
   async function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     if (ocupado.current || espera > 0) return;
-    const novos: Record<string, string> = {};
-    if (
-      modo !== "redefinir" &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valores.email.trim())
-    )
-      novos.email = "Informe um e-mail válido.";
-    if (cadastro && valores.nome.trim().length < 2)
-      novos.nome = "Informe seu nome com pelo menos 2 caracteres.";
-    if (cadastro && !validarCpf(valores.cpf))
-      novos.cpf = "Informe um CPF válido.";
-    if (
-      cadastro &&
-      valores.telefone &&
-      !/^\d{10,11}$/.test(valores.telefone.replace(/\D/g, ""))
-    )
-      novos.telefone = "Informe DDD e telefone com 10 ou 11 dígitos.";
-    if (
-      senha &&
-      ([...valores.senha].length < 15 || [...valores.senha].length > 128)
-    )
-      novos.senha = "Use de 15 a 128 caracteres.";
-    if (senha && valores.senha !== valores.confirmacao)
-      novos.confirmacao = "As senhas devem ser iguais.";
+    const novos = errosSchema(schemaConta(modo), valores);
     setErros(novos);
     if (Object.keys(novos).length) {
-      evento.currentTarget
-        .querySelector<HTMLInputElement>(
-          `input[name="${["nome", "email", "cpf", "telefone", "senha", "confirmacao"].find((nome) => novos[nome])}"]`,
-        )
-        ?.focus();
+      focarPrimeiroErro(evento.currentTarget, novos);
       return;
     }
     ocupado.current = true;
     setPendente(true);
-    setErro("");
+    setErro('');
     try {
-      const dados: Record<string, string> = cadastro
+      const dados = cadastro
         ? {
             nome: valores.nome.trim(),
             email: valores.email.trim(),
-            cpf: valores.cpf.replace(/\D/g, ""),
+            ...serializarAniversario(valores),
+            cpf: valores.cpf.replace(/\D/g, ''),
             senha: valores.senha,
-            ...(valores.telefone
-              ? { telefone: valores.telefone.replace(/\D/g, "") }
-              : {}),
+            ...(valores.telefone ? { telefone: valores.telefone.replace(/\D/g, '') } : {}),
           }
-        : modo === "recuperar"
+        : modo === 'recuperar'
           ? { email: valores.email.trim() }
           : { token, senha: valores.senha };
       const resultado = await enviarConta(
         cadastro
-          ? "cadastro-cliente"
-          : modo === "recuperar"
-            ? "recuperar-senha"
-            : "redefinir-senha",
+          ? 'cadastro-cliente'
+          : modo === 'recuperar'
+            ? 'recuperar-senha'
+            : 'redefinir-senha',
         dados,
       );
       setMensagem(resultado);
-      setValores((atual) => ({ ...atual, senha: "", confirmacao: "" }));
-      if (modo === "recuperar") setEspera(60);
+      setValores((atual) => ({ ...atual, senha: '', confirmacao: '' }));
+      if (modo === 'recuperar') setEspera(60);
     } catch (falha) {
       setErro(
         falha instanceof ErroConta
           ? falha.message
-          : "O serviço está indisponível. Tente novamente.",
+          : 'O serviço está indisponível. Tente novamente.',
       );
       if (falha instanceof ErroConta) {
         if (falha.status === 429) setEspera(falha.espera);
-        if (modo === "redefinir" && falha.status === 400) setInvalido(true);
+        if (modo === 'redefinir' && falha.status === 400) setInvalido(true);
       }
     } finally {
       ocupado.current = false;
       setPendente(false);
     }
   }
-  const concluido = Boolean(mensagem) && modo !== "recuperar";
+  const concluido = Boolean(mensagem) && modo !== 'recuperar';
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground">
       <section
@@ -199,6 +181,12 @@ export function ContaPublica({ modo }: { modo: Modo }) {
           )}
           {!concluido && !tokenAusente && !invalido && (
             <form
+              onBlur={(evento) => {
+                const nome = evento.target instanceof HTMLInputElement ? evento.target.name : '';
+                if (!nome) return;
+                const novos = errosSchema(schemaConta(modo), valores);
+                setErros((atual) => ({ ...atual, [nome]: novos[nome] ?? '' }));
+              }}
               onSubmit={enviar}
               noValidate
               className="mt-6 space-y-4"
@@ -212,22 +200,22 @@ export function ContaPublica({ modo }: { modo: Modo }) {
                   maxLength={120}
                   value={valores.nome}
                   erro={erros.nome}
-                  onChange={(e) => atualizar("nome", e.target.value)}
+                  onChange={(e) => atualizar('nome', e.target.value)}
                 />
               )}
-              {modo !== "redefinir" && (
+              {modo !== 'redefinir' && (
                 <CampoConta
                   nome="email"
                   label="E-mail"
                   type="email"
                   inputMode="email"
-                  autoComplete={cadastro ? "username" : "email"}
+                  autoComplete={cadastro ? 'username' : 'email'}
                   autoCapitalize="none"
                   spellCheck={false}
                   maxLength={254}
                   value={valores.email}
                   erro={erros.email}
-                  onChange={(e) => atualizar("email", e.target.value)}
+                  onChange={(e) => atualizar('email', e.target.value)}
                 />
               )}
               {cadastro && (
@@ -239,9 +227,7 @@ export function ContaPublica({ modo }: { modo: Modo }) {
                     maxLength={14}
                     value={valores.cpf}
                     erro={erros.cpf}
-                    onChange={(e) =>
-                      atualizar("cpf", mascararCpf(e.target.value))
-                    }
+                    onChange={(e) => atualizar('cpf', mascararCpf(e.target.value))}
                   />
                   <CampoConta
                     nome="telefone"
@@ -252,26 +238,49 @@ export function ContaPublica({ modo }: { modo: Modo }) {
                     maxLength={15}
                     value={valores.telefone}
                     erro={erros.telefone}
-                    onChange={(e) =>
-                      atualizar("telefone", mascararTelefone(e.target.value))
-                    }
+                    onChange={(e) => atualizar('telefone', mascararTelefone(e.target.value))}
                   />
                 </div>
+              )}
+              {cadastro && (
+                <fieldset className="grid grid-cols-2 gap-4">
+                  <legend className="mb-2 text-sm font-semibold">Aniversário (opcional)</legend>
+                  <CampoConta
+                    nome="diaAniversario"
+                    label="Dia"
+                    type="number"
+                    min={1}
+                    max={31}
+                    value={valores.diaAniversario}
+                    erro={erros.diaAniversario}
+                    onChange={(e) => atualizar('diaAniversario', e.target.value)}
+                  />
+                  <CampoConta
+                    nome="mesAniversario"
+                    label="Mês"
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={valores.mesAniversario}
+                    erro={erros.mesAniversario}
+                    onChange={(e) => atualizar('mesAniversario', e.target.value)}
+                  />
+                </fieldset>
               )}
               {senha && (
                 <>
                   <CampoConta
                     nome="senha"
-                    label={cadastro ? "Senha" : "Nova senha"}
+                    label={cadastro ? 'Senha' : 'Nova senha'}
                     senha
                     autoComplete="new-password"
                     value={valores.senha}
                     erro={erros.senha}
-                    onChange={(e) => atualizar("senha", e.target.value)}
+                    onChange={(e) => atualizar('senha', e.target.value)}
                   />
                   <p id="requisitos-senha" className="text-xs text-muted">
-                    Use de 15 a 128 caracteres. Uma frase longa é uma boa opção.
-                    Espaços são preservados.
+                    Use de 15 a 128 caracteres. Uma frase longa é uma boa opção. Espaços são
+                    preservados.
                   </p>
                   <CampoConta
                     nome="confirmacao"
@@ -280,14 +289,14 @@ export function ContaPublica({ modo }: { modo: Modo }) {
                     autoComplete="new-password"
                     value={valores.confirmacao}
                     erro={erros.confirmacao}
-                    onChange={(e) => atualizar("confirmacao", e.target.value)}
+                    onChange={(e) => atualizar('confirmacao', e.target.value)}
                   />
                 </>
               )}
               {cadastro && (
                 <p className="text-xs text-muted">
-                  Esta conta é exclusiva para clientes. O cadastro não verifica
-                  a posse do e-mail informado.
+                  Esta conta é exclusiva para clientes. O cadastro não verifica a posse do e-mail
+                  informado.
                 </p>
               )}
               <Button
@@ -296,24 +305,21 @@ export function ContaPublica({ modo }: { modo: Modo }) {
                 className="w-full bg-primary font-bold text-white hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {pendente
-                  ? "Enviando…"
+                  ? 'Enviando…'
                   : espera > 0
                     ? `Aguarde ${espera}s`
                     : cadastro
-                      ? "Criar minha conta"
-                      : modo === "recuperar"
+                      ? 'Criar minha conta'
+                      : modo === 'recuperar'
                         ? mensagem
-                          ? "Reenviar link de recuperação"
-                          : "Enviar link de recuperação"
-                        : "Salvar nova senha"}
+                          ? 'Reenviar link de recuperação'
+                          : 'Enviar link de recuperação'
+                        : 'Salvar nova senha'}
               </Button>
             </form>
           )}
           {(tokenAusente || invalido) && (
-            <Link
-              to="/recuperar-senha"
-              className="mt-5 block font-semibold text-primary underline"
-            >
+            <Link to="/recuperar-senha" className="mt-5 block font-semibold text-primary underline">
               Solicitar outro link
             </Link>
           )}
@@ -322,7 +328,7 @@ export function ContaPublica({ modo }: { modo: Modo }) {
             state={retorno}
             className="mt-6 block text-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
           >
-            {concluido ? "Ir para entrar" : "Voltar para entrar"}
+            {concluido ? 'Ir para entrar' : 'Voltar para entrar'}
           </Link>
         </div>
       </section>

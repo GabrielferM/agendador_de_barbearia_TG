@@ -68,6 +68,7 @@ beforeEach(() => {
       if (invalida) return json({ indicadores: {} });
       return json({
         ...dados,
+        meta: { ...dados.meta, pagina: Number(url.searchParams.get('pagina') ?? 1) },
         indicadores: { ...dados.indicadores, ativos: ativo ? 3 : 2 },
         data: vazio ? [] : dados.data.map((item) => ({ ...item, ativo })),
       });
@@ -143,6 +144,7 @@ it("preserva busca e filtro e retorna à primeira página após gravar", async (
     screen.getByRole("combobox", { name: "Status" }),
     "false",
   );
+  await userEvent.click(screen.getByRole("button", { name: "Buscar" }));
   await userEvent.click(screen.getByRole("button", { name: "Próxima" }));
   await userEvent.click(
     await screen.findByRole("button", { name: "Ativar Corte real" }),
@@ -266,6 +268,8 @@ it("envia paginação e filtros ao servidor", async () => {
     screen.getByRole("textbox", { name: "Buscar serviço" }),
     "API",
   );
+  expect(fetch).not.toHaveBeenLastCalledWith(expect.stringContaining("busca=API"), expect.anything());
+  await userEvent.click(screen.getByRole("button", { name: "Buscar" }));
   expect(fetch).toHaveBeenLastCalledWith(
     expect.stringContaining("busca=API"),
     expect.anything(),
@@ -274,4 +278,74 @@ it("envia paginação e filtros ao servidor", async () => {
     expect.stringContaining("pagina=1"),
     expect.anything(),
   );
+});
+
+function simularFormularioServico(status = 200) {
+  const original = vi.mocked(fetch).getMockImplementation()!;
+  vi.mocked(fetch).mockImplementation(async (entrada, opcoes) => {
+    const url = new URL(String(entrada));
+    if (url.pathname === '/servicos/9' && opcoes?.method !== 'PATCH') return json({ id: 9, nome: 'Corte real', descricao: 'Descrição atual', precoBase: '55.00', duracaoMinutos: 30, ativo: false });
+    if (opcoes?.method === 'POST' || (url.pathname === '/servicos/9' && opcoes?.method === 'PATCH')) {
+      if (status !== 200) return json({}, status);
+      return json({ id: 9, ...JSON.parse(String(opcoes.body)), ativo: false }, opcoes.method === 'POST' ? 201 : 200);
+    }
+    return original(entrada, opcoes);
+  });
+}
+
+it('cria serviço em modal com preço e duração persistidos pelo contrato', async () => {
+  simularFormularioServico(); abrir();
+  await userEvent.click(await screen.findByRole('button', { name: 'Novo serviço' }));
+  expect(screen.getByRole('dialog', { name: 'Novo serviço' })).toBeInTheDocument();
+  await userEvent.type(screen.getByLabelText('Nome'), 'Barba');
+  await userEvent.type(screen.getByLabelText('Duração (minutos)'), '25');
+  await userEvent.type(screen.getByLabelText('Preço (R$)'), '45.90');
+  await userEvent.type(screen.getByLabelText('Descrição (opcional)'), 'Acabamento');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+  await screen.findByText('Serviço salvo.');
+  const post = vi.mocked(fetch).mock.calls.find(([, o]) => o?.method === 'POST')!;
+  expect(JSON.parse(String(post[1]?.body))).toEqual({ nome: 'Barba', descricao: 'Acabamento', duracaoMinutos: 25, precoBase: 45.9 });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+it('edita os detalhes reais sem enviar status e preserva os campos após conflito', async () => {
+  simularFormularioServico(409); abrir();
+  await userEvent.click(await screen.findByRole('button', { name: 'Editar Corte real' }));
+  const nome = await screen.findByLabelText('Nome');
+  expect(nome).toHaveValue('Corte real');
+  expect(screen.getByLabelText('Preço (R$)')).toHaveValue(55);
+  await userEvent.clear(nome); await userEvent.type(nome, 'Corte atualizado');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+  await screen.findByRole('alert');
+  expect(nome).toHaveValue('Corte atualizado');
+  expect(screen.getByRole('dialog', { name: 'Editar serviço' })).toBeInTheDocument();
+  const patch = vi.mocked(fetch).mock.calls.find(([, o]) => o?.method === 'PATCH')!;
+  expect(JSON.parse(String(patch[1]?.body))).not.toHaveProperty('ativo');
+});
+
+it('rejeita preço com mais de duas casas e duração fracionada sem gravar', async () => {
+  simularFormularioServico(); abrir();
+  await userEvent.click(await screen.findByRole('button', { name: 'Novo serviço' }));
+  await userEvent.type(screen.getByLabelText('Nome'), 'Barba');
+  await userEvent.type(screen.getByLabelText('Duração (minutos)'), '1.5');
+  await userEvent.type(screen.getByLabelText('Preço (R$)'), '1.555');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+  expect(screen.getByText('Use minutos inteiros.')).toBeInTheDocument();
+  expect(screen.getByText('Use até duas casas decimais.')).toBeInTheDocument();
+  expect(screen.getByLabelText('Duração (minutos)')).toHaveFocus();
+  expect(vi.mocked(fetch).mock.calls.some(([, o]) => o?.method === 'POST')).toBe(false);
+});
+
+it('salva a edição de serviço com preço alterado e atualiza consultas', async () => {
+  simularFormularioServico(); abrir();
+  await userEvent.click(await screen.findByRole('button', { name: 'Editar Corte real' }));
+  const preco = await screen.findByLabelText('Preço (R$)');
+  await userEvent.clear(preco); await userEvent.type(preco, '75.50');
+  const antes = vi.mocked(fetch).mock.calls.filter(([url]) => String(url).includes('/dashboard/')).length;
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+  await screen.findByText('Serviço salvo.');
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  const patch = vi.mocked(fetch).mock.calls.find(([, o]) => o?.method === 'PATCH')!;
+  expect(JSON.parse(String(patch[1]?.body))).toMatchObject({ precoBase: 75.5, duracaoMinutos: 30 });
+  await waitFor(() => expect(vi.mocked(fetch).mock.calls.filter(([url]) => String(url).includes('/dashboard/')).length).toBeGreaterThan(antes));
 });

@@ -1,6 +1,7 @@
-import { Input } from "@heroui/react";
-import { useState } from "react";
-import type { InputHTMLAttributes } from "react";
+import { ErroCampo } from '../../forms/erro-campo';
+import { Input } from '@heroui/react';
+import { useState } from 'react';
+import type { InputHTMLAttributes } from 'react';
 
 type Props = {
   nome: string;
@@ -20,39 +21,29 @@ export function CampoConta({ nome, label, erro, senha, ...props }: Props) {
           {...props}
           id={nome}
           name={nome}
-          type={
-            senha ? (visivel ? "text" : "password") : (props.type ?? "text")
-          }
+          type={senha ? (visivel ? 'text' : 'password') : (props.type ?? 'text')}
           aria-invalid={Boolean(erro)}
           aria-describedby={
-            [erro ? `${nome}-erro` : "", senha ? "requisitos-senha" : ""]
+            [erro ? `${nome}-erro` : '', senha ? 'requisitos-senha' : '']
               .filter(Boolean)
-              .join(" ") || undefined
+              .join(' ') || undefined
           }
-          className={`w-full border-border bg-surface text-foreground ${senha ? "pr-20" : ""}`}
+          className={`w-full border-border bg-surface text-foreground ${senha ? 'pr-20' : ''}`}
         />
         {senha && (
           <button
             type="button"
             aria-controls={nome}
             aria-pressed={visivel}
-            aria-label={`${visivel ? "Ocultar" : "Mostrar"} ${label.toLowerCase()}`}
+            aria-label={`${visivel ? 'Ocultar' : 'Mostrar'} ${label.toLowerCase()}`}
             onClick={() => setVisivel(!visivel)}
             className="absolute right-2 inset-y-0 my-auto h-fit rounded px-2 py-1 text-xs font-semibold text-primary hover:bg-background focus-visible:outline-2 focus-visible:outline-primary"
           >
-            {visivel ? "Ocultar" : "Mostrar"}
+            {visivel ? 'Ocultar' : 'Mostrar'}
           </button>
         )}
       </div>
-      {erro && (
-        <p
-          id={`${nome}-erro`}
-          role="alert"
-          className="mt-1 text-sm text-danger"
-        >
-          {erro}
-        </p>
-      )}
+      <ErroCampo id={`${nome}-erro`} mensagem={erro} />
     </div>
   );
 }

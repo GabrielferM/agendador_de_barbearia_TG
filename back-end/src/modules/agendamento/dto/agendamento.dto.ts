@@ -9,6 +9,7 @@ import {
   IsOptional,
   IsString,
   IsNumber,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -73,6 +74,7 @@ export class AtualizarAgendamentoDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(1000)
   motivoCancelamento?: string;
 }
 export class ListarAgendamentosDto extends PaginacaoDto {

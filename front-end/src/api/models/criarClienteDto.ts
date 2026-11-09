@@ -7,6 +7,18 @@
  */
 
 export interface CriarClienteDto {
+  /**
+     * @minimum 1
+     * @maximum 31
+     * @nullable
+     */
+  diaAniversario?: number | null;
+  /**
+     * @minimum 1
+     * @maximum 12
+     * @nullable
+     */
+  mesAniversario?: number | null;
   /** @minLength 2 */
   nome: string;
   email: string;
@@ -16,7 +28,7 @@ export interface CriarClienteDto {
      */
   senha: string;
   cpf: string;
+  /** @pattern ^(?:\d{10,11})?$ */
   telefone?: string;
-  dataNascimento?: string;
   observacao?: string;
 }

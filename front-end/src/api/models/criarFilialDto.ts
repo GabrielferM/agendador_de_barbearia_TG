@@ -10,6 +10,7 @@ import type { DadosEnderecoDto } from './dadosEnderecoDto';
 export interface CriarFilialDto {
   nome: string;
   cnpj: string;
+  /** @pattern ^\d{10,11}$ */
   telefone?: string;
   email?: string;
   endereco: DadosEnderecoDto;

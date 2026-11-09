@@ -5,6 +5,7 @@
  * Contrato OpenAPI da API REST do Agendador de Barbearia.
  * OpenAPI spec version: 1.0
  */
+import type { AtualizarEnderecoDtoEstado } from './atualizarEnderecoDtoEstado';
 
 export interface AtualizarEnderecoDto {
   /** @nullable */
@@ -19,5 +20,5 @@ export interface AtualizarEnderecoDto {
      * @minLength 2
      * @maxLength 2
      */
-  estado?: string;
+  estado?: AtualizarEnderecoDtoEstado;
 }

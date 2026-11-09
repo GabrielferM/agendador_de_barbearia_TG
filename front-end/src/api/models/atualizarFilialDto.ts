@@ -9,7 +9,10 @@ import type { AtualizarEnderecoDto } from './atualizarEnderecoDto';
 import type { AtualizarFilialDtoStatus } from './atualizarFilialDtoStatus';
 
 export interface AtualizarFilialDto {
-  /** @nullable */
+  /**
+     * @nullable
+     * @pattern ^\d{10,11}$
+     */
   telefone?: string | null;
   /** @nullable */
   email?: string | null;

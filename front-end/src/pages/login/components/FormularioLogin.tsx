@@ -1,51 +1,72 @@
-import { Button, Input } from "@heroui/react";
-import { type FormEvent, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { useLogin } from "../hooks/use-login";
-import type { CredenciaisLogin } from "../types";
-import {
-  type ErrosFormularioLogin,
-  validarFormularioLogin,
-} from "../validation";
+import { Button, Input } from '@heroui/react';
+import { type FormEvent, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useLogin } from '../hooks/use-login';
+import type { CredenciaisLogin } from '../types';
+import { schemaLogin, type ErrosFormularioLogin, validarFormularioLogin } from '../validation';
 
-const VALORES_INICIAIS: CredenciaisLogin = { email: "", senha: "" };
+import { errosSchema, focarPrimeiroErro } from '../../../forms/campos';
+
+const VALORES_INICIAIS: CredenciaisLogin = { email: '', senha: '' };
 
 export function FormularioLogin() {
   const location = useLocation();
-  const retorno =
-    location.state?.retorno === "/agendar"
-      ? { retorno: "/agendar" }
-      : undefined;
+  const retorno = location.state?.retorno === '/agendar' ? { retorno: '/agendar' } : undefined;
   const [valores, setValores] = useState(VALORES_INICIAIS);
   const [erros, setErros] = useState<ErrosFormularioLogin>({});
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const login = useLogin();
+  const ocupado = useRef(false);
 
   function atualizarCampo(campo: keyof CredenciaisLogin, valor: string) {
     setValores((atuais) => ({ ...atuais, [campo]: valor }));
-    setErros((atuais) => ({ ...atuais, [campo]: undefined }));
+    if (erros[campo])
+      setErros((atuais) => ({
+        ...atuais,
+        [campo]: validarFormularioLogin({ ...valores, [campo]: valor })[campo],
+      }));
     if (login.isError) login.reset();
   }
 
   function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    if (login.isPending) return;
+    if (login.isPending || ocupado.current) return;
 
     const novosErros = validarFormularioLogin(valores);
     setErros(novosErros);
-    if (Object.keys(novosErros).length > 0) return;
+    if (Object.keys(novosErros).length > 0) {
+      focarPrimeiroErro(evento.currentTarget, novosErros as Record<string, string>);
+      return;
+    }
 
-    login.mutate({ email: valores.email.trim(), senha: valores.senha });
+    ocupado.current = true;
+    login.mutate(
+      { email: valores.email.trim(), senha: valores.senha },
+      {
+        onSettled: () => {
+          ocupado.current = false;
+        },
+      },
+    );
   }
 
   return (
-    <form className="space-y-5" noValidate onSubmit={enviar}>
+    <form
+      className="space-y-5"
+      noValidate
+      onSubmit={enviar}
+      onBlur={(evento) => {
+        const nome = evento.target instanceof HTMLInputElement ? evento.target.name : '';
+        if (nome)
+          setErros((atuais) => ({ ...atuais, [nome]: errosSchema(schemaLogin, valores)[nome] }));
+      }}
+    >
       <div>
         <label className="mb-2 block text-sm font-semibold" htmlFor="email">
           E-mail
         </label>
         <Input
-          aria-describedby={erros.email ? "email-erro" : undefined}
+          aria-describedby={erros.email ? 'email-erro' : undefined}
           aria-invalid={Boolean(erros.email)}
           autoCapitalize="none"
           autoComplete="username"
@@ -54,7 +75,7 @@ export function FormularioLogin() {
           inputMode="email"
           maxLength={254}
           name="email"
-          onChange={(evento) => atualizarCampo("email", evento.target.value)}
+          onChange={(evento) => atualizarCampo('email', evento.target.value)}
           placeholder="voce@exemplo.com"
           spellCheck={false}
           type="email"
@@ -75,27 +96,27 @@ export function FormularioLogin() {
         </div>
         <div className="relative">
           <Input
-            aria-describedby={erros.senha ? "senha-erro" : undefined}
+            aria-describedby={erros.senha ? 'senha-erro' : undefined}
             aria-invalid={Boolean(erros.senha)}
             autoComplete="current-password"
             className="w-full border-border bg-surface pr-24 text-foreground placeholder:text-muted"
             id="senha"
             maxLength={256}
             name="senha"
-            onChange={(evento) => atualizarCampo("senha", evento.target.value)}
+            onChange={(evento) => atualizarCampo('senha', evento.target.value)}
             placeholder="Digite sua senha"
-            type={senhaVisivel ? "text" : "password"}
+            type={senhaVisivel ? 'text' : 'password'}
             value={valores.senha}
           />
           <button
             aria-controls="senha"
-            aria-label={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
+            aria-label={senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}
             aria-pressed={senhaVisivel}
             className="absolute inset-y-0 right-3 my-auto h-fit rounded px-2 py-1 text-xs font-bold text-primary hover:bg-background focus-visible:outline-2 focus-visible:outline-primary"
             onClick={() => setSenhaVisivel((visivel) => !visivel)}
             type="button"
           >
-            {senhaVisivel ? "Ocultar" : "Mostrar"}
+            {senhaVisivel ? 'Ocultar' : 'Mostrar'}
           </button>
         </div>
         {erros.senha ? (
@@ -120,7 +141,7 @@ export function FormularioLogin() {
         isDisabled={login.isPending}
         type="submit"
       >
-        {login.isPending ? "Entrando…" : "Entrar"}
+        {login.isPending ? 'Entrando…' : 'Entrar'}
       </Button>
       <div className="text-center">
         <Link
@@ -133,7 +154,7 @@ export function FormularioLogin() {
       </div>
 
       <p className="text-center text-sm text-muted">
-        Ainda não tem uma conta?{" "}
+        Ainda não tem uma conta?{' '}
         <Link
           className="font-bold text-primary underline-offset-4 hover:underline"
           to="/cadastro"

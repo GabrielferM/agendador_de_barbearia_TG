@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { CODIGOS_PAPEL } from '../../../common/constants/papeis';
 import { SenhaService } from '../../../common/security/senha.service';
+import { validarAniversario } from '../../../common/validation/aniversario';
 import { normalizarCpf, normalizarEmail } from '../../../common/utils/documentos';
 import { semSenha } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -14,6 +15,7 @@ export class CriarClienteService {
   ) {}
 
   async execute(input: CriarClienteDto) {
+    validarAniversario(input);
     let cpf: string;
     try {
       cpf = normalizarCpf(input.cpf);
@@ -37,7 +39,8 @@ export class CriarClienteService {
         cliente: {
           create: {
             cpf,
-            dataNascimento: input.dataNascimento ? new Date(input.dataNascimento) : null,
+            diaAniversario: input.diaAniversario ?? null,
+            mesAniversario: input.mesAniversario ?? null,
             observacao: input.observacao?.trim(),
           },
         },

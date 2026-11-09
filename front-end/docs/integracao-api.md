@@ -60,3 +60,13 @@ Não houve alteração de contrato público. Contatos demonstrativos não usam e
 ## Contas públicas
 
 O adapter manual `pages/conta-publica/conta-api.ts` usa as três operações Orval regeneradas do domínio Autenticação, valida status 200 e mensagem de sucesso, traduz 400/409/429/5xx e respeita Retry-After. Não repete mutações automaticamente. Contratos e configuração: [contas públicas](../../back-end/doc/contas-publicas.md).
+
+## Serialização de formulários e aniversário
+
+Adapters de cadastro projetam somente propriedades do contrato. CPF, CNPJ, telefone e CEP são enviados sem pontuação; senhas permanecem intactas. O contrato de cliente substitui `dataNascimento` por `diaAniversario`/`mesAniversario`, inteiros opcionais e anuláveis em conjunto. Clientes gerados foram regenerados a partir do OpenAPI do backend, preservando os adapters manuais. Consulte [formulários](formularios.md).
+
+## Formulários administrativos em modal
+
+Clientes e filiais reutilizam seus adapters de cadastro/edição; barbeiros acrescentam consulta de detalhe, edição e status de conta; serviços acrescentam detalhe, criação e edição pelos clientes gerados existentes. `PATCH /barbeiros/:id` aceita `statusConta` opcional ATIVO/INATIVO; o dashboard de barbeiros inclui `statusConta`, separado do status profissional. O OpenAPI foi atualizado e os tipos foram regenerados por Orval. Não houve novo endpoint nem mudança de schema/migrations.
+
+Serviços enviam `precoBase`, embora o dashboard mostre `preco`. A edição não altera status do serviço implicitamente. Todos os novos adapters verificam status esperado, identidade e campos essenciais da resposta; mutações não são repetidas automaticamente. Consultas afetadas são invalidadas após sucesso, preservando filtros e página válida nos cadastros/edições. Falhas preservam o modal e os dados. Regras de conta/perfil, senha e opcionais: [administração](administracao.md#edição-e-status-da-conta-de-barbeiro).

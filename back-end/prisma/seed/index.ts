@@ -220,7 +220,8 @@ async function main() {
       cliente: {
         create: {
           cpf: '52998224725',
-          dataNascimento: new Date('1990-05-15T00:00:00.000Z'),
+          diaAniversario: 15,
+          mesAniversario: 5,
         },
       },
     },

@@ -38,3 +38,19 @@ No agendamento, filial inativa, profissional/usuário inativo, vínculo com outr
 Um eventual formato único de erro continua exigindo decisão de contrato e atualização coordenada do consumidor. Ao alterar uma falha, teste status, corpo seguro, documento OpenAPI e comportamento do cliente, incluindo erro desconhecido. Veja [testes](testes.md).
 
 Referência consultada: [exceções do NestJS](https://docs.nestjs.com/exception-filters). As escolhas de organização acima são convenções deste projeto.
+
+## Aniversário e normalização de cadastros
+
+Cliente armazena `diaAniversario` e `mesAniversario` inteiros opcionais. O contrato antigo `dataNascimento` deixa de ser aceito. Criação pública/administrativa aceita o par válido ou ambos ausentes/nulos; PATCH omitindo ambos mantém o aniversário e dois `null` removem. Valores fracionários, strings numéricas, par incompleto e combinações impossíveis retornam 400. O calendário aceita 29/02 e não calcula idade. A restrição CHECK do banco reforça o mesmo par.
+
+A migration `20261103193000_aniversario_cliente` converte as datas existentes por EXTRACT, descarta o ano e remove a coluna antiga. Ela executa `SET CONSTRAINTS ALL IMMEDIATE` dentro da transação: os triggers históricos da especialização do usuário precisam ser executados antes dos ALTER TABLE seguintes. Não desabilite esses triggers. Aplique as migrations em ordem e disponibilize frontend/backend atualizados juntos, pois há substituição do contrato.
+
+DTOs de cadastro validam CPF/CNPJ antes da persistência. CPF e telefone aceitam formatos brutos ou pontuados válidos; telefone é normalizado para dígitos antes da validação de comprimento. Não se removem letras de uma entrada inválida para torná-la válida. Nome/e-mail são aparados antes da validação; senha permanece intacta. Filiais validam UF brasileira; barbeiros validam URL HTTP/HTTPS e admissão com data real. Cancelamento mantém regra de motivo obrigatório no caso de uso e limita o campo a 1000 caracteres no DTO.
+
+Yup pertence ao frontend. O servidor mantém class-validator, normalizadores e regras de negócio, sem mudar o formato global de exceções. Interface e payload: [formulários](../../front-end/docs/formularios.md).
+
+Campos opcionais não anuláveis de cliente/barbeiro distinguem ausência de `null`: omissão preserva o valor; `null` é rejeitado pela validação em vez de alcançar operações de string. O aniversário e os campos de filial explicitamente anuláveis mantêm suas regras próprias.
+
+## Status da conta do barbeiro
+
+`AtualizarBarbeiroDto.statusConta` é opcional e aceita somente ATIVO/INATIVO. `null`, booleanos, números, BLOQUEADO e status profissionais retornam 400 antes da escrita. O status profissional continua no campo `statusProfissional`. A edição conserva 401/403 para sessão/permissão/CSRF, 404 para barbeiro ou filial inexistentes e 409 para e-mail duplicado. A resposta segue sanitizada, sem senha/hash. Não há mudança no envelope de erro. Consulte [administração](../../front-end/docs/administracao.md#edição-e-status-da-conta-de-barbeiro).

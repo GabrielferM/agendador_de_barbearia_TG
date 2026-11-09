@@ -6,6 +6,8 @@
 
 Exclusão é física e bloqueada por agendamentos; inativação usa edição de status. A tela confirma a exclusão, preserva formulários em falhas, verifica status HTTP e invalida caches após gravações. Não usa demonstração como fallback. As permissões do servidor continuam sendo a autoridade.
 
+No modal de exclusão de cliente, os botões Confirmar exclusão e Cancelar mantêm espaçamento de 8 px, com quebra de linha quando necessário em telas estreitas.
+
 ## Matriz de implementação
 
 | Tela/ação | Fonte/contrato | Permissão | Verificação/aceite |
@@ -38,15 +40,15 @@ Cadastro e alteração administrativos de agendamentos permanecem pendentes; os 
 
 `/admin/barbeiros` sempre consulta `GET /dashboard/administrador/barbeiros` com busca, status e paginação no servidor e `GERENCIAR_USUARIOS`. Indicadores são globais; cards correspondem à página filtrada. Cache inclui usuário e filtros; consultas são canceláveis, verificam status e validam dados. Não há fallback de mocks.
 
-Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita concluída e comissões registradas. O total global a pagar inclui todos os períodos; o valor no card inclui apenas comissões geradas no mês. Especialidades, jornada e percentual padrão não existem no schema; a tela informa essa ausência. Edição e disponibilidade individual permanecem pendentes.
+Cards mostram filial, status, agendamentos do dia (exceto cancelados), receita concluída e comissões registradas. O total global a pagar inclui todos os períodos; o valor no card inclui apenas comissões geradas no mês. Especialidades, jornada e percentual padrão não existem no schema; a tela informa essa ausência. A edição de conta e perfil está disponível em Dialog; jornada e disponibilidade individual permanecem pendentes.
 
 ### Criação de conta de barbeiro
 
-O botão “Novo barbeiro” abre um formulário na própria tela, sob `GERENCIAR_USUARIOS`. Nome, e-mail, senha de 15 a 128 caracteres e filial são obrigatórios. Nome profissional, descrição, URL da foto e data de admissão são opcionais. A seleção carrega todas as páginas de `GET /publico/filiais`, oferecendo filiais ativas sem exigir a permissão de gerenciamento de filiais. Uma filial única é pré-selecionada; ausência de filiais impede o envio e falhas permitem nova tentativa.
+O botão “Novo barbeiro” abre um Dialog de criação, sob `GERENCIAR_USUARIOS`. Nome, e-mail, senha de 15 a 128 caracteres e filial são obrigatórios. Nome profissional, descrição, URL da foto e data de admissão são opcionais. A seleção carrega todas as páginas de `GET /publico/filiais`, oferecendo filiais ativas sem exigir a permissão de gerenciamento de filiais. Uma filial única é pré-selecionada; ausência de filiais impede o envio e falhas permitem nova tentativa.
 
-A gravação usa o cliente gerado para `POST /barbeiros`, com cookies e CSRF existentes. O backend cria atomicamente Usuario e Barbeiro com papel BARBEIRO e status ativo por padrão, permitindo login com o e-mail e a senha cadastrados. A senha é enviada sem remover espaços e não é persistida no navegador. O formulário impede envios duplicados enquanto pendente, preserva campos após falha e descarta os valores ao fechar ou concluir. O adapter confere HTTP 201 e não repete a gravação automaticamente.
+A gravação usa o cliente gerado para `POST /barbeiros`, com cookies e CSRF existentes. O backend cria atomicamente Usuario e Barbeiro com papel BARBEIRO e status ativo por padrão, permitindo login com o e-mail e a senha cadastrados. A senha é enviada sem remover espaços e não é persistida no navegador. O formulário impede envios duplicados enquanto pendente, preserva campos após falha e pede confirmação antes de descartar alterações ao cancelar, pressionar Escape ou clicar fora. O adapter confere HTTP 201 e não repete a gravação automaticamente.
 
-Após sucesso, a tela limpa busca/status, retorna à primeira página e invalida consultas administrativas do usuário, catálogo inicial de barbeiros e seleção de barbeiros do agendamento. Testes HTTP simulados cobrem payload, atualização da lista, conflito com preservação dos campos, bloqueio de envio duplicado, paginação/seleção de filiais e ausência de filial; não comprovam login/persistência em banco real.
+Após sucesso, a tela preserva busca, filtro e página válida e invalida consultas administrativas do usuário, catálogo inicial de barbeiros e seleção de barbeiros do agendamento. Testes HTTP simulados cobrem payload, atualização da lista, conflito com preservação dos campos, bloqueio de envio duplicado, paginação/seleção de filiais e ausência de filial; não comprovam login/persistência em banco real.
 
 ## Serviços integrados
 
@@ -58,7 +60,7 @@ A coluna Ações oferece “Ativar” ou “Desativar” conforme o status atual
 
 A tela impede envios duplicados enquanto a operação está pendente, não repete a mutação automaticamente e só confirma sucesso após HTTP 200 com ID e status esperados. Falhas mantêm o status exibido e mostram uma mensagem. Após sucesso, preserva busca/filtro, retorna à primeira página e invalida a consulta administrativa de serviços, o catálogo inicial e as consultas de agendamento, atualizando lista e indicadores pelo servidor.
 
-Serviços inativos deixam o catálogo público e são recusados na disponibilidade e na criação de novas reservas. A alteração de status não modifica nem cancela agendamentos existentes e não altera seus preços ou durações registrados. Reativar torna o serviço disponível novamente, respeitando as demais regras de agendamento. Cadastro de serviços continua pendente.
+Serviços inativos deixam o catálogo público e são recusados na disponibilidade e na criação de novas reservas. A alteração de status não modifica nem cancela agendamentos existentes e não altera seus preços ou durações registrados. Reativar torna o serviço disponível novamente, respeitando as demais regras de agendamento. Cadastro e edição de serviços estão disponíveis em Dialog, conforme o padrão compartilhado abaixo.
 
 Os testes HTTP do backend cobrem booleanos válidos/inválidos, inexistência, sessão, permissão, CSRF, preservação dos demais campos e ausência de escrita em agendamentos, além do filtro do catálogo e da rejeição de novas reservas. Os testes da tela cobrem ambas as ações, payload, indicadores, invalidação de caches, filtros/paginação, duplicação e falhas HTTP/rede/resposta inválida. Usam Prisma e HTTP simulados; não comprovam gravação em PostgreSQL real. Nesta entrega, a coluna foi confirmada por consulta de metadados ao banco configurado, sem alterar registros; a inspeção visual em navegador não foi realizada.
 
@@ -117,7 +119,7 @@ HTTP simulado não confirmam dados de produção ou persistência em PostgreSQL.
 ## Painéis compactos de clientes, barbeiros e serviços
 
 As três consultas usam um painel com faixa de três indicadores globais, filtros,
-conteúdo e paginação no rodapé. Controles têm 36–40 px; filtros e indicadores
+conteúdo e paginação no rodapé. Campos e filtros têm altura mínima de 44 px; filtros e indicadores
 empilham no celular. Estilos ficam limitados a `PainelCatalogo`, sem alterar o menu
 ou os tokens globais. As tabelas possuem rolagem horizontal interna acessível pelo
 teclado e os nomes longos podem aumentar a altura das linhas.
@@ -132,10 +134,39 @@ profissional, em até duas colunas; o total global a pagar informa “Todos os
 períodos”, enquanto o card identifica os valores gerados no mês. Serviços alinha
 preços, quantidades e receitas à direita e preserva “Sem atendimentos”.
 
-Contratos, permissões, busca/paginação no servidor, retorno à primeira página e
-invalidações após gravações permanecem existentes. O cadastro de barbeiros está descrito acima e reutiliza o endpoint existente; não foram acrescentados endpoints, indicadores ou campos persistidos. Cadastro de serviços, especialidades, jornada e comissão padrão permanecem pendentes.
+Permissões, busca/paginação no servidor e indicadores globais são preservados. Cadastro e edição preservam filtros e a página atual válida; a paginação corrige uma página que fique fora do intervalo. A ação existente de status dos serviços mantém o retorno à primeira página. Especialidades, jornada e comissão padrão permanecem pendentes.
 
 Ao abrir detalhes de Clientes, o ID vem do argumento da mutação concluída, evitando
 uma corrida com a atualização de `mutation.variables` quando a resposta é imediata.
 Isso conserva o ID no editor e permite editar status e enviar PATCH ao registro
 correto. O teste de edição com resposta imediata cobre essa correção funcional.
+
+## Validação de cadastros e aniversário
+
+Clientes, criação de barbeiros e filiais usam schemas Yup com erros por campo, foco e preservação dos valores. CPF/CNPJ/telefone/CEP recebem máscaras e são enviados normalizados; UF aceita somente estados brasileiros. Clientes usam aniversário opcional com dia e mês, substituindo nascimento; a edição permite limpar ambos. Senhas novas são validadas e preservadas sem trim. Regras e serialização: [formulários](formularios.md).
+
+## Formulários administrativos em Dialog
+
+Clientes, Barbeiros, Serviços e Filiais abrem criação e edição em modais HeroUI 3, sem inserir formulários entre filtros e listagem. Clientes preservam consulta de detalhes, edição direta ou a partir dos detalhes e exclusão confirmada. Filiais preservam status e todos os campos de contato/endereço.
+
+O diálogo usa título contextual, foco inicial no primeiro campo, contenção de foco, Cancelar/Salvar e indicação de salvamento. Após fechar, retorna ao botão de origem; se ele deixar a listagem, usa o botão de criação. Cancelar, Escape e clique fora pedem confirmação quando houver alterações; continuar editando preserva os valores. Durante gravação, envio e fechamento ficam bloqueados. Sucesso fecha e atualiza consultas; falhas mantêm os campos e mensagens. O padrão visual e a validação estão em [formulários](formularios.md).
+
+### Edição e status da conta de barbeiro
+
+Detalhes vêm de `GET /barbeiros/:id`; edição usa `PATCH /barbeiros/:id`. Campos suportados: nome/e-mail da conta, nova senha opcional, filial, nome profissional, descrição, foto, admissão e status profissional. A senha nunca é carregada; vazio omite a alteração. Foto e admissão vazias preservam os valores anteriores, conforme o contrato não anulável. A seleção oferece filiais ativas e preserva a filial atual, mesmo inativa.
+
+`statusConta` é uma extensão opcional do PATCH, limitada a ATIVO/INATIVO e protegida por `GERENCIAR_USUARIOS`. A gravação altera o Usuario relacionado, na mesma operação atômica de edição. O dashboard acrescenta `statusConta`, mantendo `status` e o filtro como status profissional. Cards mostram os dois estados; inativar/reativar exige confirmação contextual. Contas BLOQUEADO são identificadas e não oferecem desbloqueio nessa tela. Não há DELETE nesse fluxo.
+
+A conta e o perfil profissional permanecem independentes: reativar uma conta não altera AFASTADO/INATIVO do perfil. A autenticação existente recusa contas inativas; novas reservas seguem as validações existentes de conta/perfil. Agendamentos anteriores permanecem intactos. Gravações invalidam consultas administrativas, catálogo público de barbeiros e seleção do agendamento.
+
+### Cadastro e edição de serviços
+
+Novo serviço e Editar usam o mesmo Dialog. Detalhes vêm de `GET /servicos/:id`; gravações usam POST/PATCH existentes com nome, descrição opcional, `duracaoMinutos` inteiro positivo e `precoBase` numérico positivo com até duas casas. O preço do dashboard continua chamado `preco`; o adapter faz a projeção explícita. A edição não envia `ativo`: ativação/desativação mantém sua ação própria.
+
+Adapters verificam status HTTP e respostas consumidas; erros não são convertidos em sucesso. Gravações invalidam indicadores/listas administrativos, catálogo inicial e consultas de agendamento. Não houve alteração de schema ou migrations para estes formulários.
+
+## Busca explícita e atualização das listagens
+
+Clientes, Barbeiros e Serviços mantêm texto e status como rascunho até clicar em **Buscar** ou pressionar Enter. Filiais aplica seu status pelo mesmo botão, sem busca textual. A aplicação confirma todos os filtros juntos e retorna à página 1; repetir a busca força atualização. Texto vazio remove a busca textual. Paginar usa os últimos filtros aplicados e preserva os campos ainda não submetidos.
+
+Durante a consulta, os campos continuam editáveis e Buscar/paginação ficam desabilitados. Resultados, indicadores e paginação anteriores permanecem visíveis com “Atualizando resultados…” e `aria-busy`; a região preserva sua altura até concluir. Página e totais correspondem aos dados exibidos, e o ajuste para a última página só ocorre com resposta definitiva. O carregamento completo fica reservado à primeira consulta sem dados. Falhas de atualização preservam a última resposta válida com aviso e nova tentativa; veja [tratamento de erros](tratamento-de-erros.md#falhas-na-atualização-de-listagens).

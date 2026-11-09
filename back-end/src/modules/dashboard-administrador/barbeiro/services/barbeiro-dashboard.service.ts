@@ -40,7 +40,10 @@ export class BarbeiroDashboardService {
           orderBy: { nomeProfissional: 'asc' },
           skip: (query.pagina - 1) * query.limite,
           take: query.limite,
-          include: { usuario: { select: { nome: true } }, filial: { select: { nome: true } } },
+          include: {
+            usuario: { select: { nome: true, status: true } },
+            filial: { select: { nome: true } },
+          },
         }),
         this.prisma.barbeiro.count({ where }),
         this.prisma.barbeiro.count({
@@ -123,6 +126,7 @@ export class BarbeiroDashboardService {
         fotoUrl: item.fotoUrl,
         filial: item.filial.nome,
         status: item.statusProfissional,
+        statusConta: item.usuario.status,
         ...totais.get(item.id)!,
       })),
       meta: {

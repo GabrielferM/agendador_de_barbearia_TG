@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import App from "../../../../App";
@@ -12,6 +12,7 @@ const dados = {
       nome: "Profissional real",
       filial: "Centro",
       status: "AFASTADO",
+      statusConta: "ATIVO",
       atendimentosHoje: 2,
       receitaMes: 100,
       comissoesRegistradasMes: 30,
@@ -51,7 +52,7 @@ beforeEach(() => {
         });
       if (falha) return json({}, 503);
       if (invalida) return json({ indicadores: {} });
-      return json(vazio ? { ...dados, data: [] } : dados);
+      return json({ ...dados, data: vazio ? [] : dados.data, meta: { ...dados.meta, pagina: Number(url.searchParams.get('pagina') ?? 1) } });
     }),
   );
 });
@@ -128,6 +129,8 @@ it("envia paginação e filtros ao servidor", async () => {
     screen.getByRole("textbox", { name: "Buscar barbeiro" }),
     "API",
   );
+  expect(fetch).not.toHaveBeenLastCalledWith(expect.stringContaining("busca=API"), expect.anything());
+  await userEvent.click(screen.getByRole("button", { name: "Buscar" }));
   expect(fetch).toHaveBeenLastCalledWith(
     expect.stringContaining("busca=API"),
     expect.anything(),
@@ -143,7 +146,7 @@ function simularCadastro(status = 201, filiais = [{ id: 3, nome: "Centro" }]) {
   vi.mocked(fetch).mockImplementation(async (entrada, opcoes) => {
     const url = new URL(String(entrada));
     if (url.pathname === "/publico/filiais") return json({ data: filiais, meta: { pagina: 1, limite: 100, total: filiais.length, totalPaginas: 1 } });
-    if (url.pathname === "/barbeiros" && opcoes?.method === "POST") return json({}, status);
+    if (url.pathname === "/barbeiros" && opcoes?.method === "POST") return json(status === 201 ? { id: 9, usuario: { id: 9, status: 'ATIVO' } } : {}, status);
     return original(entrada, opcoes);
   });
 }
@@ -181,8 +184,9 @@ it("preserva os campos após conflito e permite fechar sem criar conta", async (
   await screen.findByText("O registro mudou, já existe ou possui vínculos que impedem esta operação.");
   expect(screen.getByLabelText("Nome", { exact: true })).toHaveValue("Ana Silva");
   expect(screen.getByLabelText("Senha (15 a 128 caracteres)")).toHaveValue("  frase de teste longa  ");
-  await userEvent.click(screen.getByRole("button", { name: "Fechar" }));
-  expect(screen.queryByRole("form")).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+  await userEvent.click(screen.getByRole("button", { name: "Descartar alterações" }));
+  await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument());
   expect(vi.mocked(fetch).mock.calls.filter(([, opcoes]) => opcoes?.method === "POST")).toHaveLength(1);
 });
 
@@ -207,10 +211,10 @@ it("bloqueia envios duplicados enquanto o cadastro está pendente", async () => 
   await preencherCadastro();
   await userEvent.click(screen.getByRole("button", { name: "Salvar" }));
   expect(screen.getByRole("button", { name: "Salvando…" })).toBeDisabled();
-  expect(screen.getByRole("button", { name: "Fechar" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Cancelar" })).toBeDisabled();
   await userEvent.click(screen.getByRole("button", { name: "Salvando…" }));
   expect(vi.mocked(fetch).mock.calls.filter(([, opcoes]) => opcoes?.method === "POST")).toHaveLength(1);
-  concluir(json({}, 201));
+  concluir(json({ id: 9, usuario: { id: 9, status: 'ATIVO' } }, 201));
   await screen.findByText(/Conta de barbeiro criada/);
 });
 
@@ -232,4 +236,83 @@ it("carrega todas as páginas de filiais e exige seleção quando há mais de um
   expect(screen.getByRole("option", { name: "Bairro" })).toBeInTheDocument();
   await userEvent.selectOptions(filial, "2");
   expect(filial).toHaveValue("2");
+});
+
+function simularEdicao(falhar = false) {
+  const original = vi.mocked(fetch).getMockImplementation()!;
+  let statusConta = 'ATIVO';
+  vi.mocked(fetch).mockImplementation(async (entrada, opcoes) => {
+    const url = new URL(String(entrada));
+    if (url.pathname === '/publico/filiais') return json({ data: [{ id: 3, nome: 'Centro' }], meta: { pagina: 1, limite: 100, total: 1, totalPaginas: 1 } });
+    if (url.pathname === '/barbeiros/9') {
+      if (opcoes?.method === 'PATCH') {
+        if (falhar) return json({}, 409);
+        const payload = JSON.parse(String(opcoes.body));
+        statusConta = payload.statusConta ?? statusConta;
+        return json({ id: 9, usuario: { id: 9, status: statusConta } });
+      }
+      return json({ id: 9, idFilial: 4, filial: { id: 4, nome: 'Unidade antiga' }, usuario: { id: 9, nome: 'Ana Silva', email: 'ana@example.com', status: statusConta }, nomeProfissional: 'Ana', descricao: 'Perfil atual', fotoUrl: null, dataAdmissao: null, statusProfissional: 'AFASTADO' });
+    }
+    if (url.pathname === '/dashboard/administrador/barbeiros') return json({ ...dados, data: dados.data.map((b) => ({ ...b, statusConta })) });
+    return original(entrada, opcoes);
+  });
+}
+
+it('edita conta e perfil em modal com filial atual inativa e sem preencher senha', async () => {
+  simularEdicao(); abrir();
+  await userEvent.click(await screen.findByRole('button', { name: 'Editar Profissional real' }));
+  await screen.findByRole('dialog', { name: 'Editar barbeiro' });
+  const nome = await screen.findByRole('textbox', { name: 'Nome' });
+  expect(nome).toHaveValue('Ana Silva');
+  expect(screen.getByLabelText('Nova senha (opcional)')).toHaveValue('');
+  expect(screen.getByLabelText('Filial')).toHaveValue('4');
+  expect(within(screen.getByRole('dialog')).getByLabelText('Status profissional')).toHaveValue('AFASTADO');
+  await userEvent.clear(nome); await userEvent.type(nome, 'Ana Atualizada');
+  await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+  await screen.findByText('Barbeiro atualizado.');
+  const patch = vi.mocked(fetch).mock.calls.find(([, o]) => o?.method === 'PATCH')!;
+  expect(String(patch[0])).toContain('/barbeiros/9');
+  expect(JSON.parse(String(patch[1]?.body))).toMatchObject({ nome: 'Ana Atualizada', email: 'ana@example.com', idFilial: 4, statusProfissional: 'AFASTADO' });
+  expect(JSON.parse(String(patch[1]?.body))).not.toHaveProperty('senha');
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+it('inativa e reativa a conta com confirmação e preserva status profissional', async () => {
+  simularEdicao(); abrir();
+  await userEvent.click(await screen.findByRole('button', { name: 'Inativar conta de Profissional real' }));
+  expect(screen.getByRole('dialog', { name: 'Inativar conta de Profissional real?' })).toBeInTheDocument();
+  expect(vi.mocked(fetch).mock.calls.some(([, o]) => o?.method === 'PATCH')).toBe(false);
+  await userEvent.click(screen.getByRole('button', { name: 'Confirmar alteração' }));
+  await screen.findByText(/Conta inativada/);
+  await userEvent.click(await screen.findByRole('button', { name: 'Reativar conta de Profissional real' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Confirmar alteração' }));
+  await screen.findByText('Conta reativada.');
+  const patches = vi.mocked(fetch).mock.calls.filter(([, o]) => o?.method === 'PATCH');
+  expect(patches.map(([, o]) => JSON.parse(String(o?.body)))).toEqual([{ statusConta: 'INATIVO' }, { statusConta: 'ATIVO' }]);
+  expect(screen.getAllByText('Afastado').length).toBeGreaterThan(0);
+});
+
+it('mantém confirmação de status aberta em conflito e não exclui a conta', async () => {
+  simularEdicao(true); abrir();
+  await userEvent.click(await screen.findByRole('button', { name: 'Inativar conta de Profissional real' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Confirmar alteração' }));
+  await screen.findByRole('alert');
+  expect(screen.getByRole('dialog')).toHaveAccessibleName('Inativar conta de Profissional real?');
+  expect(vi.mocked(fetch).mock.calls.some(([, o]) => o?.method === 'DELETE')).toBe(false);
+});
+
+it('protege alterações ao cancelar e reabre criação limpa após descarte', async () => {
+  simularCadastro(); abrir(); await preencherCadastro();
+  await userEvent.keyboard('{Escape}');
+  expect(await screen.findByRole('dialog', { name: 'Descartar alterações?' })).toBeInTheDocument();
+  await userEvent.click(screen.getByRole('button', { name: 'Continuar editando' }));
+  expect(screen.getByLabelText('Nome', { exact: true })).toHaveValue('Ana Silva');
+  await userEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Descartar alterações' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  const novo = screen.getByRole('button', { name: 'Novo barbeiro' });
+  await waitFor(() => expect(novo).toHaveFocus());
+  await userEvent.click(novo);
+  expect(await screen.findByLabelText('Nome', { exact: true })).toHaveValue('');
+  expect(screen.getByLabelText('Senha (15 a 128 caracteres)')).toHaveValue('');
 });

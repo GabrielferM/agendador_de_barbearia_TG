@@ -43,6 +43,7 @@ suite('Contas com PostgreSQL isolado (integração real, opt-in)', () => {
         email: `${prefixo}@example.com`,
         senhaHash: await senhas.gerarHash('senha antiga muito longa'),
         idPapel,
+        cliente: { create: { cpf: '12345678909' } },
       },
     });
     idUsuario = usuario.id;

@@ -16,6 +16,7 @@ export interface CriarBarbeiroDto {
      * @maxLength 128
      */
   senha: string;
+  /** @minimum 1 */
   idFilial: number;
   nomeProfissional?: string;
   descricao?: string;
