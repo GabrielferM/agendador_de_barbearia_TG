@@ -1,0 +1,67 @@
+name: Validação
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back-end
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres_teste_ci
+          POSTGRES_DB: barbearia_ci_auth_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres_teste_ci@127.0.0.1:5432/barbearia_ci_auth_test
+      DATABASE_URL_TESTE: postgresql://postgres:postgres_teste_ci@127.0.0.1:5432/barbearia_ci_auth_test
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: back-end/package-lock.json
+      - run: npm ci --include=dev
+      - run: npm run prisma:generate
+      - run: npx prisma migrate deploy
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      - run: npm test -- --runInBand
+      - run: npm run test:e2e -- --runInBand
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front-end
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: front-end/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
