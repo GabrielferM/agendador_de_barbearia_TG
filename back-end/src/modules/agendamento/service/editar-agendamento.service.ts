@@ -1,3 +1,4 @@
+import { gerarComissoesConcluidas } from '../../comissao/validations/gerar-comissoes-concluidas';
 import type { UsuarioAutenticado } from '../../../common/auth/auth.types';
 import { ValidarVinculosAgendamentoService } from '../validations/validar-vinculos-agendamento.service';
 import { duracaoItens, validarExpediente } from '../constants/expediente';
@@ -140,6 +141,18 @@ export class EditarAgendamentoService {
           data,
           include: includeAgendamento,
         });
+        if (dto.status === StatusAgendamento.CONCLUIDO) {
+          await gerarComissoesConcluidas(transaction, atualizado, atualizado.fimReal ?? new Date());
+        }
+        if (
+          dto.status === StatusAgendamento.CANCELADO ||
+          dto.status === StatusAgendamento.NAO_COMPARECEU
+        ) {
+          await transaction.comissao.updateMany({
+            where: { agendamentoServico: { idAgendamento: id }, status: 'PREVISTA' },
+            data: { status: 'CANCELADA' },
+          });
+        }
         if (dto.status && usuario) {
           await transaction.historicoStatusAgendamento.create({
             data: {
