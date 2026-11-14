@@ -15,7 +15,6 @@ A URL padrão é `http://localhost:5173`. Para consumir dados reais, inicie tamb
 
 ```env
 VITE_API_URL=http://localhost:3000
-VITE_USAR_DADOS_MOCKADOS=false
 ```
 
 Variáveis `VITE_` são públicas no bundle: não coloque segredos nelas. O modo de mocks precisa ser habilitado explicitamente com `true` nas telas que o suportam; ele não comprova integração real.

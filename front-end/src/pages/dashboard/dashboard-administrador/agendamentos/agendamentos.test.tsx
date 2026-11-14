@@ -13,7 +13,6 @@ beforeEach(() => {
   todosStatus = false; duplicado = false; diaErrado = false; negado = false;
   permitido = true; falha = false; invalida = false; vazio = false; falhaRede = false;
   vi.setSystemTime(new Date("2026-10-26T15:00:00Z"));
-  vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
   vi.stubGlobal("fetch", vi.fn(async (entrada: RequestInfo | URL) => {
     const url = new URL(String(entrada));
     if (url.pathname === "/auth/me") return json({ usuario: {

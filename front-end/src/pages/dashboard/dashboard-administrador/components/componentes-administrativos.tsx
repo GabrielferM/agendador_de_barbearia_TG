@@ -1,49 +1,6 @@
 import type { ReactNode } from "react";
 import { Cartao, Icone } from "../../components/dashboard-compartilhado";
 
-export function BarraFerramentas({ children }: { children: ReactNode }) {
-  return <div className="mb-5 flex flex-col gap-3 md:flex-row">{children}</div>;
-}
-
-export function CampoVisual({
-  placeholder,
-  className = "",
-}: {
-  placeholder: string;
-  className?: string;
-}) {
-  return (
-    <div
-      aria-disabled="true"
-      className={`flex min-h-12 flex-1 items-center gap-3 rounded-xl border border-border bg-surface px-4 text-muted ${className}`}
-    >
-      <Icone nome="dashboard" className="size-4" />
-      <span className="text-sm">{placeholder}</span>
-      <span className="sr-only">Controle demonstrativo, indisponível</span>
-    </div>
-  );
-}
-
-export function BotaoIndisponivel({
-  children,
-  destaque = false,
-}: {
-  children: ReactNode;
-  destaque?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      disabled
-      title="Disponível na integração real"
-      className={`min-h-12 cursor-not-allowed rounded-xl border px-5 text-sm font-semibold opacity-70 ${destaque ? "border-primary bg-primary text-white" : "border-primary bg-surface text-primary"}`}
-    >
-      {children}
-      <span className="sr-only"> — Disponível na integração real</span>
-    </button>
-  );
-}
-
 export function IndicadorSimples({
   titulo,
   valor,

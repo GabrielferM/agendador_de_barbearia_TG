@@ -1,4 +1,3 @@
-import { Type } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class MetaPaginacaoDto {
@@ -6,17 +5,6 @@ export class MetaPaginacaoDto {
   @ApiProperty({ example: 20 }) limite!: number;
   @ApiProperty({ example: 42 }) total!: number;
   @ApiProperty({ example: 3 }) totalPaginas!: number;
-}
-
-export function criarRespostaPaginadaDto<T>(modelo: Type<T>) {
-  class RespostaPaginadaDto {
-    @ApiProperty({ type: () => modelo, isArray: true })
-    data!: T[];
-
-    @ApiProperty({ type: () => MetaPaginacaoDto })
-    meta!: MetaPaginacaoDto;
-  }
-  return RespostaPaginadaDto;
 }
 
 export class ErroRespostaDto {

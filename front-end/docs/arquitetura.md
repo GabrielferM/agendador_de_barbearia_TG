@@ -29,7 +29,7 @@ O fluxo recomendado é página → hook/serviço → cliente da API → backend.
 
 Para consultas, diferencie carregamento, erro, resultado vazio e sucesso. Para formulários, preserve valores úteis, indique erros próximos aos campos e impeça envios duplicados enquanto pendentes. Use rótulos acessíveis, foco visível e mensagens que não dependam somente de cor.
 
-`VITE_USAR_DADOS_MOCKADOS=true` ativa dados demonstrativos onde implementado, conforme [mocks do dashboard](../src/pages/dashboard/mocks/dados-dashboard.ts). Não use mocks como fallback silencioso de falha real. Ao implementar uma tela, confira seus handlers e chamadas para distinguir ações locais de persistência no backend.
+As telas de dashboard consultam a API real. Preserve os estados de carregamento e erro ao evoluir as integrações.
 
 Cores seguem exclusivamente o [guia de tokens](padroes/cores-front-end.md). Nomes seguem [nomenclatura](nomenclatura.md); erros e sessão seguem [tratamento de erros](tratamento-de-erros.md) e [segurança](seguranca-autenticacao.md).
 
