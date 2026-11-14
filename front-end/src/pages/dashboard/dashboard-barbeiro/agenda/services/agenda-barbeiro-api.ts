@@ -100,12 +100,22 @@ export async function alterarStatus(
   status: NonNullable<AgendamentoControllerListarParams["status"]>,
   motivoCancelamento?: string,
 ) {
-  const valor = conferir(
-    await agendamentoControllerAtualizar(id, {
-      status,
-      ...(motivoCancelamento ? { motivoCancelamento } : {}),
-    }),
-  );
+  const resposta = await agendamentoControllerAtualizar(id, {
+    status,
+    ...(motivoCancelamento ? { motivoCancelamento } : {}),
+  });
+  if (
+    status === "CONCLUIDO" &&
+    resposta.status === 409 &&
+    resposta.data?.message ===
+      "Configure o percentual de comissão do barbeiro antes de concluir."
+  ) {
+    throw new ErroAgendamento(
+      409,
+      "Solicite ao administrador a configuração da sua comissão antes de concluir.",
+    );
+  }
+  const valor = conferir(resposta);
   if (!validarAtendimento(valor))
     throw new Error("Resposta inválida do atendimento.");
   return valor;
