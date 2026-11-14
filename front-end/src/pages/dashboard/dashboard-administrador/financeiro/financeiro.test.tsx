@@ -89,6 +89,7 @@ beforeEach(() => {
         });
       if (url.pathname === "/financeiro/comissoes")
         return json({
+          previstas: "10.00",
           aReceber: repassado ? "0.00" : "12.50",
           pagasNoPeriodo: repassado ? "12.50" : "0.00",
           geradasNoPeriodo: "12.50",

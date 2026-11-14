@@ -1,3 +1,4 @@
+import { STATUS_COMISSAO_A_PAGAR } from '../constants/status-comissao';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { UsuarioAutenticado } from '../../../common/auth/auth.types';
@@ -49,7 +50,7 @@ export class ConsultarFinanceiroService {
           }),
           tx.comissao.count({ where }),
           tx.comissao.aggregate({
-            where: { ...escopo, status: 'LIBERADA' },
+            where: { ...escopo, status: STATUS_COMISSAO_A_PAGAR },
             _sum: { valorComissao: true },
           }),
           tx.comissao.aggregate({

@@ -140,11 +140,17 @@ export function ComissoesPainel({
           />
         ) : (
           <>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <Kpi
                 rotulo={admin ? "Comissões a pagar" : "Comissões a receber"}
                 valor={moeda.format(Number(consulta.data.aReceber))}
                 detalhe="Todos os períodos"
+                icone="financeiro"
+              />
+              <Kpi
+                rotulo="Comissões previstas"
+                valor={moeda.format(Number(consulta.data.previstas))}
+                detalhe="Todos os períodos · aguardam liberação"
                 icone="financeiro"
               />
               <Kpi
