@@ -1,3 +1,4 @@
+import { ComissoesPainel } from '../financeiro/comissoes-painel';
 import { useQuery } from "@tanstack/react-query";
 import {
   ErroDashboard,
@@ -44,6 +45,7 @@ export function DashboardAdministrador() {
       subtitulo="Visão geral da barbearia em tempo real"
       itens={MENU_ADMINISTRADOR}
     >
+      <ComissoesPainel admin compacto />
       {!permitido ? (
         <p role="alert">
           Você não possui permissão para visualizar este painel.

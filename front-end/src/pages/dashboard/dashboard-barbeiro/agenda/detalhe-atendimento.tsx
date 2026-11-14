@@ -38,7 +38,7 @@ export function DetalheAtendimento() {
       setAcao(null);
       setMotivo('');
       await Promise.all(
-        ['dashboard', 'agenda-barbeiro', 'atendimento', 'barbeiro'].map((chave) =>
+        ['dashboard', 'agenda-barbeiro', 'atendimento', 'barbeiro', 'financeiro'].map((chave) =>
           cache.invalidateQueries({ queryKey: [chave] }),
         ),
       );

@@ -88,3 +88,7 @@ Agenda, serviços e histórico validam datas, situação e paginação com Yup, 
 Clientes e Serviços aplicam seus campos pelo botão **Buscar** ou Enter; Histórico mantém **Aplicar filtros**. Nova aplicação retorna à página 1 e repetir os mesmos filtros atualiza os resultados. Os filtros aplicados continuam na URL. Paginar não apaga alterações ainda não aplicadas nos campos; navegação para outros filtros sincroniza os campos sem remontar o formulário. Limpar restaura os defaults.
 
 Clientes, Serviços e Histórico preservam os resultados durante novas consultas, com indicação “Atualizando resultados…”, `aria-busy` e altura mantida até a conclusão. A paginação mostra os metadados dos itens ainda visíveis. Campos permanecem editáveis; submissão, Limpar e paginação ficam bloqueados enquanto a consulta está em andamento. Falhas preservam o último resultado válido com aviso e nova tentativa, exceto perda de sessão/acesso. Não há alteração de endpoints ou filtros no servidor.
+
+### Minhas comissões
+
+O dashboard do barbeiro apresenta a receber em todos os períodos, comissões geradas e repasses pagos no período, além do extrato paginado. O período inicial vai do início do mês até hoje. A API identifica o profissional pela sessão. A conclusão de um atendimento atualiza a consulta de comissões. Se faltar a taxa para calcular uma comissão, a conclusão pede que o barbeiro solicite a configuração ao administrador.

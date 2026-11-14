@@ -1,3 +1,4 @@
+import { ComissoesPainel } from '../financeiro/comissoes-painel';
 import {
   dataCurtaBarbeiro as dataCurta,
   horaBarbeiro as hora,
@@ -229,6 +230,7 @@ export function DashboardBarbeiro() {
           </div>
         </>
       )}
+      <ComissoesPainel />
     </DashboardLayout>
   );
 }
