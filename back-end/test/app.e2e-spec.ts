@@ -247,6 +247,45 @@ describe('AppController (e2e)', () => {
     expect(me.body as unknown).toMatchObject({ usuario: { permissoes: ['GERENCIAR_COMISSOES'] } });
   });
 
+  it('protege financeiro, rejeita escopo alheio e percentual inválido', async () => {
+    await request(app.getHttpServer()).get('/financeiro/comissoes').expect(401);
+    const agente = request.agent(app.getHttpServer());
+    const login = await agente
+      .post('/auth/login')
+      .send({ email: 'cliente@teste.local', senha: 'senha correta de teste' })
+      .expect(200);
+    const csrf = (login.headers['set-cookie'] as unknown as string[])
+      .find((c) => c.startsWith('csrf='))!
+      .split(';')[0]
+      .slice(5);
+    await agente.get('/financeiro/comissoes').expect(403);
+    await agente
+      .post('/financeiro/comissoes/1/repasse')
+      .set('X-CSRF-Token', csrf)
+      .send({})
+      .expect(403);
+    const usuario = sessaoAtual!.usuario as { papel: { codigo: string; permissoes: unknown[] } };
+    usuario.papel.codigo = 'ADMINISTRADOR';
+    usuario.papel.permissoes = [
+      { ativo: true, permissao: { ativo: true, codigo: 'GERENCIAR_COMISSOES' } },
+    ];
+    await agente.post('/financeiro/comissoes/1/repasse').send({}).expect(403);
+    for (const percentual of [null, '', '50', -1, 101, 50.001]) {
+      await agente
+        .patch('/financeiro/barbeiros/1/percentual')
+        .set('X-CSRF-Token', csrf)
+        .send({ percentual })
+        .expect(400);
+    }
+    await agente.get('/financeiro/comissoes?inicioDe=2026-02-30').expect(400);
+    await agente.get('/financeiro/comissoes?idBarbeiro=2').expect(400);
+    await agente
+      .patch('/comissoes/1')
+      .set('X-CSRF-Token', csrf)
+      .send({ status: 'PAGA' })
+      .expect(409);
+  });
+
   it('edita o status da conta do barbeiro com permissão e CSRF, sem alterar o perfil', async () => {
     await request(app.getHttpServer())
       .patch('/barbeiros/9')
