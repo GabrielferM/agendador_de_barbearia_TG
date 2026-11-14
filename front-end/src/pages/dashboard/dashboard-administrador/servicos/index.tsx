@@ -66,7 +66,8 @@ export function ServicosAdministrador() {
       alterarStatusServico(id, ativo),
     retry: false,
     onMutate: () => setAviso(''),
-    onSuccess: async () => {
+    onSuccess: async (_servico, { ativo }) => {
+      setAviso(ativo ? 'Serviço ativado.' : 'Serviço desativado. Agendamentos existentes foram preservados.');
       setPagina(1);
       await Promise.all([
         cache.invalidateQueries({
