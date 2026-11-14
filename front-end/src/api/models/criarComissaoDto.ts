@@ -7,12 +7,13 @@
  */
 
 export interface CriarComissaoDto {
-  idAgendamentoServico: number;
-  idBarbeiro: number;
   /**
+     * Se informado, deve corresponder à taxa cadastrada do barbeiro.
      * @minimum 0
      * @maximum 100
      */
-  percentualAplicado: number;
+  percentualAplicado?: number;
+  idAgendamentoServico: number;
+  idBarbeiro: number;
   observacao?: string;
 }

@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { StatusComissao } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
@@ -6,6 +7,7 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  ValidateIf,
   Min,
   Max,
   IsString,
@@ -14,11 +16,16 @@ import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 export class CriarComissaoDto {
   @Type(() => Number) @IsInt() idAgendamentoServico!: number;
   @Type(() => Number) @IsInt() idBarbeiro!: number;
-  @Type(() => Number)
+  @ApiPropertyOptional({
+    minimum: 0,
+    maximum: 100,
+    description: 'Se informado, deve corresponder à taxa cadastrada do barbeiro.',
+  })
+  @ValidateIf((_objeto, valor: unknown) => valor !== undefined)
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @Max(100)
-  percentualAplicado!: number;
+  percentualAplicado?: number;
   @IsOptional() @IsString() observacao?: string;
 }
 export class AtualizarComissaoDto {
