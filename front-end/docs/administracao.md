@@ -170,3 +170,7 @@ Adapters verificam status HTTP e respostas consumidas; erros não são convertid
 Clientes, Barbeiros e Serviços mantêm texto e status como rascunho até clicar em **Buscar** ou pressionar Enter. Filiais aplica seu status pelo mesmo botão, sem busca textual. A aplicação confirma todos os filtros juntos e retorna à página 1; repetir a busca força atualização. Texto vazio remove a busca textual. Paginar usa os últimos filtros aplicados e preserva os campos ainda não submetidos.
 
 Durante a consulta, os campos continuam editáveis e Buscar/paginação ficam desabilitados. Resultados, indicadores e paginação anteriores permanecem visíveis com “Atualizando resultados…” e `aria-busy`; a região preserva sua altura até concluir. Página e totais correspondem aos dados exibidos, e o ajuste para a última página só ocorre com resposta definitiva. O carregamento completo fica reservado à primeira consulta sem dados. Falhas de atualização preservam a última resposta válida com aviso e nova tentativa; veja [tratamento de erros](tratamento-de-erros.md#falhas-na-atualização-de-listagens).
+
+### Comissões e repasses
+
+O dashboard administrativo mostra saldo a pagar de todos os períodos, comissões geradas no mês e repasses pagos no mês. No Financeiro, o filtro de período também se aplica ao extrato por data de geração. A lista de percentuais permite configurar de 0 a 100% por barbeiro. Selecione Registrar repasse para uma comissão liberada e confirme após efetuar o pagamento. O sistema registra o repasse integral e atualiza os indicadores.

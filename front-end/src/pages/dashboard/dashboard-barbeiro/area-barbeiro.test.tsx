@@ -118,6 +118,26 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe("área do barbeiro integrada", () => {
+  it("mostra o extrato próprio no dashboard sem enviar o ID do barbeiro", async () => {
+    const original = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (...args) => {
+      const url = new URL(String(args[0]), "http://localhost:3000");
+      if (url.pathname !== "/financeiro/minhas-comissoes") return original(...args);
+      expect(url.searchParams.has("idBarbeiro")).toBe(false);
+      return json({
+        aReceber: "15.00", pagasNoPeriodo: "0.00", geradasNoPeriodo: "15.00", totalPaginas: 1,
+        itens: [{
+          id: 10, barbeiro: "Profissional", servico: "Corte próprio",
+          baseCalculo: "60.00", percentualAplicado: "25.00", valorComissao: "15.00",
+          status: "LIBERADA", dataGeracao: "2026-11-01T15:00:00Z", dataPagamento: null,
+        }],
+      });
+    });
+    abrir("/barbeiro");
+    expect(await screen.findByText("Comissões a receber")).toBeInTheDocument();
+    expect(await screen.findByText("Corte próprio")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Registrar repasse" })).not.toBeInTheDocument();
+  });
   it.each(['clientes', 'servicos'])('busca explícita em %s preserva lista, foco e rascunho na paginação', async (tela) => {
     const original = vi.mocked(fetch).getMockImplementation()!;
     vi.mocked(fetch).mockImplementation(async (...args) => {

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import App from "../../../../App";
@@ -33,6 +33,8 @@ const dados = {
     },
   ],
 };
+let repassado = false;
+let taxaSalva: string | null = null;
 let permitido = true,
   falha = false,
   invalida = false,
@@ -44,13 +46,15 @@ const json = (data: unknown, status = 200) =>
   });
 beforeEach(() => {
   permitido = true;
+  repassado = false;
+  taxaSalva = null;
   falha = false;
   invalida = false;
   vazio = false;
   vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
   vi.stubGlobal(
     "fetch",
-    vi.fn(async (entrada: RequestInfo | URL) => {
+    vi.fn(async (entrada: RequestInfo | URL, opcoes?: RequestInit) => {
       const url = new URL(String(entrada));
       if (url.pathname === "/auth/me")
         return json({
@@ -61,6 +65,47 @@ beforeEach(() => {
             papel: "ADMINISTRADOR",
             permissoes: permitido ? ["GERENCIAR_COMISSOES"] : [],
           },
+        });
+      if (url.pathname === "/financeiro/comissoes/50/repasse") {
+        repassado = true;
+        return json({
+          idComissao: 50,
+          valor: "12.50",
+          dataRegistro: "2026-10-26T15:00:00Z",
+        });
+      }
+      if (url.pathname === "/financeiro/barbeiros/9/percentual") {
+        const corpo = JSON.parse(String(opcoes?.body)) as {
+          percentual: number;
+        };
+        taxaSalva = corpo.percentual.toFixed(2);
+        return new Response(null, { status: 204 });
+      }
+      if (url.pathname === "/financeiro/barbeiros")
+        return json({
+          itens: [{ id: 9, nome: "Profissional real", percentual: taxaSalva }],
+          pagina: 1,
+          totalPaginas: 1,
+        });
+      if (url.pathname === "/financeiro/comissoes")
+        return json({
+          aReceber: repassado ? "0.00" : "12.50",
+          pagasNoPeriodo: repassado ? "12.50" : "0.00",
+          geradasNoPeriodo: "12.50",
+          totalPaginas: 1,
+          itens: [
+            {
+              id: 50,
+              barbeiro: "Profissional real",
+              servico: "Barba",
+              baseCalculo: "50.00",
+              percentualAplicado: "25.00",
+              valorComissao: "12.50",
+              status: repassado ? "PAGA" : "LIBERADA",
+              dataGeracao: "2026-10-26T15:00:00Z",
+              dataPagamento: repassado ? "2026-10-26T15:00:00Z" : null,
+            },
+          ],
         });
       if (falha) return json({}, 503);
       if (invalida) return json({ indicadores: {} });
@@ -145,8 +190,46 @@ it("aplica um intervalo explícito e preserva as cinco situações de comissão"
   await userEvent.click(
     screen.getByRole("button", { name: "Aplicar período" }),
   );
-  expect(fetch).toHaveBeenLastCalledWith(
-    expect.stringContaining("inicioDe=2026-09-01&inicioAte=2026-09-30"),
-    expect.anything(),
+  await waitFor(() =>
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "/dashboard/administrador/financeiro?inicioDe=2026-09-01&inicioAte=2026-09-30",
+      ),
+      expect.anything(),
+    ),
   );
+});
+it("exige confirmação para registrar o repasse e atualiza o extrato", async () => {
+  abrir();
+  await userEvent.click(
+    await screen.findByRole("button", { name: "Registrar repasse" }),
+  );
+  expect(repassado).toBe(false);
+  await userEvent.click(
+    screen.getByRole("button", { name: "Confirmar registro" }),
+  );
+  expect(await screen.findByText("Repasse registrado.")).toBeInTheDocument();
+  await waitFor(() =>
+    expect(
+      screen.queryByRole("button", { name: "Registrar repasse" }),
+    ).not.toBeInTheDocument(),
+  );
+  expect(fetch).toHaveBeenCalledWith(
+    expect.stringContaining("/financeiro/comissoes/50/repasse"),
+    expect.objectContaining({ method: "POST" }),
+  );
+});
+it("permite configurar zero sem confundir com taxa ausente", async () => {
+  abrir();
+  const campo = await screen.findByRole("spinbutton", {
+    name: /Sem taxa definida/,
+  });
+  await userEvent.type(campo, "0");
+  await userEvent.click(
+    screen.getByRole("button", { name: "Salvar percentual" }),
+  );
+  expect(await screen.findByText("Percentual salvo.")).toBeInTheDocument();
+  expect(
+    screen.getByRole("spinbutton", { name: /0% configurado/ }),
+  ).toHaveValue(0);
 });
