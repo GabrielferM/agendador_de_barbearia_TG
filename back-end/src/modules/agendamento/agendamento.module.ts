@@ -3,9 +3,6 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AgendamentoController } from './agendamento.controller';
 import { AgendamentoService } from './agendamento.service';
-import { BuscarServicosAgendamentoService } from './validations/buscar-servicos-agendamento.service';
-import { CalcularFimAgendamentoService } from './validations/calcular-fim-agendamento.service';
-import { CalcularValorTotalAgendamentoService } from './validations/calcular-valor-total-agendamento.service';
 import { ValidarDataHoraAgendamentoService } from './validations/validar-data-hora-agendamento.service';
 import { ValidarVinculosAgendamentoService } from './validations/validar-vinculos-agendamento.service';
 import { VerificarConflitoAgendamentoService } from './validations/verificar-conflito-agendamento.service';
@@ -23,9 +20,6 @@ import { ValidarAcessoAgendamentoService } from './validations/validar-acesso-ag
   providers: [
     AgendamentoService,
     ListarHorariosDisponiveisAgendamentoService,
-    BuscarServicosAgendamentoService,
-    CalcularFimAgendamentoService,
-    CalcularValorTotalAgendamentoService,
     ValidarDataHoraAgendamentoService,
     ValidarVinculosAgendamentoService,
     VerificarConflitoAgendamentoService,

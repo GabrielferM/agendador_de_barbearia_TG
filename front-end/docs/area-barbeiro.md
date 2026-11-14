@@ -1,6 +1,6 @@
 # Área do barbeiro
 
-As seis rotas usam API real, mesmo com VITE_USAR_DADOS_MOCKADOS=true. O frontend
+As seis rotas usam API real. O frontend
 exige BARBEIRO. As consultas específicas exigem sessão, perfil e
 GERENCIAR_PROPRIA_AGENDA no backend. A identidade vem da sessão, nunca dos filtros.
 

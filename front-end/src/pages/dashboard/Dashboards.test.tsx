@@ -81,7 +81,6 @@ function renderizar(
 describe("dashboards", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
-    vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "false");
   });
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -117,7 +116,6 @@ describe("dashboards", () => {
   });
 
   it("consulta dados administrativos reais mesmo com mocks habilitados", async () => {
-    vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     renderizar("/admin", "ADMINISTRADOR");
     expect(await screen.findByText("Clientes ativos")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
@@ -130,7 +128,6 @@ describe("dashboards", () => {
   });
 
   it("consulta o painel real do barbeiro mesmo com mocks habilitados", async () => {
-    vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     renderizar("/barbeiro", "BARBEIRO");
     expect(
       await screen.findByText("Clientes nos últimos 7 dias"),
@@ -143,7 +140,6 @@ describe("dashboards", () => {
   });
 
   it("navega pela sidebar e destaca a área administrativa atual", async () => {
-    vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     renderizar("/admin", "ADMINISTRADOR", true);
     const link = await screen.findByRole("link", { name: "Clientes" });
     await userEvent.click(link);
