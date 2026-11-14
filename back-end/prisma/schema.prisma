@@ -63,6 +63,7 @@ model Usuario {
   barbeiro           Barbeiro?                    @relation("UsuarioBarbeiro")
   administrador      Administrador?               @relation("UsuarioAdministrador")
   alteracoesDeStatus HistoricoStatusAgendamento[] @relation("UsuarioHistoricoStatus")
+  repassesRegistrados RepasseComissao[]
   recuperacoesSenha RecuperacaoSenha[]
   sessoes            Sessao[]                     @relation("UsuarioSessoes")
 
@@ -279,6 +280,7 @@ model Comissao {
   dataLiberacao        DateTime?
   dataPagamento        DateTime?
   dataEstorno          DateTime?
+  repasse              RepasseComissao?
   motivoEstorno        String?
   observacao           String?
   agendamentoServico   AgendamentoServico @relation("AgendamentoServicoComissao", fields: [idAgendamentoServico], references: [id], onDelete: Restrict)
@@ -319,4 +321,16 @@ model RecuperacaoSenha {
   @@index([idUsuario, dataConsumo])
   @@index([dataExpiracao])
   @@map("recuperacao_senha")
+}
+
+model RepasseComissao {
+  id Int @id @default(autoincrement())
+  idComissao Int @unique
+  idUsuarioResponsavel Int
+  valor Decimal @db.Decimal(10, 2)
+  dataRegistro DateTime @default(now())
+  comissao Comissao @relation(fields: [idComissao], references: [id], onDelete: Restrict)
+  responsavel Usuario @relation(fields: [idUsuarioResponsavel], references: [id], onDelete: Restrict)
+  @@index([dataRegistro])
+  @@map("repasse_comissao")
 }
