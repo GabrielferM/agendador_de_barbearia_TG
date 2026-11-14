@@ -37,9 +37,12 @@ export async function consultarExtrato(
   const extrato = resposta.data;
   if (
     !extrato ||
-    ![extrato.aReceber, extrato.pagasNoPeriodo, extrato.geradasNoPeriodo].every(
-      decimal,
-    ) ||
+    ![
+      extrato.aReceber,
+      extrato.previstas,
+      extrato.pagasNoPeriodo,
+      extrato.geradasNoPeriodo,
+    ].every(decimal) ||
     !Number.isSafeInteger(extrato.totalPaginas) ||
     !Array.isArray(extrato.itens) ||
     !extrato.itens.every(

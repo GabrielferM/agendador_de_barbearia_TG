@@ -23,11 +23,21 @@ export class CriarComissaoService {
       }
       if (['CONCLUIDO', 'CANCELADO', 'NAO_COMPARECEU'].includes(item.agendamento.status))
         throw new ConflictException('Não é permitido criar previsão para atendimento encerrado.');
-      if (!(await tx.barbeiro.findUnique({ where: { id: dto.idBarbeiro } }))) {
-        throw new NotFoundException('Barbeiro não encontrado.');
-      }
+      const barbeiro = await tx.barbeiro.findUnique({ where: { id: dto.idBarbeiro } });
+      if (!barbeiro) throw new NotFoundException('Barbeiro não encontrado.');
+      const percentualAplicado = barbeiro.percentualComissao;
+      if (percentualAplicado === null)
+        throw new ConflictException(
+          'Configure o percentual de comissão do barbeiro antes de criar a previsão.',
+        );
+      if (
+        dto.percentualAplicado !== undefined &&
+        !percentualAplicado.equals(dto.percentualAplicado)
+      )
+        throw new ConflictException(
+          'O percentual informado difere da taxa cadastrada do barbeiro.',
+        );
 
-      const percentualAplicado = new Prisma.Decimal(dto.percentualAplicado);
       try {
         return serializarResposta(
           await tx.comissao.create({
