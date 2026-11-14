@@ -45,7 +45,6 @@ beforeEach(() => {
   falhaGravacao = 0;
   respostaGravacaoInvalida = false;
   aguardarGravacao = undefined;
-  vi.stubEnv('VITE_USAR_DADOS_MOCKADOS', 'true');
   document.cookie = 'csrf=teste-csrf';
   vi.stubGlobal(
     'fetch',

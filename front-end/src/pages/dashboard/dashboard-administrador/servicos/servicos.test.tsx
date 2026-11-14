@@ -41,7 +41,6 @@ beforeEach(() => {
   falhaGravacao = false;
   respostaInvalida = false;
   aguardarGravacao = undefined;
-  vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (entrada: RequestInfo | URL, opcoes?: RequestInit) => {

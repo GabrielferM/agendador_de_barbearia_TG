@@ -26,7 +26,7 @@ Testes com respostas HTTP/Prisma simuladas não comprovam persistência em Postg
 
 ## Implementado: consulta da agenda
 
-`/admin/agendamentos` exige `GERENCIAR_AGENDAMENTOS` e consulta `GET /dashboard/administrador/agendamentos` com `inicioDe` e `inicioAte`. Usa o cliente gerado com adapter que confere status, sequência completa dos dias e campos consumidos. A tela sempre usa a API, inclusive quando `VITE_USAR_DADOS_MOCKADOS=true`; não há fallback demonstrativo.
+`/admin/agendamentos` exige `GERENCIAR_AGENDAMENTOS` e consulta `GET /dashboard/administrador/agendamentos` com `inicioDe` e `inicioAte`. Usa o cliente gerado com adapter que confere status, sequência completa dos dias e campos consumidos. A tela sempre usa a API. Falhas da API são exibidas ao usuário.
 
 A abertura mostra a semana atual, de segunda a domingo. Dia, semana e mês permitem navegar entre períodos e voltar para hoje. Datas e horários seguem America/Sao_Paulo. Selecionar um dia atualiza seu resumo; contagens e rótulos contemplam os seis status reais. Carregamento, falha com nova tentativa e períodos/dias vazios são distintos. Queries incluem usuário e período e recebem sinal de cancelamento.
 
