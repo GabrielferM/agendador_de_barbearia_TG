@@ -6,14 +6,19 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
-  IsPositive,
+  Min,
+  Max,
   IsString,
 } from 'class-validator';
 import { PaginacaoDto } from '../../../common/dto/paginacao.dto';
 export class CriarComissaoDto {
   @Type(() => Number) @IsInt() idAgendamentoServico!: number;
   @Type(() => Number) @IsInt() idBarbeiro!: number;
-  @Type(() => Number) @IsNumber({ maxDecimalPlaces: 2 }) @IsPositive() percentualAplicado!: number;
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  percentualAplicado!: number;
   @IsOptional() @IsString() observacao?: string;
 }
 export class AtualizarComissaoDto {
