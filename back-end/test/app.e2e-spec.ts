@@ -36,7 +36,11 @@ describe('AppController (e2e)', () => {
     papel: { findUnique: jest.fn() },
     recuperacaoSenha: { create: jest.fn(), findUnique: jest.fn(), updateMany: jest.fn() },
     historicoStatusAgendamento: { create: jest.fn().mockResolvedValue({}) },
-    comissao: { findMany: jest.fn(), count: jest.fn() },
+    comissao: {
+      findMany: jest.fn(),
+      count: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    },
     filial: {
       findUnique: jest.fn(),
       findMany: jest.fn(),

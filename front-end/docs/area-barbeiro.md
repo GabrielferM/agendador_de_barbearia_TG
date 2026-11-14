@@ -13,8 +13,7 @@ GERENCIAR_PROPRIA_AGENDA no backend. A identidade vem da sessão, nunca dos filt
 | /barbeiro/clientes | GET /dashboard/barbeiro/clientes | Nova carteira agregada e paginada por cliente |
 | /barbeiro/historico | GET /dashboard/barbeiro/historico | Novo histórico de atendimentos encerrados |
 
-Não há migrations, alterações de schema, criação/reagendamento ou geração/pagamento
-de comissões. Nenhum endpoint administrativo foi liberado ao barbeiro.
+Criação/reagendamento não fazem parte da área do barbeiro. A evolução financeira está descrita no [guia financeiro](../../back-end/doc/financeiro.md). Nenhum endpoint administrativo foi liberado ao barbeiro.
 POST/GET `historico-status` não ficam disponíveis ao barbeiro; auditoria de mudanças
 não é o histórico de atendimentos e não é usada para simular transições.
 
@@ -62,7 +61,7 @@ A UI confirma explicitamente e exige motivo no cancelamento. O backend deriva
 responsável e estado anterior da sessão/banco, relê propriedade/estado dentro da
 transação serializável, grava histórico e início/fim real quando ausentes.
 Falha no histórico impede concluir a transação. P2034 repete a leitura e revalida
-estado. Nenhuma comissão é criada. Sucesso invalida todos os caches afetados.
+estado. A conclusão gera/libera comissões na mesma transação; consulte [financeiro](../../back-end/doc/financeiro.md). Sucesso invalida todos os caches afetados.
 
 ## Verificação e limites
 
