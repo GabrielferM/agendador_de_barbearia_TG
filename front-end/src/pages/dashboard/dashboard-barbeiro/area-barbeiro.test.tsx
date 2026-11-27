@@ -125,7 +125,7 @@ describe("área do barbeiro integrada", () => {
       if (url.pathname !== "/financeiro/minhas-comissoes") return original(...args);
       expect(url.searchParams.has("idBarbeiro")).toBe(false);
       return json({
-        aReceber: "15.00", pagasNoPeriodo: "0.00", geradasNoPeriodo: "15.00", totalPaginas: 1,
+        previstas: "0.00", aReceber: "15.00", pagasNoPeriodo: "0.00", geradasNoPeriodo: "15.00", totalPaginas: 1,
         itens: [{
           id: 10, barbeiro: "Profissional", servico: "Corte próprio",
           baseCalculo: "60.00", percentualAplicado: "25.00", valorComissao: "15.00",

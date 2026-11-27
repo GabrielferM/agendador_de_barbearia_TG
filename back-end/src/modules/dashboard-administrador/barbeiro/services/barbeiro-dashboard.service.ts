@@ -7,7 +7,7 @@ import {
 } from '../../../../common/utils/periodo-dashboard';
 import { serializarResposta } from '../../../../common/utils/resposta';
 import { PrismaService } from '../../../../prisma/prisma.service';
-import { STATUS_COMISSAO_A_PAGAR } from '../constants/barbeiro-dashboard.constants';
+import { STATUS_COMISSAO_A_PAGAR } from '../../../comissao/constants/status-comissao';
 import type { ConsultarBarbeirosDashboardDto } from '../dto/barbeiro-dashboard.dto';
 import type { TotaisBarbeiroDashboard } from '../types/barbeiro-dashboard.types';
 import { normalizarBuscaBarbeiro } from '../validator/busca-barbeiro.validator';
@@ -56,7 +56,7 @@ export class BarbeiroDashboardService {
           },
         }),
         this.prisma.comissao.aggregate({
-          where: { status: { in: STATUS_COMISSAO_A_PAGAR } },
+          where: { status: STATUS_COMISSAO_A_PAGAR },
           _sum: { valorComissao: true },
         }),
       ]);
@@ -110,7 +110,7 @@ export class BarbeiroDashboardService {
       const totalItem = totais.get(item.idBarbeiro)!;
       const valor = Number(item.valorComissao);
       totalItem.comissoesRegistradasMes += valor;
-      if (STATUS_COMISSAO_A_PAGAR.includes(item.status)) totalItem.comissoesAPagar += valor;
+      if (item.status === STATUS_COMISSAO_A_PAGAR) totalItem.comissoesAPagar += valor;
     }
 
     return serializarResposta({
