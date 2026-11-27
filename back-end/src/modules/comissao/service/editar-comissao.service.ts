@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { serializarResposta } from '../../../common/utils/resposta';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { includeComissao } from '../constants/include-comissao';
@@ -13,20 +13,19 @@ export class EditarComissaoService {
   ) {}
 
   async execute(id: number, dto: AtualizarComissaoDto) {
+    if (
+      dto.status !== undefined ||
+      dto.dataLiberacao !== undefined ||
+      dto.dataPagamento !== undefined ||
+      dto.dataEstorno !== undefined ||
+      dto.motivoEstorno !== undefined
+    )
+      throw new ConflictException('Use o fluxo financeiro para alterar o estado da comissão.');
     await this.buscarService.execute(id);
     return serializarResposta(
       await this.prisma.comissao.update({
         where: { id },
         data: {
-          ...(dto.status ? { status: dto.status } : {}),
-          ...(dto.dataLiberacao !== undefined
-            ? { dataLiberacao: new Date(dto.dataLiberacao) }
-            : {}),
-          ...(dto.dataPagamento !== undefined
-            ? { dataPagamento: new Date(dto.dataPagamento) }
-            : {}),
-          ...(dto.dataEstorno !== undefined ? { dataEstorno: new Date(dto.dataEstorno) } : {}),
-          ...(dto.motivoEstorno !== undefined ? { motivoEstorno: dto.motivoEstorno.trim() } : {}),
           ...(dto.observacao !== undefined ? { observacao: dto.observacao.trim() } : {}),
         },
         include: includeComissao,
