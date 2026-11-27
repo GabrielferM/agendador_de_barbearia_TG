@@ -78,29 +78,24 @@ export function DashboardLayout({
   titulo,
   subtitulo,
   itens,
-  dadosDemonstrativos = false,
   fusoHorario,
   children,
 }: {
   titulo: string;
   subtitulo: string;
   itens: ItemMenu[];
-  dadosDemonstrativos?: boolean;
   fusoHorario?: string;
   children: ReactNode;
 }) {
   const { usuario, sair } = useAutenticacao();
   const navigate = useNavigate();
-  const dataCabecalho = dadosDemonstrativos
-    ? new Date("2026-09-07T12:00:00-03:00")
-    : new Date();
   const hoje = new Intl.DateTimeFormat("pt-BR", {
     timeZone: fusoHorario,
     weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
-  }).format(dataCabecalho);
+  }).format(new Date());
 
   return (
     <main className="min-h-screen bg-background text-foreground lg:grid lg:grid-cols-[230px_minmax(0,1fr)]">
@@ -190,11 +185,6 @@ export function DashboardLayout({
               <h1 className="font-serif text-2xl font-bold sm:text-3xl">
                 {titulo}
               </h1>
-              {dadosDemonstrativos && (
-                <span className="rounded-full border border-secondary bg-background px-3 py-1 text-xs font-semibold text-primary">
-                  Dados demonstrativos
-                </span>
-              )}
             </div>
             <p className="mt-1 text-sm text-muted">{subtitulo}</p>
           </div>
@@ -298,22 +288,6 @@ export function EstadoErro({
           ? `Aguarde ${segundos} ${segundos === 1 ? "segundo" : "segundos"}`
           : "Tentar novamente"}
       </button>
-    </div>
-  );
-}
-
-export function EstadoIntegracaoIndisponivel() {
-  return (
-    <div className="grid min-h-64 place-items-center rounded-2xl border border-border bg-surface p-8 text-center">
-      <div>
-        <p className="font-serif text-xl font-bold">
-          Área disponível em modo demonstrativo
-        </p>
-        <p className="mt-2 text-sm text-muted">
-          Defina VITE_USAR_DADOS_MOCKADOS=true e reinicie o front-end para
-          visualizar este exemplo.
-        </p>
-      </div>
     </div>
   );
 }

@@ -85,7 +85,6 @@ describe("sessão e rotas protegidas", () => {
   });
 
   it("limpa dados privados e avisa quando o logout remoto não é confirmado", async () => {
-    vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
     vi.mocked(fetch)
       .mockResolvedValueOnce(
         new Response(
@@ -115,7 +114,6 @@ describe("sessão e rotas protegidas", () => {
   });
 
   it("encerra localmente uma sessão expirada sem chamar logout", async () => {
-    vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "false");
     vi.mocked(fetch)
       .mockResolvedValueOnce(
         new Response(

@@ -3,5 +3,3 @@ export const CODIGOS_PAPEL = {
   BARBEIRO: 'BARBEIRO',
   CLIENTE: 'CLIENTE',
 } as const;
-
-export type CodigoPapel = (typeof CODIGOS_PAPEL)[keyof typeof CODIGOS_PAPEL];

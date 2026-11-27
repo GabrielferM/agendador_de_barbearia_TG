@@ -51,7 +51,6 @@ beforeEach(() => {
   falha = false;
   invalida = false;
   vazio = false;
-  vi.stubEnv("VITE_USAR_DADOS_MOCKADOS", "true");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (entrada: RequestInfo | URL, opcoes?: RequestInit) => {
