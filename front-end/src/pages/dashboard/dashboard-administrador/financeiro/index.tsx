@@ -1,3 +1,6 @@
+import { ComissoesPainel } from "../../financeiro/comissoes-painel";
+import { periodoFinanceiroAtual } from "../../financeiro/financeiro-api";
+import { TaxasComissao } from "../../financeiro/taxas-comissao";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAutenticacao } from "../../../../auth/contexto-autenticacao";
@@ -17,19 +20,12 @@ import {
 } from "./components/components";
 import { consultarFinanceiro } from "./services/financeiro-api";
 
-function periodoAtual() {
-  const hoje = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Sao_Paulo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-  return { inicioDe: `${hoje.slice(0, 7)}-01`, inicioAte: hoje };
-}
 export function FinanceiroAdministrador() {
   const { usuario } = useAutenticacao();
-  const permitido = !!usuario?.permissoes.includes("GERENCIAR_COMISSOES");
-  const [periodo, setPeriodo] = useState(periodoAtual);
+  const permitido =
+    usuario?.papel === "ADMINISTRADOR" &&
+    usuario.permissoes.includes("GERENCIAR_COMISSOES");
+  const [periodo, setPeriodo] = useState(periodoFinanceiroAtual);
   const consulta = useQuery({
     queryKey: ["admin", usuario?.id, "financeiro", periodo],
     enabled: permitido,
@@ -55,6 +51,8 @@ export function FinanceiroAdministrador() {
             estiloCampo={estiloCampo}
             estiloBotao={estiloBotao}
           />
+          <ComissoesPainel admin periodo={periodo} />
+          <TaxasComissao />
           {consulta.isPending ? (
             <EstadoCarregamento />
           ) : consulta.isError ? (
