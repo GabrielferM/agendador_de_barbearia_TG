@@ -143,6 +143,7 @@ model Cliente {
 model Barbeiro {
   id                 Int            @id
   idFilial           Int
+  percentualComissao Decimal?       @db.Decimal(5, 2)
   nomeProfissional   String
   descricao          String?
   fotoUrl            String?
